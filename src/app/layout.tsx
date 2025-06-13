@@ -35,7 +35,7 @@ export default function RootLayout({
             <Logo />
           </div>
           {/* menu */}
-          <nav className="flex items-center gap-4 max-sm:hidden">
+          <nav className="items-center hidden gap-4 lg:flex">
             <Link href="/" className="text-[20px] font-[400] text-gray-900">
               Home
             </Link>
@@ -53,7 +53,7 @@ export default function RootLayout({
             </Link>
           </nav>
           {/* right */}
-          <div className="flex items-center gap-4 max-sm:hidden">
+          <div className="items-center hidden gap-4 lg:flex">
             <Link href="/" className="text-[20px] gap-2 font-[400] text-gray-900 flex items-center">
               <span>Login</span> <FaRightLong className="text-[20px] font-[400] text-gray-900" />
             </Link>
@@ -64,7 +64,8 @@ export default function RootLayout({
               Sign Up
             </Link>
           </div>
-          <div>
+          <div className="lg:hidden">
+            {/* Mobile Menu Button */}
             <Header />
           </div>
         </header>

@@ -20,7 +20,7 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex bg-black/40 md:hidden">
+    <div className="fixed inset-0 z-50 flex bg-black/40 lg:hidden">
       {/* Drawer */}
       <div className="w-[80vw] max-w-[350px] bg-white h-full p-6 flex flex-col relative animate-slide-in">
         {/* Close button */}
