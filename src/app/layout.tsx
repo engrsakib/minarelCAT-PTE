@@ -1,9 +1,13 @@
+
 import type { Metadata } from "next";
 import {Poppins } from "next/font/google";
 import "./globals.css";
 import Logo from "@/components/personal/Logo";
 import Link from "next/link";
 import { FaRightLong } from "react-icons/fa6";
+import Header from "@/components/personal/Header";
+
+
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -31,7 +35,7 @@ export default function RootLayout({
             <Logo />
           </div>
           {/* menu */}
-          <nav className="flex items-center gap-4">
+          <nav className="flex items-center gap-4 max-sm:hidden">
             <Link href="/" className="text-[20px] font-[400] text-gray-900">
               Home
             </Link>
@@ -49,16 +53,19 @@ export default function RootLayout({
             </Link>
           </nav>
           {/* right */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 max-sm:hidden">
             <Link href="/" className="text-[20px] gap-2 font-[400] text-gray-900 flex items-center">
               <span>Login</span> <FaRightLong className="text-[20px] font-[400] text-gray-900" />
             </Link>
             <Link
               href="/"
-              className="text-[20px] font-[400] text-gray-900 ml-4 bg-blue-500 px-4 py-2 rounded-full"
+              className="text-[20px] font-[400] ml-4 bg-gradient-to-r from-[#D80000] to-[#720000] p-8 text-white px-4 py-2 rounded-full w-[289px] h-[60px] flex items-center justify-center hover:bg-gradient-to-r hover:from-[#720000] transition-all duration-300"
             >
               Sign Up
             </Link>
+          </div>
+          <div>
+            <Header />
           </div>
         </header>
 
