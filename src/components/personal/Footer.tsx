@@ -70,7 +70,30 @@ export default function Footer() {
             
             
           </div>
+
+
+          <div className="flex flex-col gap-2">
+            <h1 className="text-2xl font-[400] text-white">Get in Touch</h1>
+            <Link
+              href="/"
+              className=" text-white text-[16px] font-[400] hover:text-[#F2F2F2] transition-all duration-300"
+            >
+              Fortunekouka@gmail.com
+            </Link>
+            <Link
+              href="/"
+              className=" text-white text-[16px] font-[400] hover:text-[#F2F2F2] transition-all duration-300"
+            >
+              (009)56567890
+            </Link>
+            
+            
+          </div>
+
         </div>
+
+
+        
       </section>
     </div>
   );
