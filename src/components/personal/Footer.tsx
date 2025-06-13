@@ -4,12 +4,12 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <div className="text-[20px] font-[400] bg-gradient-to-r from-[#7F0B0B] to-[#590000] p-8 text-white px-4 py-2 rounded w-full min-h-[250px]  hover:transition-all duration-300">
-      <section className="grid grid-cols-6 gap-4 mt-[65px] mb-[183px] w-[80%] mx-auto">
+    <div className="text-[20px] font-normal bg-gradient-to-r from-[#7F0B0B] to-[#590000] px-4 py-8 rounded w-full min-h-[250px] transition-all duration-300">
+      <section className="grid grid-cols-1 lg:grid-cols-6 gap-8 mt-10 mb-20 w-full max-w-6xl mx-auto">
         {/* first */}
-        <div className="col-span-2 flex flex-col gap-4">
+        <div className="lg:col-span-2 flex flex-col gap-4 items-start text-left">
           <Logo />
-          <p className="font-[400] text-[14px] capitalize text-white">
+          <p className="font-normal text-[14px] capitalize text-white max-w-xs md:max-w-md lg:max-w-none">
             MUPRODEC ENERGY SARL specializes in renewable energy and efficiency
             solutions across West Africa. With 10+ years of expertise, we
             provide high-quality installations, maintenance, and training to
@@ -17,83 +17,73 @@ export default function Footer() {
           </p>
         </div>
 
-        <div className="col-span-4 flex flex-col lg:flex-row items-center justify-around gap-4">
-          <div className="flex flex-col gap-2">
-            <h1 className="text-2xl font-[400] text-white">Explore</h1>
+        <div className="lg:col-span-4 flex flex-col lg:flex-row items-start justify-between gap-8 lg:gap-0">
+          <div className="flex flex-col gap-2 items-start">
+            <h1 className="text-xl md:text-2xl font-normal text-white">Explore</h1>
             <Link
               href="/"
-              className=" text-white text-[16px] font-[400] hover:text-[#F2F2F2] transition-all duration-300"
+              className="text-white text-[16px] font-normal hover:text-[#F2F2F2] transition-all duration-300"
             >
-              Home{" "}
+              Home
             </Link>
             <Link
               href="/"
-              className=" text-white text-[16px] font-[400] hover:text-[#F2F2F2] transition-all duration-300"
+              className="text-white text-[16px] font-normal hover:text-[#F2F2F2] transition-all duration-300"
             >
-              Product{" "}
+              Product
             </Link>
             <Link
               href="/"
-              className=" text-white text-[16px] font-[400] hover:text-[#F2F2F2] transition-all duration-300"
+              className="text-white text-[16px] font-normal hover:text-[#F2F2F2] transition-all duration-300"
             >
-              Blogs{" "}
+              Blogs
             </Link>
             <Link
               href="/"
-              className=" text-white text-[16px] font-[400] hover:text-[#F2F2F2] transition-all duration-300"
+              className="text-white text-[16px] font-normal hover:text-[#F2F2F2] transition-all duration-300"
             >
-              Contact{" "}
+              Contact
             </Link>
-            
           </div>
 
-          <div className="flex flex-col gap-2">
-            <h1 className="text-2xl font-[400] text-white">Unity Pages</h1>
+          <div className="flex flex-col gap-2 items-start mt-6 lg:mt-0">
+            <h1 className="text-xl md:text-2xl font-normal text-white">Unity Pages</h1>
             <Link
               href="/"
-              className=" text-white text-[16px] font-[400] hover:text-[#F2F2F2] transition-all duration-300"
+              className="text-white text-[16px] font-normal hover:text-[#F2F2F2] transition-all duration-300"
             >
-              About Us{" "}
+              About Us
             </Link>
             <Link
               href="/"
-              className=" text-white text-[16px] font-[400] hover:text-[#F2F2F2] transition-all duration-300"
+              className="text-white text-[16px] font-normal hover:text-[#F2F2F2] transition-all duration-300"
             >
-              Privecy Policy{" "}
+              Privacy Policy
             </Link>
             <Link
               href="/"
-              className=" text-white text-[16px] font-[400] hover:text-[#F2F2F2] transition-all duration-300"
+              className="text-white text-[16px] font-normal hover:text-[#F2F2F2] transition-all duration-300"
             >
-              Terms and Conditions{" "}
+              Terms and Conditions
             </Link>
-            
-            
           </div>
 
-
-          <div className="flex flex-col gap-2">
-            <h1 className="text-2xl font-[400] text-white">Get in Touch</h1>
+          <div className="flex flex-col gap-2 items-start mt-6 lg:mt-0">
+            <h1 className="text-xl md:text-2xl font-normal text-white">Get in Touch</h1>
             <Link
-              href="/"
-              className=" text-white text-[16px] font-[400] hover:text-[#F2F2F2] transition-all duration-300"
+              href="mailto:Fortunekouka@gmail.com"
+              className="text-white text-[16px] font-normal hover:text-[#F2F2F2] transition-all duration-300"
             >
               Fortunekouka@gmail.com
             </Link>
             <Link
-              href="/"
-              className=" text-white text-[16px] font-[400] hover:text-[#F2F2F2] transition-all duration-300"
+              href="tel:00956567890"
+              className="text-white text-[16px] font-normal hover:text-[#F2F2F2] transition-all duration-300"
             >
               (009)56567890
             </Link>
-            
-            
           </div>
-
         </div>
-
-
-        
       </section>
     </div>
   );
