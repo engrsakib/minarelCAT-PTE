@@ -1,13 +1,11 @@
-
 import type { Metadata } from "next";
-import {Poppins } from "next/font/google";
+import { Poppins } from "next/font/google";
 import "./globals.css";
 import Logo from "@/components/personal/Logo";
 import Link from "next/link";
 import { FaRightLong } from "react-icons/fa6";
 import Header from "@/components/personal/Header";
-
-
+import Footer from "@/components/personal/Footer";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -54,8 +52,12 @@ export default function RootLayout({
           </nav>
           {/* right */}
           <div className="items-center hidden gap-4 lg:flex">
-            <Link href="/" className="text-[20px] gap-2 font-[400] text-gray-900 flex items-center">
-              <span>Login</span> <FaRightLong className="text-[20px] font-[400] text-gray-900" />
+            <Link
+              href="/"
+              className="text-[20px] gap-2 font-[400] text-gray-900 flex items-center"
+            >
+              <span>Login</span>{" "}
+              <FaRightLong className="text-[20px] font-[400] text-gray-900" />
             </Link>
             <Link
               href="/"
@@ -71,6 +73,11 @@ export default function RootLayout({
         </header>
 
         {children}
+
+        {/* footer */}
+        <footer className="flex items-center justify-center h-[100px] mt-10">
+          <Footer />
+        </footer>
       </body>
     </html>
   );
