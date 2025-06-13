@@ -27,9 +27,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <header>
-          sakib
-        </header>
+        <header className="flex items-center justify-between h-[110px] p-4 border border-red-700 rounded-full mt-7 w-[80%] mx-auto"></header>
 
         {children}
       </body>
