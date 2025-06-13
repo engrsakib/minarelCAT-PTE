@@ -3,6 +3,7 @@ import {Poppins } from "next/font/google";
 import "./globals.css";
 import Logo from "@/components/personal/Logo";
 import Link from "next/link";
+import { FaRightLong } from "react-icons/fa6";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -31,22 +32,34 @@ export default function RootLayout({
           </div>
           {/* menu */}
           <nav className="flex items-center gap-4">
-            <Link href="/" className="text-[20px] font-semibold text-gray-900">
+            <Link href="/" className="text-[20px] font-[400] text-gray-900">
               Home
             </Link>
-            <Link href="/" className="text-[20px] font-semibold text-gray-900">
+            <Link href="/" className="text-[20px] font-[400] text-gray-900">
               Practice
             </Link>
-            <Link href="/" className="text-[20px] font-semibold text-gray-900">
+            <Link href="/" className="text-[20px] font-[400] text-gray-900">
               Mock Test
             </Link>
-            <Link href="/" className="text-[20px] font-semibold text-gray-900">
+            <Link href="/" className="text-[20px] font-[400] text-gray-900">
               Pricing
             </Link>
-            <Link href="/" className="text-[20px] font-semibold text-gray-900">
+            <Link href="/" className="text-[20px] font-[400] text-gray-900">
               FAQ
             </Link>
           </nav>
+          {/* right */}
+          <div className="flex items-center gap-4">
+            <Link href="/" className="text-[20px] gap-2 font-[400] text-gray-900 flex items-center">
+              <span>Login</span> <FaRightLong className="text-[20px] font-[400] text-gray-900" />
+            </Link>
+            <Link
+              href="/"
+              className="text-[20px] font-[400] text-gray-900 ml-4 bg-blue-500 px-4 py-2 rounded-full"
+            >
+              Sign Up
+            </Link>
+          </div>
         </header>
 
         {children}
