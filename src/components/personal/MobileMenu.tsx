@@ -49,7 +49,7 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
         {/* Buttons */}
         <div className="flex flex-col gap-3">
           <Link
-            href="/"
+            href="/auth/login"
             className="text-[20px] gap-2 font-normal text-gray-900 flex items-center justify-center hover:text-[#D80000] transition"
             onClick={onClose}
           >

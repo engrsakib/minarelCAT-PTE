@@ -53,7 +53,7 @@ export default function RootLayout({
           {/* right */}
           <div className="items-center hidden gap-4 lg:flex">
             <Link
-              href="/"
+              href="/auth/login"
               className="text-[20px] gap-2 font-[400] text-gray-900 flex items-center"
             >
               <span>Login</span>{" "}
@@ -72,10 +72,12 @@ export default function RootLayout({
           </div>
         </header>
 
-        {children}
+        <section className="min-h-dvh">
+          {children}
+        </section>
 
         {/* footer */}
-        <footer className="flex items-center justify-center h-[100px] mt-10">
+        <footer className="flex items-center justify-center  mt-10">
           <Footer />
         </footer>
       </body>
