@@ -1,3 +1,4 @@
+import Banner from "@/components/home/Banner";
 import Title from "@/components/Reusable/Title";
 
 
@@ -11,7 +12,10 @@ export default function Home() {
         <Title heading="Ace Your PTE Core Exam" subheading="with AI-Powered Practice!" pragraph="Boost your scores with real-time AI scoring, mock tests!" />
        </div>
 
-
+        {/* banner */}
+        <section>
+          <Banner />
+        </section>
 
     </div>
   );
