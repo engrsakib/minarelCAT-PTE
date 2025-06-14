@@ -17,7 +17,7 @@ export default function Footer() {
           </p>
         </div>
 
-        <div className="lg:col-span-4 flex flex-col lg:flex-row items-start justify-between gap-8 lg:gap-0">
+        <div className="md:col-span-4 flex flex-col md:flex-row items-start justify-between gap-8 lg:gap-0">
           <div className="flex flex-col gap-2 items-start">
             <h1 className="text-xl md:text-2xl font-normal text-white">Explore</h1>
             <Link
@@ -46,7 +46,7 @@ export default function Footer() {
             </Link>
           </div>
 
-          <div className="flex flex-col gap-2 items-start mt-6 lg:mt-0">
+          <div className="flex flex-col gap-2 items-start mt-6  md:mt-0">
             <h1 className="text-xl md:text-2xl font-normal text-white">Unity Pages</h1>
             <Link
               href="/"
@@ -68,7 +68,7 @@ export default function Footer() {
             </Link>
           </div>
 
-          <div className="flex flex-col gap-2 items-start mt-6 lg:mt-0">
+          <div className="flex flex-col gap-2 items-start mt-6 md:mt-0">
             <h1 className="text-xl md:text-2xl font-normal text-white">Get in Touch</h1>
             <Link
               href="mailto:Fortunekouka@gmail.com"

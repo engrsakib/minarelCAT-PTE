@@ -27,7 +27,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={` ${poppins.variable} antialiased`}>
         {/* header */}
-        <header className="flex items-center justify-between h-[110px] p-4 border border-red-700 rounded-full mt-7 w-[80%] mx-auto sticky top-14 z-50 bg-white shadow-lg">
+        <header className="flex items-center justify-between lg:h-[110px] p-4 border border-red-700 rounded-full mt-7 lg:w-[80%] w-[95%] mx-auto sticky top-14 z-50 bg-white shadow-lg">
           {/* logo */}
           <div>
             <Logo />
