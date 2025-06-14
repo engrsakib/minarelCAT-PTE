@@ -1,5 +1,6 @@
 import Banner from "@/components/home/Banner";
 import Platform from "@/components/home/Platform";
+import PracticeOverview from "@/components/home/PracticeOverview";
 import Title from "@/components/Reusable/Title";
 
 export default function Home() {
@@ -22,6 +23,11 @@ export default function Home() {
       {/* platform */}
       <section>
         <Platform />
+      </section>
+
+      {/* pacytice overview */}
+      <section>
+        <PracticeOverview />
       </section>
     </div>
   );
