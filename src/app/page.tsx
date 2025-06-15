@@ -1,4 +1,5 @@
 import Banner from "@/components/home/Banner";
+import FAQSection from "@/components/home/FaqSection";
 import Platform from "@/components/home/Platform";
 import PracticeOverview from "@/components/home/PracticeOverview";
 import Title from "@/components/Reusable/Title";
@@ -28,6 +29,11 @@ export default function Home() {
       {/* pacytice overview */}
       <section>
         <PracticeOverview />
+      </section>
+
+      {/* Faq section */}
+      <section>
+        <FAQSection />
       </section>
     </div>
   );
