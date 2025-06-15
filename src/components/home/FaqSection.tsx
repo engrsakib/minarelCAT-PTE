@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Plus, Minus } from "lucide-react"
 import Image from "next/image"
+import woman from '@/../public/woman.png'
 
 interface FAQItem {
   id: number
@@ -175,11 +176,11 @@ export default function FAQSection() {
           <div className="flex justify-center lg:justify-end">
             <div className="relative w-full max-w-md lg:max-w-lg">
               <Image
-                src="/faq-illustration.png"
+                src={woman}
                 alt="Woman thinking with question marks"
-                width={500}
-                height={400}
-                className="w-full h-auto object-contain"
+                width={400}
+                height={300}
+                className="w-[80%] h-auto object-contain"
                 priority
               />
             </div>
