@@ -1,5 +1,6 @@
 import { FaRightLong } from "react-icons/fa6";
 import { FaTimes } from "react-icons/fa";
+import Link from "next/link";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -60,18 +61,20 @@ export default function MobileMenu({ open, onClose, setIsOpen, isOpen }: MobileM
         <div className="my-6 border-t" />
         {/* Buttons */}
         <div className="flex flex-col gap-3">
-          <button
+          <Link
+            href="/auth/login"
             className="text-[20px] gap-2 font-normal text-gray-900 flex items-center justify-center hover:text-[#D80000] transition"
             onClick={onClose}
           >
             <span>Login</span> <FaRightLong className="text-[20px]" />
-          </button>
-          <button
+          </Link>
+          <Link
+            href="/auth/signin"
             className="text-[20px] font-normal bg-gradient-to-r from-[#D80000] to-[#720000] text-white px-4 py-2 rounded-full flex items-center justify-center hover:from-[#720000] hover:to-[#D80000] transition-all duration-300"
             onClick={onClose}
           >
             Sign Up
-          </button>
+          </Link>
         </div>
       </div>
       {/* Overlay click closes modal */}
