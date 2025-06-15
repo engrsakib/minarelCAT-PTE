@@ -11,7 +11,9 @@ import Image from "next/image";
 import Link from "next/link";
 
 // const BASE_URL = import.meta.env.VITE_ADMIN_URL as string;
-const BASE_URL = "";
+const BASE_URL = process.env.NEXT_PUBLIC_URL as string;
+
+console.log("BASE_URL:", BASE_URL);
 
 export default function LogIn() {
   const [isEyeOpen, setIsEyeOpen] = useState(false);
@@ -42,7 +44,7 @@ export default function LogIn() {
 
     setLoading(true);
     try {
-      const response = await axios.post(`${BASE_URL}/admin/login`, {
+      const response = await axios.post(`${BASE_URL}/auth/login`, {
         email,
         password,
       });
