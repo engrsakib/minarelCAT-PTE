@@ -53,9 +53,12 @@ export default function Navbar() {
           <Header isOpen={isOpen} setIsOpen={setIsOpen} />
         </div>
       </header>
-      {
-        isOpen && <LanguageSkills />
-      }
+      <div className='w-[95%] relative mx-auto mt-4'>
+        {/* Language Skills Modal */}
+        {isOpen && (
+          <LanguageSkills setIsOpen={setIsOpen} />
+        )}
+      </div>
     </>
   )
 }
