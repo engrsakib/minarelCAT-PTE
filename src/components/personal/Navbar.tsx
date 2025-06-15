@@ -50,7 +50,7 @@ export default function Navbar() {
         </div>
         {/* Mobile Menu Button */}
         <div className="lg:hidden">
-          <Header />
+          <Header isOpen={isOpen} setIsOpen={setIsOpen} />
         </div>
       </header>
       {

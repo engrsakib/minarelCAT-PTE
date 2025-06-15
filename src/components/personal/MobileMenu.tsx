@@ -1,23 +1,32 @@
-"use client";
 import Link from "next/link";
-import { FaRightLong  } from "react-icons/fa6";
-import { FaTimes  } from "react-icons/fa";
+import { FaRightLong } from "react-icons/fa6";
+import { FaTimes } from "react-icons/fa";
 
 const navLinks = [
   { href: "/", label: "Home" },
-  { href: "/", label: "Practice" },
+  { href: "#", label: "Practice" },
   { href: "/", label: "Mock Test" },
   { href: "/", label: "Pricing" },
-  { href: "/", label: "FAQ" },
+  { href: "#", label: "FAQ" },
 ];
 
 type MobileMenuProps = {
   open: boolean;
+  isOpen: boolean;
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   onClose: () => void;
 };
 
-export default function MobileMenu({ open, onClose }: MobileMenuProps) {
+export default function MobileMenu({ open, onClose, setIsOpen, isOpen }: MobileMenuProps) {
   if (!open) return null;
+
+  // Handle click on "Practice" link to set isOpen to true
+  const handleLinkClick = (label: string) => {
+    if (label === "Practice") {
+      setIsOpen(true); // Set `isOpen` to true for "Practice"
+    }
+    onClose(); // Always close the menu after clicking any link
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex bg-black/40 lg:hidden">
@@ -38,12 +47,14 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
               key={link.label}
               href={link.href}
               className="text-[20px] font-normal text-gray-900 hover:text-[#D80000] transition px-4 py-2 rounded"
-              onClick={onClose}
+              onClick={() => handleLinkClick(link.label)} // Call the handleLinkClick with label
             >
               {link.label}
             </Link>
           ))}
+      
         </nav>
+        
         {/* Divider */}
         <div className="my-6 border-t" />
         {/* Buttons */}

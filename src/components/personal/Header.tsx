@@ -3,7 +3,14 @@ import { useState } from "react";
 import MobileMenu from "@/components/personal/MobileMenu";
 import { RxHamburgerMenu } from "react-icons/rx";
 
-export default function Header() {
+
+  type MobileMenuProps = {
+  
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  isOpen: boolean;
+};
+
+export default function Header({ setIsOpen, isOpen }: MobileMenuProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -13,7 +20,7 @@ export default function Header() {
         {/* mobile menu icon */}
         <RxHamburgerMenu />
       </button>
-      <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} setIsOpen={setIsOpen} isOpen={isOpen} />
     </div>
   );
 }
