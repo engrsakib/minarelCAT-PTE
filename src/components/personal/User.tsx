@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import * as React from "react";
 import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
 import { Button } from "@/components/ui/button";
@@ -10,9 +11,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
+import Link from "next/link";
+import { logoutAndRedirect } from "@/lib/fetchWithAuth";
+
 
 type Checked = DropdownMenuCheckboxItemProps["checked"];
-
+// throw new Error("Please do not use this file directly. It is meant to be used as a component in the application.");
 export function User({
   user,
   loading,
@@ -26,7 +30,10 @@ export function User({
   const [showActivityBar, setShowActivityBar] = React.useState<Checked>(false);
   const [showPanel, setShowPanel] = React.useState<Checked>(false);
 
-  console.log(user);
+  console.log(user, loading, error);
+  if (loading) {
+    return ;
+  }
 
   return (
     <DropdownMenu>
@@ -53,26 +60,26 @@ export function User({
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
-        <DropdownMenuLabel>Appearance</DropdownMenuLabel>
+       
         <DropdownMenuSeparator />
         <DropdownMenuCheckboxItem
           checked={showStatusBar}
           onCheckedChange={setShowStatusBar}
         >
-          Status Bar
+          <Link href="/personal/dashboard">dashboard</Link>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           checked={showActivityBar}
           onCheckedChange={setShowActivityBar}
           disabled
         >
-          Activity Bar
+          <Link href="/personal/profile">Profle</Link>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           checked={showPanel}
           onCheckedChange={setShowPanel}
         >
-          Panel
+         <button onClick={logoutAndRedirect}>logout</button>
         </DropdownMenuCheckboxItem>
       </DropdownMenuContent>
     </DropdownMenu>

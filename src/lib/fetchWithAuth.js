@@ -66,7 +66,7 @@ export default async function fetchWithAuth(url, options = {}) {
 }
 
 // Logout helper
-function logoutAndRedirect() {
+export function logoutAndRedirect() {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
   window.location.href = "/auth/login";
