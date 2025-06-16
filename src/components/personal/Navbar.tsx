@@ -13,7 +13,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
   const { user, loading, error } = useLoggedInUser();
 
-  console.log(user);
+  
 
   return (
     <>
@@ -52,7 +52,7 @@ export default function Navbar() {
         </nav>
         {/* right */}
         {user ? (
-          <User />
+          <User user={user} loading={loading} error={error}/>
         ) : (
           <div className="items-center hidden gap-4 lg:flex">
             <Link
