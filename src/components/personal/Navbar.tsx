@@ -6,9 +6,20 @@ import Header from './Header'
 import Logo from './Logo'
 import Link from 'next/link'
 import LanguageSkills from './LanguageSkills';
+import useLoggedInUser from '@/lib/useGetLoggedInUser';
+
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
+  const { user, loading, error } = useLoggedInUser();
+  
+  console.log(user)
+
+  
+
+  
+
+
   return (
     <>
       <header className="flex items-center gap-x-7 justify-between lg:h-[110px] p-4 border border-red-700 rounded-full mt-7 lg:w-[80%] w-[95%] mx-auto sticky top-14 z-50 bg-white shadow-lg">

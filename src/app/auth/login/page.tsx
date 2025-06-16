@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { useState, FormEvent } from "react";
 import logo from "@/../public/rafiki.png";
 
@@ -6,14 +6,14 @@ import { PiEyeClosedBold, PiEyeClosedDuotone } from "react-icons/pi";
 import axios from "axios";
 import { IoMdCheckboxOutline } from "react-icons/io";
 import { MdOutlineCheckBoxOutlineBlank } from "react-icons/md";
- // changed to react-router-dom for better TS support
+// changed to react-router-dom for better TS support
 import Image from "next/image";
 import Link from "next/link";
 
 // const BASE_URL = import.meta.env.VITE_ADMIN_URL as string;
 const BASE_URL = process.env.NEXT_PUBLIC_URL as string;
 
-console.log("BASE_URL:", BASE_URL);
+// console.log("BASE_URL:", BASE_URL);
 
 export default function LogIn() {
   const [isEyeOpen, setIsEyeOpen] = useState(false);
@@ -22,7 +22,6 @@ export default function LogIn() {
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  
 
   const data = {
     greetings: "Welcome back!",
@@ -56,8 +55,8 @@ export default function LogIn() {
 
       localStorage.setItem("accessToken", response?.data?.accessToken);
       localStorage.setItem("refreshToken", response?.data?.refreshToken);
-    //   navigate("/"); // Redirect to the home page or dashboard after successful login
-
+      //   navigate("/"); // Redirect to the home page or dashboard after successful login
+      window.location.href = "/"; // Using window.location.href for redirection
     } catch (err) {
       console.error("Login error:", err);
       setError("Login failed. Please check your credentials.");
@@ -148,7 +147,9 @@ export default function LogIn() {
             </div>
 
             {error && (
-              <p className="text-red-600 font-semibold mt-2 text-left">{error}</p>
+              <p className="text-red-600 font-semibold mt-2 text-left">
+                {error}
+              </p>
             )}
 
             {/* remember sections */}
