@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import fetchWithAuth from "./fetchWithAuth";
 
 interface User {
   name: string;
@@ -20,7 +21,7 @@ export default function useLoggedInUser() {
           return;
         }
 
-        const response = await fetch(
+        const response = await fetchWithAuth(
           `${process.env.NEXT_PUBLIC_URL || ""}/user/user-info`,
           {
             headers: {
@@ -31,7 +32,7 @@ export default function useLoggedInUser() {
           }
         );
 
-        if (!response.ok) {
+        if (!response || !response.ok) {
           throw new Error("Failed to fetch user data");
         }
 

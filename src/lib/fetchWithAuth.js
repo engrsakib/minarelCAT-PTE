@@ -22,7 +22,7 @@ export default async function fetchWithAuth(url, options = {}) {
 
     try {
       const refreshResponse = await fetch(
-        `${import.meta.env.VITE_ADMIN_URL}/auth/refresh-token`,
+        `${process.env.NEXT_PUBLIC_URL}/auth/refresh-token`,
         {
           method: "POST",
           headers: {
@@ -69,5 +69,5 @@ export default async function fetchWithAuth(url, options = {}) {
 function logoutAndRedirect() {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
-  window.location.href = "/auth/admin/login";
+  window.location.href = "/auth/login";
 }
