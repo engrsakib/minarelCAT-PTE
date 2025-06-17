@@ -5,9 +5,9 @@ import Link from "next/link";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "#", label: "Practice" },  // Don't use href="#" for Practice, just trigger action
-  { href: "/", label: "Mock Test" },
-  { href: "/", label: "Pricing" },
-  { href: "#", label: "FAQ" },  // Same for FAQ
+  { href: "/questions/test", label: "Mock Test" },
+  { href: "/subscription/pricing", label: "Pricing" },
+  { href: "/company/about", label: "About US" },  // Same for FAQ
 ];
 
 type MobileMenuProps = {
@@ -45,6 +45,9 @@ export default function MobileMenu({ open, onClose, setIsOpen, isOpen }: MobileM
         >
           <FaTimes />
         </button>
+        
+
+
         {/* Nav Links */}
         <nav className="flex flex-col gap-4 mt-10">
           {navLinks.map((link) => (

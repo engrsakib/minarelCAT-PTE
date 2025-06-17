@@ -9,12 +9,11 @@ import LanguageSkills from "./LanguageSkills";
 import useLoggedInUser from "@/lib/useGetLoggedInUser";
 import { User } from "./User";
 
-
 export default function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
   const { user, loading, error } = useLoggedInUser();
-  
-  console.log("User:", typeof user);
+
+  // console.log("User:", typeof user);
 
   return (
     <>
@@ -45,15 +44,15 @@ export default function Navbar() {
             Pricing
           </Link>
           <Link
-            href="/"
+            href="/company/about"
             className="text-[20px] font-[400] text-gray-900 hover:text-black"
           >
-            FAQ
+            About US
           </Link>
         </nav>
         {/* right */}
         {user ? (
-          <User user={user} loading={loading} error={error}/>
+          <User user={user} loading={loading} error={error} />
         ) : (
           <div className="items-center hidden gap-4 lg:flex">
             <Link
