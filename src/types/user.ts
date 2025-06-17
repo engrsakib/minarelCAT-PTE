@@ -1,7 +1,7 @@
 // UserSubscription ইন্টারফেস
 interface UserSubscription {
   _id: string;
-  user: string; // ইউজারের _id
+  user: string;
   planType: string;
   isActive: boolean;
   mockTestLimit: number;
@@ -29,7 +29,8 @@ interface User {
   profile: string; // ইউজারের প্রোফাইল ইমেজ URL
 }
 
-// RootUser ইন্টারফেস (যেখানে আপনি user.user অ্যাক্সেস করবেন)
-export interface RootUser {
-  user: User;
+// RootUser ইন্টারফেস
+interface RootUser {
+  user: User; // `user` প্রপার্টি যেখানে মূল ইউজার ডেটা থাকবে
 }
+export type { User, UserSubscription, RootUser };
