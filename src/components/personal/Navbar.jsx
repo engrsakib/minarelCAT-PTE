@@ -52,7 +52,7 @@ export default function Navbar() {
         </nav>
         {/* right */}
         {user ? (
-          <User user={user} loading={loading} error={error} />
+        <div className="hidden lg:block"><User user={user} loading={loading} error={error} /></div>
         ) : (
           <div className="items-center hidden gap-4 lg:flex">
             <Link

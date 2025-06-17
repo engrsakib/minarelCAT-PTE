@@ -49,19 +49,19 @@ export default function Footer() {
           <div className="flex flex-col gap-2 items-start mt-6  md:mt-0">
             <h1 className="text-xl md:text-2xl font-normal text-white">Unity Pages</h1>
             <Link
-              href="/"
+              href="/company/about"
               className="text-white text-[16px] font-normal hover:text-[#F2F2F2] transition-all duration-300"
             >
               About Us
             </Link>
             <Link
-              href="/"
+              href="/company/privacy"
               className="text-white text-[16px] font-normal hover:text-[#F2F2F2] transition-all duration-300"
             >
               Privacy Policy
             </Link>
             <Link
-              href="/"
+              href="/company/terms"
               className="text-white text-[16px] font-normal hover:text-[#F2F2F2] transition-all duration-300"
             >
               Terms and Conditions

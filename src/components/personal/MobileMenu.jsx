@@ -1,6 +1,8 @@
 import { FaRightLong } from "react-icons/fa6";
 import { FaTimes } from "react-icons/fa";
 import Link from "next/link";
+import { User } from "./User";
+import useLoggedInUser from "@/lib/useGetLoggedInUser";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -10,18 +12,12 @@ const navLinks = [
   { href: "/company/about", label: "About US" },  // Same for FAQ
 ];
 
-type MobileMenuProps = {
-  open: boolean;
-  isOpen: boolean;
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  onClose: () => void;
-};
-
-export default function MobileMenu({ open, onClose, setIsOpen, isOpen }: MobileMenuProps) {
+export default function MobileMenu({ open, onClose, setIsOpen, isOpen }) {
+  const { user, loading, error } = useLoggedInUser();
   if (!open) return null;
 
   // Handle click on "Practice" link to set isOpen to true
-  const handleLinkClick = (label: string, href: string) => {
+  const handleLinkClick = (label, href) => {
     if (label === "Practice") {
       setIsOpen(!isOpen); // Set `isOpen` to true for "Practice"
     }
@@ -45,8 +41,8 @@ export default function MobileMenu({ open, onClose, setIsOpen, isOpen }: MobileM
         >
           <FaTimes />
         </button>
-        
-
+        {/* user */}
+        <User user={user} loading={loading} error={error} />
 
         {/* Nav Links */}
         <nav className="flex flex-col gap-4 mt-10">
@@ -60,8 +56,10 @@ export default function MobileMenu({ open, onClose, setIsOpen, isOpen }: MobileM
             </button>
           ))}
         </nav>
+
         {/* Divider */}
         <div className="my-6 border-t" />
+
         {/* Buttons */}
         <div className="flex flex-col gap-3">
           <Link
@@ -80,8 +78,10 @@ export default function MobileMenu({ open, onClose, setIsOpen, isOpen }: MobileM
           </Link>
         </div>
       </div>
+      
       {/* Overlay click closes modal */}
       <div className="flex-1" onClick={onClose} />
+
       {/* Animation style */}
       <style jsx global>{`
         @keyframes slide-in {
