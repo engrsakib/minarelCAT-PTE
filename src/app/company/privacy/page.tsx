@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 
 import parse from "html-react-parser";
 import fetchWithAuth from "@/lib/fetchWithAuth";
+import { useAuthProtection } from "@/components/Reusable/protectRoute";
 
 
 
@@ -13,6 +14,8 @@ export default function Terms() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
+  useAuthProtection(); // Ensure user is authenticated before accessing this page
+
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
 
   useEffect(() => {
@@ -35,7 +38,7 @@ export default function Terms() {
     fetchTerms();
   }, [baseUrl]);
 
-  
+
 
   return (
     <div className="min-h-screen mt-20 w-[80%] mx-auto">
