@@ -1,17 +1,22 @@
-// middleware.ts
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
+  console.log("Middleware triggered:", request.url);
+
   const token = request.cookies.get("authToken");
-  
+
   if (!token) {
+    console.log("Redirecting to login...");
     return NextResponse.redirect(new URL("/auth/login", request.url));
   }
 
-  return NextResponse.next();
+  // If token exists, allow the request to continue
+  const response = NextResponse.next();
+
+  return response;
 }
 
 export const config = {
-  matcher: ["/subscription/*", "/questions/test/*"],
+  matcher: ["/subscription/pricing", "/questions/test"],
 };

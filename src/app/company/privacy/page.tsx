@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 
 import parse from "html-react-parser";
 import fetchWithAuth from "@/lib/fetchWithAuth";
-import { useAuthProtection } from "@/components/Reusable/protectRoute";
+
 
 
 
@@ -14,7 +14,7 @@ export default function Terms() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  useAuthProtection(); // Ensure user is authenticated before accessing this page
+   // Ensure user is authenticated before accessing this page
 
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
 

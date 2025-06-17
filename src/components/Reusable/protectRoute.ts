@@ -1,16 +1,30 @@
-// Example of using useEffect for client-side redirection
+// "use client" directive ensures the component is rendered on the client side
 "use client";
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
 
-export const useAuthProtection = () => {
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+const useAuth = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken'); // LocalStorage থেকে টোকেন চেক
+    const checkAuth = () => {
+      const token = localStorage.getItem("authToken");
+      if (token) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+        router.push("/auth/login"); // Redirect to login if not authenticated
+      }
+      setLoading(false);
+    };
 
-    if (!token) {
-      router.push('/auth/login'); // যদি টোকেন না থাকে তবে লগইন পেজে রিডাইরেক্ট
-    }
+    checkAuth();
   }, [router]);
+
+  return { isAuthenticated, loading };
 };
+
+export default useAuth;
