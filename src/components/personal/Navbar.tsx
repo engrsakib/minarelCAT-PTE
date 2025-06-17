@@ -9,11 +9,12 @@ import LanguageSkills from "./LanguageSkills";
 import useLoggedInUser from "@/lib/useGetLoggedInUser";
 import { User } from "./User";
 
+
 export default function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
   const { user, loading, error } = useLoggedInUser();
-
   
+  console.log("User:", typeof user);
 
   return (
     <>

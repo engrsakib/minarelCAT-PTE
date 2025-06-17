@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 
 export default function Loading() {
   const [dots, setDots] = useState("")
-  console.log("Loading component initialized")
+//   console.log("Loading component initialized")
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -17,7 +17,7 @@ export default function Loading() {
     return () => clearInterval(interval)
   }, [])
 
-  console.log("Loading component rendered")
+//   console.log("Loading component rendered")
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-red-50 flex items-center justify-center p-4">
