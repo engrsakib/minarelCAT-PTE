@@ -1,28 +1,36 @@
-// "use client" directive ensures the component is rendered on the client side
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import useLoggedInUser from "@/lib/useGetLoggedInUser";
 
 const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { user, loading: userLoading } = useLoggedInUser();
+
+  console.log(user, "user in useAuth");
 
   useEffect(() => {
     const checkAuth = () => {
-      const token = localStorage.getItem("authToken");
-      if (token) {
+      // Check if the user is loading first
+      if (userLoading) {
+        return;
+      }
+
+      if (user) {
         setIsAuthenticated(true);
       } else {
         setIsAuthenticated(false);
         router.push("/auth/login"); // Redirect to login if not authenticated
       }
-      setLoading(false);
+
+      setLoading(false);  // After authentication check, stop loading
     };
 
     checkAuth();
-  }, [router]);
+  }, [router, user, userLoading]); // Add userLoading to the dependencies to prevent early redirect
 
   return { isAuthenticated, loading };
 };
