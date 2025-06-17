@@ -1,25 +1,26 @@
-/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+"use client";
 import React, { useState, useEffect } from "react";
 
-import { Edit } from "lucide-react";
 import parse from "html-react-parser";
+import fetchWithAuth from "@/lib/fetchWithAuth";
 
 
-const MySwal = withReactContent(Swal);
+
 
 export default function Terms() {
   const [termsContent, setTermsContent] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   
-  const baseUrl = import.meta.env.VITE_ADMIN_URL || "";
+  const baseUrl = process.env.NEXT_PUBLIC_URL || "";
 
   useEffect(() => {
     const fetchTerms = async () => {
       try {
         setIsLoading(true);
         const res = await fetchWithAuth(`${baseUrl}/terms/terms-action`);
-        if (!res.ok) throw new Error("Failed to fetch terms");
+        if (!res || !res.ok) throw new Error("Failed to fetch terms");
         const data = await res.json();
         const htmlContent =
           data?.termData?.[0]?.termText || "<p>Content not found.</p>";
@@ -34,28 +35,13 @@ export default function Terms() {
     fetchTerms();
   }, [baseUrl]);
 
-  const handleEdit = () => {
-    MySwal.fire({
-      title: "Are you sure?",
-      text: "Do you want to edit the Terms & Service content?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, edit it!",
-      cancelButtonText: "Cancel",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        navigate("/settings/terms/edit");
-      }
-    });
-  };
+  
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen mt-20 mx-w-[80%] mx-auto">
       {/* Header */}
-      <div className="bg-red-800 text-white px-6 py-4">
-        <h1 className="text-xl font-medium">Terms & Service</h1>
+      <div className=" text-[#7D0000] text-center px-6 py-4">
+        <h1 className="text-[48px] font-[600]">Terms & Service</h1>
       </div>
 
       {/* Content Area */}
@@ -87,15 +73,7 @@ export default function Terms() {
           </div>
         )}
 
-        {/* Edit Button */}
-        <button
-          onClick={handleEdit}
-          className="fixed bottom-6 right-6 bg-red-800 hover:bg-red-900 text-white px-4 py-2 rounded flex items-center gap-2 shadow-lg transition-colors z-10"
-          aria-label="Edit Terms and Service"
-        >
-          <Edit size={16} />
-          Edit
-        </button>
+       
       </div>
     </div>
   );
