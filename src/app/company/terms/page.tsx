@@ -19,11 +19,11 @@ export default function Terms() {
     const fetchTerms = async () => {
       try {
         setIsLoading(true);
-        const res = await fetchWithAuth(`${baseUrl}/about-us/`);
+        const res = await fetchWithAuth(`${baseUrl}/terms/terms-action`);
         if (!res || !res.ok) throw new Error("Failed to fetch terms");
         const data = await res.json();
         const htmlContent =
-          data?.[0]?.aboutUsText || "<p>Content not found.</p>";
+          data?.termData?.[0]?.termText || "<p>Content not found.</p>";
         setTermsContent(htmlContent);
       } catch (err) {
         setError("Error loading terms and service content.");
@@ -41,11 +41,11 @@ export default function Terms() {
     <div className="min-h-screen mt-20 w-[80%] mx-auto">
       {/* Header */}
       <div className=" text-[#7D0000] text-center px-6 py-4">
-        <h1 className="text-[48px] font-[600]">About US</h1>
+        <h1 className="text-[48px] font-[600]">Terms & Service</h1>
       </div>
 
       {/* Content Area */}
-      <div className=" mx-6 mt-6 p-8 rounded-sm shadow-sm relative min-h-96">
+      <div className="bg-white mx-6 mt-6 p-8 rounded-sm shadow-sm relative min-h-96">
         {isLoading && (
           <div className="w-full max-w-4xl mx-auto">
             <div className="bg-[#A85C5C] text-white p-4">
