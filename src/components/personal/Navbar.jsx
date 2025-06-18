@@ -8,13 +8,14 @@ import Link from "next/link";
 import LanguageSkills from "./LanguageSkills";
 import useLoggedInUser from "@/lib/useGetLoggedInUser";
 import { User } from "./User";
+import { IoNotificationsOutline } from "react-icons/io5";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
   const { user, loading, error } = useLoggedInUser();
-  
-  if(loading){
-    return <></>
+
+  if (loading) {
+    return <></>;
   }
 
   // console.log("User:", typeof user);
@@ -55,8 +56,13 @@ export default function Navbar() {
           </Link>
         </nav>
         {/* right */}
+
         {user ? (
-          <div className="hidden lg:block">
+          <div className="hidden lg:flex items-center gap-4">
+            {/* notifications */}
+            <div className="relative text-[#7D0000] text-[36px] cursor-pointer">
+              <IoNotificationsOutline />
+            </div>
             <User user={user} loading={loading} error={error} />
           </div>
         ) : (
