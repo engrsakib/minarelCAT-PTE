@@ -12,7 +12,10 @@ import { User } from "./User";
 export default function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
   const { user, loading, error } = useLoggedInUser();
-  console.log(user, "from navbar");
+  
+  if(loading){
+    return <></>
+  }
 
   // console.log("User:", typeof user);
 
@@ -53,7 +56,9 @@ export default function Navbar() {
         </nav>
         {/* right */}
         {user ? (
-        <div className="hidden lg:block"><User user={user} loading={loading} error={error} /></div>
+          <div className="hidden lg:block">
+            <User user={user} loading={loading} error={error} />
+          </div>
         ) : (
           <div className="items-center hidden gap-4 lg:flex">
             <Link

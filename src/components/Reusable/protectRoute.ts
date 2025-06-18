@@ -10,7 +10,7 @@ const useAuth = () => {
   const router = useRouter();
   const { user, loading: userLoading } = useLoggedInUser();
 
-  console.log(user, "user in useAuth");
+  
 
   useEffect(() => {
     const checkAuth = () => {
