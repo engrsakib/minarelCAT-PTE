@@ -10,10 +10,11 @@ import useLoggedInUser from "@/lib/useGetLoggedInUser";
 import { User } from "./User";
 import { IoNotificationsOutline } from "react-icons/io5";
 
+
 export default function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
   const { user, loading, error } = useLoggedInUser();
-
+  const [notifications, setNotifications] = React.useState({count: 10, messages: []});
   if (loading) {
     return <></>;
   }
@@ -22,7 +23,7 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="flex items-center gap-x-7 justify-between lg:h-[110px] p-4 border border-red-700 rounded-full mt-7 lg:w-[80%] w-[95%] mx-auto sticky top-14 z-50 bg-white shadow-lg">
+      <header className="flex items-center gap-x-7 justify-between lg:h-[110px]  border border-red-700 p-10 rounded-full mt-7 lg:w-[80%] w-[95%] mx-auto sticky top-14 z-50 bg-white shadow-lg">
         {/* logo */}
         <div>
           <Logo />
@@ -61,6 +62,7 @@ export default function Navbar() {
           <div className="hidden lg:flex items-center gap-4">
             {/* notifications */}
             <div className="relative text-[#7D0000] text-[36px] cursor-pointer">
+              <span className={`absolute -top-2 -right-2 bg-[#7D0000] text-white text-xs font-bold rounded-full p-1 w-5 h-5 ${notifications?.count == 0 && "hidden"}`}>{notifications?.count}</span>
               <IoNotificationsOutline />
             </div>
             <User user={user} loading={loading} error={error} />
@@ -89,7 +91,7 @@ export default function Navbar() {
       </header>
       <div className="w-[95%] relative mx-auto mt-4">
         {/* Language Skills Modal */}
-        {isOpen && <LanguageSkills setIsOpen={setIsOpen} />}
+        {isOpen && <LanguageSkills isOpen={isOpen} setIsOpen={setIsOpen} />}
       </div>
     </>
   );
