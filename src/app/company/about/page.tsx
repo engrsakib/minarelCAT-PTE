@@ -40,7 +40,7 @@ export default function Terms() {
   return (
     <div className="min-h-screen mt-20 w-[80%] mx-auto">
       {/* Header */}
-      <div className=" text-[#7D0000] text-center px-6 py-4">
+      <div className=" text-[#7D0000] text-center px-6 py-4"> 
         <h1 className="text-[48px] font-[600]">About US</h1>
       </div>
 
