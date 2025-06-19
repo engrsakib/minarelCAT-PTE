@@ -97,12 +97,12 @@ const LanguageSkills: React.FC<LanguageSkillsProps> = ({ isOpen, setIsOpen }) =>
 
   return (
     <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm">
-      {/* Modal Content - 1/3 height */}
+      {/* Modal Content - Full height on mobile, 2/3 on md, 1/3 on lg+ */}
       <div
         className={`fixed top-0 left-0 right-0 bg-white shadow-2xl h-full md:h-[66.66vh] lg:h-[33.33vh] transition-transform duration-300 ease-out ${
           isAnimating ? "translate-y-0" : "-translate-y-full"
         }`}
-        
+        style={{ maxHeight: "100vh", overflowY: "auto" }}
       >
         {/* Close button */}
         <button
@@ -115,14 +115,18 @@ const LanguageSkills: React.FC<LanguageSkillsProps> = ({ isOpen, setIsOpen }) =>
 
         {/* Content Container */}
         <div className="h-full overflow-y-auto">
-          <div className="h-full flex items-center justify-center p-4 sm:p-6 lg:p-8">
+          <div className="h-full flex flex-col items-start justify-start p-4 sm:p-6 lg:p-8">
             <div className="w-full max-w-7xl">
               {/* Skills Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-0 lg:space-x-8">
                 {skillsData.map((skill, index) => {
                   const IconComponent = skill.icon
                   return (
-                    <div key={index} className="bg-white">
+                    <div
+                      key={index}
+                      className="bg-white flex flex-col h-full lg:items-center"
+                      style={{ minWidth: 0 }}
+                    >
                       {/* Header with Icon */}
                       <div className="flex items-center gap-3 mb-4 pb-2 border-b-2 border-gray-200">
                         <div className={`p-2 rounded-full ${skill.color}`}>
@@ -132,7 +136,7 @@ const LanguageSkills: React.FC<LanguageSkillsProps> = ({ isOpen, setIsOpen }) =>
                       </div>
 
                       {/* Tasks List */}
-                      <div className="space-y-2">
+                      <div className="space-y-2 w-full">
                         {skill.tasks.map((task, taskIndex) => (
                           <Link
                             key={taskIndex}
@@ -140,7 +144,7 @@ const LanguageSkills: React.FC<LanguageSkillsProps> = ({ isOpen, setIsOpen }) =>
                               .toLowerCase()
                               .replace(/\s+/g, "-")
                               .replace(/,/g, "")}`}
-                            className="flex items-center gap-3 text-gray-700 hover:text-gray-900 transition-all duration-200 group py-1 px-2 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                            className="flex items-center gap-3 text-gray-700 hover:text-black transition-all duration-200 group py-1 px-2 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-300"
                             onClick={handleClose}
                           >
                             <div
