@@ -13,7 +13,7 @@ import { IoNotificationsOutline } from "react-icons/io5";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
-  const { user, loading, error } = useLoggedInUser();
+  const { user , loading, error } = useLoggedInUser();
   const [notifications, setNotifications] = React.useState({count: 10, messages: []});
   if (loading) {
     return <></>;
@@ -23,7 +23,7 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="flex items-center gap-x-7 justify-between lg:h-[110px]  border border-red-700 p-10 rounded-full mt-7 lg:w-[80%] w-[95%] mx-auto sticky top-14 z-50 bg-white shadow-lg">
+      <header className="flex items-center gap-x-7 justify-between lg:h-[110px]  border border-red-700 p-4 md:p-10 rounded-full mt-7 lg:w-[80%] w-[95%] mx-auto sticky top-14 z-50 bg-white shadow-lg">
         {/* logo */}
         <div>
           <Logo />

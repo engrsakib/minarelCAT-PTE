@@ -42,7 +42,9 @@ export default function MobileMenu({ open, onClose, setIsOpen, isOpen }) {
           <FaTimes />
         </button>
         {/* user */}
-        <User user={user} loading={loading} error={error} />
+        {
+          user && <User user={user} loading={loading} error={error} />
+        }
 
         {/* Nav Links */}
         <nav className="flex flex-col gap-4 mt-10">
