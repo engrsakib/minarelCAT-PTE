@@ -1,17 +1,19 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Check } from "lucide-react"
+import { Check, Medal, Trophy, Crown } from "lucide-react"
 
 export default function Component() {
   const plans = [
     {
-      name: "Essential",
+      name: "Bronze",
+      icon: Medal,
+      iconColor: "text-amber-600",
       description: "Get started with AI for creatives",
       price: "3.75 EUR",
       originalPrice: "6 EUR",
       period: "/month",
-      buttonText: "Get Essential",
+      buttonText: "Get Bronze",
       buttonVariant: "default" as const,
       features: [
         {
@@ -29,16 +31,18 @@ export default function Component() {
       ],
     },
     {
-      name: "Premium",
+      name: "Silver",
+      icon: Trophy,
+      iconColor: "text-gray-500",
       description: "Unlock Premium assets and on-brand visuals",
       price: "9 EUR",
       originalPrice: "15 EUR",
       period: "/month",
-      buttonText: "Get Premium",
+      buttonText: "Get Silver",
       buttonVariant: "default" as const,
       features: [
         {
-          title: "Everything in Essential, and:",
+          title: "Everything in Bronze, and:",
           items: [
             "216,000 AI credits/year — up to 43,200 images or 720 videos, depending on the model",
             "Train custom AI models for on-brand visuals",
@@ -49,17 +53,19 @@ export default function Component() {
       ],
     },
     {
-      name: "Premium+",
+      name: "Gold",
+      icon: Crown,
+      iconColor: "text-yellow-500",
       description: "Boost your creativity with full access to all video, image, and audio AI models",
       price: "21 EUR",
       originalPrice: "34 EUR",
       period: "/month",
-      buttonText: "Get Premium+",
+      buttonText: "Get Gold",
       buttonVariant: "default" as const,
       badge: "Best value",
       features: [
         {
-          title: "Everything in Premium, and:",
+          title: "Everything in Silver, and:",
           items: [
             "540,000 AI credits/year — up to 108,000 images or 1,800 videos, depending on the model",
             "Priority speed when generating images with ChatGPT and Google Imagen 4, and videos with Google Veo 3",
@@ -68,51 +74,37 @@ export default function Component() {
         },
       ],
     },
-    {
-      name: "Pro",
-      description: "Power your large-scale projects with high-volume AI credits",
-      price: "133.33 EUR",
-      originalPrice: "215 EUR",
-      period: "/month",
-      buttonText: "Get Pro",
-      buttonVariant: "default" as const,
-      features: [
-        {
-          title: "Everything in Premium+, and:",
-          items: [
-            "3,600,000 AI credits/year — up to 600,000 images or 12,000 videos, depending on the model",
-            "Lowest cost per credit — 20% cheaper than Premium",
-            "Merchandising license — use non-AI Premium assets on physical products for sale",
-            "Early access to advanced AI features, including Google Veo 3",
-          ],
-        },
-      ],
-    },
   ]
 
   return (
-    <div className="w-full lg:max-w-[80%] mt-8 mx-auto p-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="w-full lg:max-w-[90%] mt-8 mx-auto p-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {plans.map((plan, index) => (
-          <Card key={index} className="relative flex flex-col h-full">
+          <Card
+            key={index}
+            className="relative flex flex-col h-full border-2 hover:border-blue-200 transition-all duration-300 hover:shadow-lg"
+          >
             {plan.badge && (
               <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-100 text-blue-800 hover:bg-blue-100">
                 {plan.badge}
               </Badge>
             )}
-            <CardHeader className="pb-4">
+            <CardHeader className="pb-4 text-center">
+              <div className="flex justify-center mb-3">
+                {plan.icon && <plan.icon className={`w-8 h-8 ${plan.iconColor}`} />}
+              </div>
               <CardTitle className="text-xl font-semibold">{plan.name}</CardTitle>
               <CardDescription className="text-sm text-gray-600 min-h-[40px]">{plan.description}</CardDescription>
               <div className="pt-4">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-blue-600">{plan.price}</span>
+                <div className="flex items-baseline justify-center gap-2">
+                  <span className="text-3xl font-bold text-[#7F0B0B]">{plan.price}</span>
                   <span className="text-sm text-gray-500">{plan.period}</span>
                 </div>
-                <div className="text-sm text-gray-400 line-through">{plan.originalPrice}</div>
+                <div className="text-sm text-gray-400 line-through text-center">{plan.originalPrice}</div>
               </div>
             </CardHeader>
             <CardContent className="flex-1 flex flex-col">
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white mb-6">{plan.buttonText}</Button>
+              <Button className="w-full bg-[#590000] hover:bg-[#7F0B0B] text-white mb-6">{plan.buttonText}</Button>
 
               <div className="space-y-4 flex-1">
                 {plan.features.map((section, sectionIndex) => (

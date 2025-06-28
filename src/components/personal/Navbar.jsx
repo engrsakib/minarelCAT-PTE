@@ -9,7 +9,7 @@ import LanguageSkills from "./LanguageSkills";
 import useLoggedInUser from "@/lib/useGetLoggedInUser";
 import { User } from "./User";
 import { IoNotificationsOutline } from "react-icons/io5";
-
+import { Check, Medal, Trophy, Crown } from "lucide-react"
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -65,7 +65,14 @@ export default function Navbar() {
               <span className={`absolute -top-2 -right-2 bg-[#7D0000] text-white text-xs font-bold rounded-full p-1 w-5 h-5 ${notifications?.count == 0 && "hidden"}`}>{notifications?.count}</span>
               <IoNotificationsOutline />
             </div>
-            <User user={user} loading={loading} error={error} />
+            <div className="relative">
+              <User user={user} loading={loading} error={error} />
+
+            <div className="absolute right-25 top-8 bg-amber-400 text-white p-0.5 text-[8px] rounded-2xl ">
+              <Crown className="w-[20px] h-auto"/>
+            </div>
+
+            </div>
           </div>
         ) : (
           <div className="items-center hidden gap-4 lg:flex">
