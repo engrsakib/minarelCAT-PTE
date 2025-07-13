@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import SkillsButton from "./SkillsButton";
 import { FaRightLong } from "react-icons/fa6";
 import Header from "./Header";
@@ -8,18 +8,117 @@ import Link from "next/link";
 import LanguageSkills from "./LanguageSkills";
 import useLoggedInUser from "@/lib/useGetLoggedInUser";
 import { User } from "./User";
+import { Crown } from "lucide-react";
 import { IoNotificationsOutline } from "react-icons/io5";
-import { Check, Medal, Trophy, Crown } from "lucide-react"
+import fetchWithAuth from "../../lib/fetchWithAuth";
+import NotificationBell from "@/app/notifications/page";
+
+// FAKE NOTIFICATIONS fallback
+const FAKE_NOTIFICATIONS = Array.from({ length: 30 }, (_, i) => ({
+  id: "fake-" + (i + 1),
+  message: `This is a sample notification #${i + 1}`,
+  read: false,
+  timeAgo: `${(i + 1) * 2} min ago`,
+}));
+const PAGE_SIZE = 10;
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = React.useState(false);
-  const { user , loading, error } = useLoggedInUser();
-  const [notifications, setNotifications] = React.useState({count: 10, messages: []});
-  if (loading) {
-    return <></>;
-  }
+  const [isOpen, setIsOpen] = useState(false);
+  const { user, loading, error } = useLoggedInUser();
 
-  // console.log("User:", typeof user);
+  // NOTIFICATION LOGIC
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [readIds, setReadIds] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [notifLoading, setNotifLoading] = useState(false);
+  const panelRef = useRef(null);
+
+  // Fetch notifications (server or fake)
+  const loadNotifications = useCallback(
+    async (initial = false) => {
+      try {
+        const response = await fetchWithAuth(`/api/notifications?page=${initial ? 1 : page}&limit=${PAGE_SIZE}`);
+        const data = await response.json();
+        let fetched = data.notifications || [];
+        if (fetched.length === 0 && initial) {
+          fetched = FAKE_NOTIFICATIONS.slice(0, PAGE_SIZE);
+          setHasMore(true);
+        }
+        if (initial) {
+          setNotifications(fetched);
+          setPage(1);
+          // নতুন আইডি চেক (শুধু যেগুলো readIds-এ নেই)
+          let newIds = fetched.map((n) => n.id);
+          let newCount = newIds.filter(id => !readIds.includes(id)).length;
+          setUnreadCount(newCount);
+        } else {
+          setNotifications((prev) => [...prev, ...fetched]);
+        }
+        setHasMore(fetched.length === PAGE_SIZE);
+      } catch {
+        if (initial) {
+          setNotifications(FAKE_NOTIFICATIONS.slice(0, PAGE_SIZE));
+          let fakeIds = FAKE_NOTIFICATIONS.slice(0, PAGE_SIZE).map(n => n.id);
+          let newCount = fakeIds.filter(id => !readIds.includes(id)).length;
+          setUnreadCount(newCount);
+          setHasMore(true);
+        }
+      }
+    },
+    [page, readIds]
+  );
+
+  // Initial load & periodic poll
+  useEffect(() => {
+    loadNotifications(true);
+    const interval = setInterval(() => loadNotifications(true), 30000);
+    return () => clearInterval(interval);
+  }, [loadNotifications]);
+
+  // Load more for infinite scroll
+  const loadMore = async () => {
+    if (!hasMore || notifLoading) return;
+    setNotifLoading(true);
+    setTimeout(async () => {
+      try {
+        const nextPage = page + 1;
+        const response = await fetchWithAuth(`/api/notifications?page=${nextPage}&limit=${PAGE_SIZE}`);
+        const data = await response.json();
+        let fetched = data.notifications || [];
+        if (fetched.length === 0 && nextPage * PAGE_SIZE <= FAKE_NOTIFICATIONS.length) {
+          const start = (nextPage - 1) * PAGE_SIZE;
+          fetched = FAKE_NOTIFICATIONS.slice(start, start + PAGE_SIZE);
+          setHasMore(start + PAGE_SIZE < FAKE_NOTIFICATIONS.length);
+        } else {
+          setHasMore(fetched.length === PAGE_SIZE);
+        }
+        setNotifications((prev) => [...prev, ...fetched]);
+        setPage(nextPage);
+      } catch {
+        const nextPage = page + 1;
+        const start = (nextPage - 1) * PAGE_SIZE;
+        const fetched = FAKE_NOTIFICATIONS.slice(start, start + PAGE_SIZE);
+        setNotifications((prev) => [...prev, ...fetched]);
+        setHasMore(start + PAGE_SIZE < FAKE_NOTIFICATIONS.length);
+        setPage(nextPage);
+      }
+      setNotifLoading(false);
+    }, 800);
+  };
+
+  // Bell button click: open panel, mark all current notifications as read
+  const handleNotifClick = () => {
+    setNotifOpen(true);
+    setReadIds(notifications.map(n => n.id));
+    setUnreadCount(0);
+    // fetchWithAuth("/api/notifications/mark-read", { method: "POST" });
+  };
+  const handleNotifClose = () => setNotifOpen(false);
+
+  if (loading) return <></>;
 
   return (
     <>
@@ -57,23 +156,30 @@ export default function Navbar() {
           </Link>
         </nav>
         {/* right */}
-
         {user ? (
-
-          // notifications button
           <div className="hidden lg:flex items-center gap-4">
             {/* notifications */}
-            <div className="relative text-[#7D0000] text-[36px] cursor-pointer">
-              <span className={`absolute -top-2 -right-2 bg-[#7D0000] text-white text-xs font-bold rounded-full p-1 w-5 h-5 ${notifications?.count == 0 && "hidden"}`}>{notifications?.count}</span>
+            <div className="relative text-[#7D0000] text-[36px] cursor-pointer" onClick={handleNotifClick}>
+              <span className={`absolute -top-2 -right-2 bg-[#7D0000] text-white text-xs font-bold rounded-full p-1 w-5 h-5 ${unreadCount === 0 ? "hidden" : ""}`}>{unreadCount}</span>
               <IoNotificationsOutline />
             </div>
+            {/* ড্রপডাউন প্যানেল */}
+            <NotificationBell
+              open={notifOpen}
+              setOpen={setNotifOpen}
+              notifications={notifications}
+              hasMore={hasMore}
+              loading={notifLoading}
+              onLoadMore={loadMore}
+              onClose={handleNotifClose}
+              panelRef={panelRef}
+            />
+            {/* user */}
             <div className="relative">
               <User user={user} loading={loading} error={error} />
-
-            <div className="absolute right-25 top-10 bg-yellow-500 flex items-center gap-x-1 text-white p-0.5 text-[12px] rounded ">
-              <Crown className="w-[20px] h-auto"/> <span>100</span>
-            </div>
-
+              <div className="absolute right-25 top-10 bg-yellow-500 flex items-center gap-x-1 text-white p-0.5 text-[12px] rounded ">
+                <Crown className="w-[20px] h-auto" /> <span>100</span>
+              </div>
             </div>
           </div>
         ) : (
