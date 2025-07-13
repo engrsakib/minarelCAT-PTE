@@ -2,7 +2,7 @@
 import React, { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 
-// NotificationBell কম্পোনেন্ট শুধুমাত্র ড্রপডাউন/প্যানেল দেখাবে, স্টেট ও ইভেন্ট parent (Navbar) থেকে নেবে
+// NotificationBell: শুধুমাত্র ড্রপডাউন/প্যানেল দেখাবে, স্টেট ও ইভেন্ট parent (Navbar) থেকে নেবে
 export default function NotificationBell({
   open,
   setOpen,
@@ -53,14 +53,15 @@ export default function NotificationBell({
             ease-in-out
             ${open ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"}
           `}
+          // রাউন্ডেড বাদ, শুধু স্কয়ার কর্নার
           style={{
-            borderTopLeftRadius: "30px",
-            borderBottomLeftRadius: "30px",
+            borderTopLeftRadius: 0,
+            borderBottomLeftRadius: 0,
             boxShadow: "0 0 50px 0 #0003",
           }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-9 py-7 border-b text-black rounded-tl-[30px]">
+          <div className="flex items-center justify-between px-9 py-7 border-b text-black">
             <div className="flex flex-col gap-1">
               <span className="text-2xl font-bold tracking-wide">Notifications</span>
               <span className="text-xs text-black/80">{notifications.length} total</span>
@@ -88,13 +89,11 @@ export default function NotificationBell({
                 <li
                   key={n.id}
                   className={`
-                    mb-3 last:mb-0 p-5 rounded-xl border border-gray-100 shadow-sm bg-gradient-to-br
-                    ${!n.read ? "from-[#fff0f0] via-[#ffeaea] to-white" : "from-white to-white"}
+                    mb-3 last:mb-0 p-5 border border-gray-100 shadow-sm bg-white
                     flex items-start gap-3
                     animate-fadein
                   `}
                 >
-                  {/* সার্কেল/ডট সরানো হয়েছে */}
                   <div className="flex-1">
                     <div className="text-gray-900 text-[16.5px] font-medium mb-1">{n.message}</div>
                     <div className="text-xs text-gray-400">{n.timeAgo}</div>
@@ -105,7 +104,7 @@ export default function NotificationBell({
             {/* Loader */}
             {loading && (
               <li className="flex justify-center items-center py-6">
-                <span className="animate-spin inline-block w-7 h-7 border-2 border-red-500 border-t-transparent rounded-full" />
+                <span className="animate-spin inline-block w-7 h-7 border-2 border-red-500 border-t-transparent rounded" />
               </li>
             )}
             {!hasMore && notifications.length > 0 && (

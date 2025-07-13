@@ -20,7 +20,7 @@ const FAKE_NOTIFICATIONS = Array.from({ length: 30 }, (_, i) => ({
   read: false,
   timeAgo: `${(i + 1) * 2} min ago`,
 }));
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 30;
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
