@@ -60,10 +60,10 @@ export default function NotificationBell({
           }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-9 py-7 border-b bg-gradient-to-l from-[#a91e22] to-[#c44545] text-white rounded-tl-[30px]">
+          <div className="flex items-center justify-between px-9 py-7 border-b text-black rounded-tl-[30px]">
             <div className="flex flex-col gap-1">
               <span className="text-2xl font-bold tracking-wide">Notifications</span>
-              <span className="text-xs text-white/80">{notifications.length} total</span>
+              <span className="text-xs text-black/80">{notifications.length} total</span>
             </div>
             <button
               onClick={onClose}
@@ -94,7 +94,7 @@ export default function NotificationBell({
                     animate-fadein
                   `}
                 >
-                  <div className={`mt-2 h-2 w-2 rounded-full ${!n.read ? "bg-red-500" : "bg-gray-300"}`} />
+                  {/* সার্কেল/ডট সরানো হয়েছে */}
                   <div className="flex-1">
                     <div className="text-gray-900 text-[16.5px] font-medium mb-1">{n.message}</div>
                     <div className="text-xs text-gray-400">{n.timeAgo}</div>

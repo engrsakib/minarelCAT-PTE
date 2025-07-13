@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import fetchWithAuth from "../../lib/fetchWithAuth";
 import { Bell } from "lucide-react";
 
@@ -10,7 +10,11 @@ export default function NotificationBell() {
 
   // Bell এ ক্লিক করলে সব রিড ধরে রাখো
   const handleBellClick = () => {
-    setReadIds(notifications.map(n => n.id));
+    setReadIds((prev) => {
+      const currentIds = notifications.map(n => n.id);
+      // আগেরগুলো রেখে নতুনগুলো যোগ করো (unique)
+      return Array.from(new Set([...prev, ...currentIds]));
+    });
     setUnreadCount(0);
     setOpen(true);
     // fetchWithAuth("/api/notifications/mark-read", { method: "POST" });
@@ -20,7 +24,7 @@ export default function NotificationBell() {
   const fetchNotifications = useCallback(async () => {
     const data = await fetchWithAuth("/api/notifications").then(res => res.json());
     setNotifications(data.notifications || []);
-    // কেবল নতুন আইডি গুলো কাউন্ট হবে
+    // কেবল নতুন আইডি গুলো কাউন্ট হবে (যারা আগের readIds-এ নেই)
     const newUnread = (data.notifications || []).filter(n => !readIds.includes(n.id)).length;
     setUnreadCount(newUnread);
   }, [readIds]);
@@ -52,7 +56,7 @@ export default function NotificationBell() {
               <li className="p-5 text-gray-400 text-center">No notifications</li>
             ) : (
               notifications.map((n) => (
-                <li key={n.id} className={`px-5 py-3 border-b last:border-b-0 ${!n.read ? "bg-red-50" : ""}`}>
+                <li key={n.id} className={`${!n.read ? "bg-red-50" : ""} px-5 py-3 border-b last:border-b-0`}>
                   <div className="flex items-center gap-3">
                     <span className={`h-2 w-2 rounded-full ${!n.read ? "bg-red-500" : "bg-gray-300"}`} />
                     <div>
