@@ -93,7 +93,7 @@ export default function ReadAloud() {
 
   // Handle Appeared click (can be customized for your use)
   const handleAppearedClick = (item) => {
-    router.push(`/question/read-aloud/${item._id}`);
+    router.push(`/speaking/read-aloud/${item._id}`);
   };
 
   const renderPageNumbers = () => {
