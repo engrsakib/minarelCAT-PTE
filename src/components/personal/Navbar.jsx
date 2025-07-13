@@ -59,6 +59,8 @@ export default function Navbar() {
         {/* right */}
 
         {user ? (
+
+          // notifications button
           <div className="hidden lg:flex items-center gap-4">
             {/* notifications */}
             <div className="relative text-[#7D0000] text-[36px] cursor-pointer">
@@ -68,8 +70,8 @@ export default function Navbar() {
             <div className="relative">
               <User user={user} loading={loading} error={error} />
 
-            <div className="absolute right-25 top-8 bg-amber-400 text-white p-0.5 text-[8px] rounded-2xl ">
-              <Crown className="w-[20px] h-auto"/>
+            <div className="absolute right-25 top-10 bg-yellow-500 flex items-center gap-x-1 text-white p-0.5 text-[12px] rounded ">
+              <Crown className="w-[20px] h-auto"/> <span>100</span>
             </div>
 
             </div>
