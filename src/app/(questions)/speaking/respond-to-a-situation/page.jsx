@@ -93,7 +93,7 @@ export default function repeatSentence() {
 
   // Handle Appeared click (can be customized for your use)
   const handleAppearedClick = (item) => {
-    router.push(`/speaking/repeat-sentence/${item._id}`);
+    router.push(`/speaking/respond-to-a-situation/${item._id}`);
   };
 
   const renderPageNumbers = () => {

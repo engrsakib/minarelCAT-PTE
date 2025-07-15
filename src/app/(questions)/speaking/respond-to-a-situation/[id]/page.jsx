@@ -75,7 +75,7 @@ export default function RepeatSentencePage({ params }) {
     async function getQuestions() {
       setLoading(true);
       try {
-        const res = await fetchWithAuth(`/test/speaking/repeat_sentence`);
+        const res = await fetchWithAuth(`/test/speaking/respond-to-a-situation`);
         const data = await res.json();
         const arr = data?.questions && data.questions.length ? data.questions : FAKE_QUESTIONS;
         setQuestions(arr);
@@ -262,9 +262,9 @@ export default function RepeatSentencePage({ params }) {
         Beginning in <span className="font-bold">{isThinking ? prepTime : "0"}</span> sec
       </div>
       {/* Prompt */}
-      {/* <div className="border border-[#810000] rounded p-4 mb-4 bg-white text-gray-900 whitespace-pre-line">
+      <div className="border border-[#810000] rounded p-4 mb-4 bg-white text-gray-900 whitespace-pre-line">
         {currentQ.prompt}
-      </div> */}
+      </div>
       {/* Audio Player */}
       <div className="border border-[#810000] rounded p-4 mb-4 bg-[#faf9f9] flex flex-col items-center">
         <div className="w-full flex items-center gap-2">
