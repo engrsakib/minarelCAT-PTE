@@ -40,7 +40,7 @@ export default function ReadAloud() {
       let query = `page=${currentPage}&limit=${itemsPerPage}`;
       if (tab === "not_practiced") query += "&type=not_practiced";
       if (tab === "bookmark") query += "&type=bookmark";
-      const response = await fetchWithAuth(`${baseUrl}/test/speaking/read_aloud?${query}`);
+      const response = await fetchWithAuth(`${baseUrl}/test/reading/mcq_multiple?${query}`);
       const result = await response.json();
       if (result?.questions) {
         setData(result.questions);
@@ -93,7 +93,7 @@ export default function ReadAloud() {
 
   // Handle Appeared click (can be customized for your use)
   const handleAppearedClick = (item) => {
-    router.push(`/speaking/read-aloud/${item._id}`);
+    router.push(`multiple-choice-and-answers/${item._id}`);
   };
 
   const renderPageNumbers = () => {
@@ -122,7 +122,7 @@ export default function ReadAloud() {
     ${active ? "border-[#810000] text-[#810000] bg-white" : "border-transparent text-gray-400 bg-white hover:text-[#810000]"}`;
 
   return (
-    <div className="w-full max-w-[98vw] sm:max-w-3xl md:max-w-4xl lg:max-w-5xl mx-auto py-4 px-0 sm:px-4">
+    <div className="w-full lg:max-w-[80%] mx-auto py-4 px-0 sm:px-4">
       {/* Header */}
       <div className="bg-[#810000] text-white px-2 sm:px-4 py-3 rounded-md flex items-center justify-between mb-6">
         <button onClick={() => router.push("/")} className="flex items-center gap-2">
