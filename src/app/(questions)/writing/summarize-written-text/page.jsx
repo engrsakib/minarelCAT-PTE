@@ -40,7 +40,7 @@ export default function repeatSentence() {
       let query = `page=${currentPage}&limit=${itemsPerPage}`;
       if (tab === "not_practiced") query += "&type=not_practiced";
       if (tab === "bookmark") query += "&type=bookmark";
-      const response = await fetchWithAuth(`${baseUrl}/test/speaking/repeat_sentence?${query}`);
+      const response = await fetchWithAuth(`${baseUrl}/test/writing/summarize-written-text?${query}`);
       const result = await response.json();
       if (result?.questions) {
         setData(result.questions);
@@ -93,7 +93,7 @@ export default function repeatSentence() {
 
   // Handle Appeared click (can be customized for your use)
   const handleAppearedClick = (item) => {
-    router.push(`/speaking/repeat-sentence/${item._id}`);
+    router.push(`/writing/summarize-written-text/${item._id}`);
   };
 
   const renderPageNumbers = () => {
