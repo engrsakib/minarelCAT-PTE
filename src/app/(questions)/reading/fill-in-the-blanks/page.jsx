@@ -20,7 +20,7 @@ function trimText(text, max = 34) {
   return text.slice(0, max - 1) + "…";
 }
 
-export default function repeatSentence() {
+export default function fill_in_the_blanks() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
@@ -40,7 +40,7 @@ export default function repeatSentence() {
       let query = `page=${currentPage}&limit=${itemsPerPage}`;
       if (tab === "not_practiced") query += "&type=not_practiced";
       if (tab === "bookmark") query += "&type=bookmark";
-      const response = await fetchWithAuth(`${baseUrl}/test/writing/write_email?${query}`);
+      const response = await fetchWithAuth(`${baseUrl}/test/reading/fill-in-the-blanks?${query}`);
       const result = await response.json();
       if (result?.questions) {
         setData(result.questions);
@@ -87,14 +87,13 @@ export default function repeatSentence() {
       }
     } catch {
       // ignore error
-      
     }
     setBookmarkLoadingId(null);
   };
 
   // Handle Appeared click (can be customized for your use)
   const handleAppearedClick = (item) => {
-    router.push(`/writing/write-email/${item._id}`);
+    router.push(`/reading/fill-in-the-blanks/${item._id}`);
   };
 
   const renderPageNumbers = () => {
