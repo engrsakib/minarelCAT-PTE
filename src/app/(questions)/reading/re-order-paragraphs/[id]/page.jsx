@@ -2,46 +2,37 @@
 import React, { useEffect, useState, useRef } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
 import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
 
-// Next.js-compatible dynamic import for react-mic
-const AudioRecorder = dynamic(
-  () =>
-    import("react-mic").then((mod) => {
-      return ({ onStop, record, ...props }) => (
-        <mod.ReactMic
-          record={record}
-          onStop={onStop}
-          strokeColor="#810000"
-          backgroundColor="#f9f9f9"
-          mimeType="audio/wav"
-          {...props}
-        />
-      );
-    }),
-  { ssr: false }
-);
-
-const RECORD_SECONDS = 35;
+// 9:59 minutes in seconds
+const RECORD_SECONDS = 599;
 
 // Fake questions fallback (1-100 for pagination)
 const FAKE_QUESTIONS = Array.from({ length: 100 }, (_, i) => ({
-  _id: String(1001635 + i),
-  type: "speaking",
-  subtype: "read_aloud",
-  heading: i === 0 ? "Parent Teacher Conference" : `Fake Heading ${i + 1}`,
+  _id: String(1234560 + i),
+  type: "reorder_paragraphs",
+  heading: i === 0 ? "Skin Cancer" : `Fake Heading ${i + 1}`,
   prompt:
     i === 0
-      ? `Write an email to the manager of a restaurant inquiring about the process for making online reservations.
-
-In your email, include:
-
-- Ask for information on how the online reservation system works.
-- Clarify if special requests (e.g., dietary preferences or seating arrangements) can be made online.
-- Inquire about confirmation details and how far reservations should be made in advance.`
-      : `Fake prompt for question #${i + 1}`,
+      ? `The text boxes in the left panel have been placed in random order. Restore the original order by dragging the text boxes from the left panel to the right panel.`
+      : `Fake re-order instruction for question #${i + 1}`,
+  options: [
+    "Most cases of skin cancer are linked to exposure to ultraviolet radiation.",
+    "A vaccine stimulating the production of a protein critical to the skin’s antioxidant network is helping people bolster their defenses against skin cancer.",
+    "Skin cancer is the most common cancer in the United States, and Melanoma is the most lethal form of skin cancer",
+    "There are multiple vaccines to prevent cancer.",
+  ],
 }));
+
+function shuffle(array) {
+  // Fisher-Yates Shuffle
+  let arr = array.slice();
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
 
 export default function DynamicPage({ params }) {
   const { id } = params;
@@ -55,19 +46,23 @@ export default function DynamicPage({ params }) {
 
   // Timer
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);
-  const [isRecording, setIsRecording] = useState(false);
-  const [audioBlob, setAudioBlob] = useState(null);
   const timerRef = useRef();
+  const [timerStarted, setTimerStarted] = useState(false);
+
+  // Source (left) and Target (right) state for drag-and-drop
+  const [source, setSource] = useState([]); // shuffled [{label, text}]
+  const [target, setTarget] = useState([]); // ordered [{label, text}]
+  const [dragged, setDragged] = useState(null);
 
   // Pagination dropdown
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Fetch all questions and find current index
+  // On mount/fetch question
   useEffect(() => {
     async function getQuestions() {
       setLoading(true);
       try {
-        const res = await fetchWithAuth(`/test/speaking/read_aloud`);
+        const res = await fetchWithAuth(`/test/reorder_paragraphs`);
         const data = await res.json();
         const arr =
           data?.questions && data.questions.length
@@ -77,49 +72,98 @@ export default function DynamicPage({ params }) {
         const idx = arr.findIndex((q) => q._id === id);
         setCurrentIdx(idx !== -1 ? idx : 0);
         setCurrentQ(arr[idx !== -1 ? idx : 0]);
+        // shuffle options for source, preserve original order in options
+        const optionsArr = arr[idx !== -1 ? idx : 0].options || [];
+        const shuffled = shuffle(
+          optionsArr.map((text, i) => ({
+            label: String.fromCharCode(65 + i),
+            text,
+            idx: i,
+          }))
+        );
+        setSource(shuffled);
+        setTarget([]);
       } catch {
         setQuestions(FAKE_QUESTIONS);
         setCurrentIdx(0);
         setCurrentQ(FAKE_QUESTIONS[0]);
+        const optionsArr = FAKE_QUESTIONS[0].options || [];
+        const shuffled = shuffle(
+          optionsArr.map((text, i) => ({
+            label: String.fromCharCode(65 + i),
+            text,
+            idx: i,
+          }))
+        );
+        setSource(shuffled);
+        setTarget([]);
       }
       setLoading(false);
       setTimeLeft(RECORD_SECONDS);
-      setAudioBlob(null);
-      setIsRecording(false);
+      setTimerStarted(false);
     }
     getQuestions();
     // eslint-disable-next-line
   }, [id]);
 
-  // Timer logic
+  // Timer logic (start on page load)
   useEffect(() => {
-    if (!isRecording) return;
-    if (timeLeft === 0) {
-      setIsRecording(false);
-      // Timer stop, but allow submit and restart
-      return;
-    }
+    if (loading) return;
+    if (!timerStarted) setTimerStarted(true);
+  }, [loading]);
+  useEffect(() => {
+    if (!timerStarted) return;
+    if (timeLeft === 0) return;
     timerRef.current = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearTimeout(timerRef.current);
-  }, [isRecording, timeLeft]);
+  }, [timerStarted, timeLeft]);
 
-  // react-mic will send blob to this
-  const handleMicStop = (recorded) => {
-    setAudioBlob(recorded.blob);
-    setIsRecording(false);
+  // Drag/Drop handlers
+  const handleDragStart = (item, fromSource, idx) => {
+    setDragged({ ...item, fromSource, idx });
+  };
+  const handleDropTarget = () => {
+    if (dragged && dragged.fromSource) {
+      // from source to target (append at end)
+      setTarget((prev) => [...prev, dragged]);
+      setSource((prev) => prev.filter((_, i) => i !== dragged.idx));
+    }
+    setDragged(null);
+  };
+  const handleDropSource = () => {
+    if (dragged && !dragged.fromSource) {
+      // from target back to source (append at end)
+      setSource((prev) => [...prev, dragged]);
+      setTarget((prev) => prev.filter((_, i) => i !== dragged.idx));
+    }
+    setDragged(null);
+  };
+
+  // Allow reordering inside target
+  const handleDragOverTarget = (overIdx) => {
+    if (!dragged || !(!dragged.fromSource)) return;
+    setTarget((prev) => {
+      const arr = prev.slice();
+      arr.splice(dragged.idx, 1);
+      arr.splice(overIdx, 0, dragged);
+      return arr;
+    });
+    setDragged((d) => ({ ...d, idx: overIdx }));
   };
 
   // Submit handler
   const handleSubmit = async () => {
-    if (!audioBlob || !currentQ) return;
-    const formData = new FormData();
-    formData.append("voice", audioBlob, "voice.wav");
-    formData.append("questionId", currentQ._id);
-
+    if (!currentQ || target.length !== (currentQ.options?.length || 0)) return;
+    // send the indices of selected (ordered) paragraphs
+    const payload = {
+      questionId: currentQ._id,
+      ordered: target.map((item) => item.idx), // original index order
+    };
     try {
-      await fetchWithAuth("/test/speaking/read_aloud/submit", {
+      await fetchWithAuth("/test/reorder_paragraphs/submit", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
       alert("Your answer has been submitted! (Demo: backend response not shown)");
     } catch (e) {
@@ -127,14 +171,24 @@ export default function DynamicPage({ params }) {
     }
   };
 
-  // Pagination controls
-  const goToIndex = (idx) => {
-    if (idx < 0 || idx >= questions.length) return;
-    router.push(`/question/read-aloud/${questions[idx]._id}`);
-    setDropdownOpen(false);
+  // Restart handler
+  const handleRestart = () => {
+    if (!currentQ) return;
+    const optionsArr = currentQ.options || [];
+    const shuffled = shuffle(
+      optionsArr.map((text, i) => ({
+        label: String.fromCharCode(65 + i),
+        text,
+        idx: i,
+      }))
+    );
+    setSource(shuffled);
+    setTarget([]);
+    setTimeLeft(RECORD_SECONDS);
+    setTimerStarted(false);
   };
 
-  // Render pagination (bottom right, sticky dropdown)
+  // Pagination controls (dropdown + prev/next, styled right-bottom)
   const renderPagination = () => (
     <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end w-max">
       <div className="relative">
@@ -146,11 +200,14 @@ export default function DynamicPage({ params }) {
           {dropdownOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
         </button>
         {dropdownOpen && (
-          <div className="absolute right-0 bottom-11 w-36 max-h-72 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg z-50">
+          <div className="absolute right-0 bottom-11 w-36 max-h-72 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg z-50 dropdown-scroll">
             {questions.slice(0, 100).map((q, i) => (
               <button
                 key={q._id}
-                onClick={() => goToIndex(i)}
+                onClick={() => {
+                  router.push(`/question/reorder-paragraphs/${q._id}`);
+                  setDropdownOpen(false);
+                }}
                 className={`flex w-full px-4 py-2 text-left text-sm font-semibold transition
                   ${i === currentIdx ? "bg-[#810000] text-white" : "hover:bg-[#f5eaea] text-[#810000]"}
                 `}
@@ -166,7 +223,11 @@ export default function DynamicPage({ params }) {
       <div className="flex mt-2 gap-2">
         <button
           aria-label="Prev"
-          onClick={() => goToIndex(currentIdx - 1)}
+          onClick={() => {
+            if (currentIdx > 0) {
+              router.push(`/question/reorder-paragraphs/${questions[currentIdx - 1]._id}`);
+            }
+          }}
           disabled={currentIdx === 0}
           className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
         >
@@ -174,112 +235,17 @@ export default function DynamicPage({ params }) {
         </button>
         <button
           aria-label="Next"
-          onClick={() => goToIndex(currentIdx + 1)}
+          onClick={() => {
+            if (currentIdx < questions.length - 1) {
+              router.push(`/question/reorder-paragraphs/${questions[currentIdx + 1]._id}`);
+            }
+          }}
           disabled={currentIdx === questions.length - 1}
           className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
         >
           <ChevronRight className="w-6 h-6" />
         </button>
       </div>
-    </div>
-  );
-
-  if (loading || !currentQ) {
-    return (
-      <div className="flex justify-center items-center min-h-[40vh]">Loading...</div>
-    );
-  }
-
-  return (
-    <div className="max-w-3xl mx-auto py-6 px-2 relative">
-      <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
-        Read Aloud
-      </div>
-      <p className="text-gray-700 mb-6">
-        Look at the text below. In 35 seconds, you must read this text aloud as naturally and clearly as possible. You have 35 seconds to read aloud.
-      </p>
-      {/* Question Heading */}
-      <div className="bg-[#810000] text-white px-5 py-2 rounded mb-2 text-lg font-semibold tracking-wide flex items-center gap-2">
-        <span>#{currentQ._id}</span>
-        <span>|</span>
-        <span>{currentQ.heading}</span>
-      </div>
-      {/* Timer */}
-      <div className="mb-2 text-[#810000] font-medium text-base">
-        Beginning in <span className="font-bold">{timeLeft} sec</span>
-      </div>
-      {/* Prompt */}
-      <div className="border border-[#810000] rounded p-4 mb-4 bg-white text-gray-900 whitespace-pre-line">
-        {currentQ.prompt}
-      </div>
-      {/* Audio Recorder */}
-      <div className="border border-[#810000] rounded p-4 mb-6 bg-[#faf9f9] flex flex-col items-center">
-        <AudioRecorder
-          record={isRecording}
-          onStop={handleMicStop}
-        />
-        <div className="flex items-center w-full gap-2 mt-2">
-          <span className="text-xs text-gray-600">{new Date((RECORD_SECONDS - timeLeft) * 1000).toISOString().substr(14, 5)}</span>
-          <div className="flex-1 h-2 rounded bg-gray-200 overflow-hidden relative">
-            <div
-              className="h-2 rounded bg-[#810000] transition-all duration-200"
-              style={{
-                width: `${((RECORD_SECONDS - timeLeft) / RECORD_SECONDS) * 100}%`,
-              }}
-            />
-          </div>
-          <span className="text-xs text-gray-600">{new Date(RECORD_SECONDS * 1000).toISOString().substr(14, 5)}</span>
-        </div>
-        <div className="mt-2 text-center w-full text-gray-500 font-medium">
-          {isRecording
-            ? "Recording... Speak now"
-            : audioBlob
-            ? "Recording complete"
-            : "Click Start to record"}
-        </div>
-        {/* Controls */}
-        <div className="flex gap-3 mt-4 flex-wrap">
-          <button
-            className="flex items-center gap-1 px-4 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-100 font-medium text-sm"
-            onClick={() => {
-              setAudioBlob(null);
-              setTimeLeft(RECORD_SECONDS);
-              setIsRecording(false);
-            }}
-            disabled={isRecording}
-          >
-            Restart
-          </button>
-          <button
-            className="flex items-center gap-1 px-4 py-1 rounded bg-[#810000] text-white font-medium text-sm hover:bg-[#5d0000] disabled:bg-gray-300 disabled:text-gray-400"
-            onClick={handleSubmit}
-            disabled={!audioBlob}
-          >
-            <span>Submit</span>
-          </button>
-          <button
-            className="flex items-center gap-1 px-4 py-1 rounded bg-[#810000] text-white font-medium text-sm hover:bg-[#5d0000] disabled:bg-gray-300 disabled:text-gray-400"
-            onClick={() => {
-              if (!isRecording && timeLeft > 0) {
-                setTimeLeft(RECORD_SECONDS);
-                setAudioBlob(null);
-                setIsRecording(true);
-              }
-            }}
-            disabled={isRecording || timeLeft === 0}
-          >
-            <span>Start</span>
-          </button>
-          <button
-            className="flex items-center gap-1 px-4 py-1 rounded bg-gray-500 text-white font-medium text-sm hover:bg-gray-700 disabled:bg-gray-300 disabled:text-gray-400"
-            onClick={() => setIsRecording(false)}
-            disabled={!isRecording}
-          >
-            <span>Stop</span>
-          </button>
-        </div>
-      </div>
-      {renderPagination()}
       <style jsx>{`
         .dropdown-scroll::-webkit-scrollbar {
           width: 4px;
@@ -290,6 +256,130 @@ export default function DynamicPage({ params }) {
           border-radius: 2px;
         }
       `}</style>
+    </div>
+  );
+
+  // Format MM:SS
+  const formatTime = (sec) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  };
+
+  if (loading || !currentQ) {
+    return (
+      <div className="flex justify-center items-center min-h-[40vh]">Loading...</div>
+    );
+  }
+
+  return (
+    <div className="max-w-[80%] mx-auto py-6 px-2 relative">
+      <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
+        Re-order Paragraphs
+      </div>
+      <p className="text-gray-700 mb-6">
+        {currentQ.prompt}
+      </p>
+      {/* Question Heading */}
+      <div className="flex items-center gap-2 mb-4">
+        <span className="rounded px-4 py-2 font-bold text-white bg-[#810000] text-base tracking-wide">
+          #{currentQ._id}
+        </span>
+        <span className="text-lg font-semibold text-[#810000]">{currentQ.heading}</span>
+      </div>
+      {/* Timer */}
+      <div className="mb-6 flex items-center gap-3">
+        <span className="text-[#810000] font-medium text-base">
+          Remaining Time: <span className="font-bold">00: {formatTime(timeLeft)} sec</span>
+        </span>
+      </div>
+      {/* Drag-drop panels */}
+      <div className="flex flex-col md:flex-row gap-4 w-full justify-center mb-5">
+        {/* Source */}
+        <div className="flex-1 min-w-[260px] max-w-[50%]">
+          <div className="bg-[#810000] text-white text-center rounded-t px-2 py-2 font-semibold">
+            Source
+          </div>
+          <div
+            className="border border-[#810000] border-t-0 rounded-b min-h-[320px] pb-2 pt-2 bg-white flex flex-col gap-3"
+            onDragOver={e => {
+              e.preventDefault();
+            }}
+            onDrop={handleDropSource}
+          >
+            {source.length === 0 && (
+              <div className="text-center text-gray-400 py-10">No items left</div>
+            )}
+            {source.map((item, i) => (
+              <div
+                key={item.label}
+                className="flex items-center gap-3 bg-[#faf9f9] border border-[#810000] rounded px-4 py-3 cursor-grab select-none shadow-sm"
+                draggable
+                onDragStart={() => handleDragStart(item, true, i)}
+                style={{ opacity: dragged && dragged.label === item.label && dragged.fromSource ? 0.4 : 1 }}
+              >
+                <span className="w-7 h-7 flex items-center justify-center rounded-full border border-[#810000] bg-white text-[#810000] font-bold">{item.label}</span>
+                <span className="flex-1 text-gray-800">{item.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Arrow */}
+        <div className="flex items-center justify-center px-1 py-1">
+          <span className="text-[#810000] text-3xl font-bold">{'>>'}</span>
+        </div>
+        {/* Target */}
+        <div className="flex-1 min-w-[260px] max-w-[50%]">
+          <div className="bg-[#810000] text-white text-center rounded-t px-2 py-2 font-semibold">
+            Target
+          </div>
+          <div
+            className="border border-[#810000] border-t-0 rounded-b min-h-[320px] pb-2 pt-2 bg-white flex flex-col gap-3"
+            onDragOver={e => {
+              e.preventDefault();
+            }}
+            onDrop={handleDropTarget}
+          >
+            {target.length === 0 && (
+              <div className="text-center text-gray-400 py-10">Drag paragraphs here</div>
+            )}
+            {target.map((item, i) => (
+              <div
+                key={item.label}
+                className="flex items-center gap-3 bg-[#faf9f9] border border-[#810000] rounded px-4 py-3 cursor-grab select-none shadow-sm"
+                draggable
+                onDragStart={() => handleDragStart(item, false, i)}
+                onDragOver={e => {
+                  e.preventDefault();
+                  handleDragOverTarget(i);
+                }}
+                style={{ opacity: dragged && dragged.label === item.label && !dragged.fromSource ? 0.4 : 1 }}
+              >
+                <span className="w-7 h-7 flex items-center justify-center rounded-full border border-[#810000] bg-white text-[#810000] font-bold">{item.label}</span>
+                <span className="flex-1 text-gray-800">{item.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      {/* Controls */}
+      <div className="flex gap-3 justify-center mb-2 mt-3">
+        <button
+          className="flex items-center gap-1 px-6 py-2 rounded border border-gray-400 text-gray-700 hover:bg-gray-100 font-medium text-base"
+          onClick={handleRestart}
+          disabled={timeLeft === 0}
+        >
+          Restart
+        </button>
+        <button
+          className="flex items-center gap-1 px-6 py-2 rounded border-2 border-[#810000] bg-white text-[#810000] font-semibold text-base hover:bg-[#810000] hover:text-white transition"
+          onClick={handleSubmit}
+          disabled={target.length !== (currentQ.options?.length || 0) || timeLeft === 0}
+        >
+          Submit
+        </button>
+      </div>
+      {renderPagination()}
     </div>
   );
 }

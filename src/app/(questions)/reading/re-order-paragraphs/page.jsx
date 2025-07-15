@@ -93,7 +93,7 @@ export default function reorderParagraphs() {
 
   // Handle Appeared click (can be customized for your use)
   const handleAppearedClick = (item) => {
-    router.push(`multiple-choice-and-answers/${item._id}`);
+    router.push(`/reading/re-order-paragraphs/${item._id}`);
   };
 
   const renderPageNumbers = () => {
