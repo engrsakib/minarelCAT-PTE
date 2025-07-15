@@ -3,13 +3,12 @@ import React, { useEffect, useState, useRef } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
 
-// Next.js-compatible dynamic import for AudioRecorder
+// Next.js-compatible dynamic import for react-mic
 const AudioRecorder = dynamic(
   () =>
     import("react-mic").then((mod) => {
-      // react-mic exports ReactMic, not AudioRecorder
       return ({ onStop, record, ...props }) => (
         <mod.ReactMic
           record={record}
@@ -60,6 +59,9 @@ export default function DynamicPage({ params }) {
   const [audioBlob, setAudioBlob] = useState(null);
   const timerRef = useRef();
 
+  // Pagination dropdown
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
   // Fetch all questions and find current index
   useEffect(() => {
     async function getQuestions() {
@@ -94,6 +96,7 @@ export default function DynamicPage({ params }) {
     if (!isRecording) return;
     if (timeLeft === 0) {
       setIsRecording(false);
+      // Timer stop, but allow submit and restart
       return;
     }
     timerRef.current = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
@@ -128,41 +131,56 @@ export default function DynamicPage({ params }) {
   const goToIndex = (idx) => {
     if (idx < 0 || idx >= questions.length) return;
     router.push(`/question/read-aloud/${questions[idx]._id}`);
+    setDropdownOpen(false);
   };
 
-  // Render pagination (bottom right)
+  // Render pagination (bottom right, sticky dropdown)
   const renderPagination = () => (
-    <div className="fixed bottom-4 right-4 flex items-center gap-2 z-40">
-      <button
-        aria-label="Prev"
-        onClick={() => goToIndex(currentIdx - 1)}
-        disabled={currentIdx === 0}
-        className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
-      >
-        <ChevronLeft className="w-6 h-6" />
-      </button>
-      <div className="flex gap-1">
-        {questions.slice(0, 100).map((q, i) => (
-          <button
-            key={q._id}
-            onClick={() => goToIndex(i)}
-            className={`rounded px-2 py-1 text-xs font-semibold border transition 
-              ${i === currentIdx ? "bg-[#810000] text-white border-[#810000]" : "bg-white border-gray-300 text-[#810000] hover:bg-[#f3f3f3]"}
-            `}
-            style={{ minWidth: 36 }}
-          >
-            {String(i + 1).padStart(3, "0")}
-          </button>
-        ))}
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end w-max">
+      <div className="relative">
+        <button
+          className="rounded border bg-white px-4 py-2 shadow text-[#810000] font-bold flex items-center gap-2"
+          onClick={() => setDropdownOpen((o) => !o)}
+        >
+          {String(currentIdx + 1).padStart(3, "0")}
+          {dropdownOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+        </button>
+        {dropdownOpen && (
+          <div className="absolute right-0 bottom-11 w-36 max-h-72 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg z-50">
+            {questions.slice(0, 100).map((q, i) => (
+              <button
+                key={q._id}
+                onClick={() => goToIndex(i)}
+                className={`flex w-full px-4 py-2 text-left text-sm font-semibold transition
+                  ${i === currentIdx ? "bg-[#810000] text-white" : "hover:bg-[#f5eaea] text-[#810000]"}
+                `}
+              >
+                {String(i + 1).padStart(3, "0")} {q.heading && (
+                  <span className="ml-1 truncate w-24">{q.heading}</span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
-      <button
-        aria-label="Next"
-        onClick={() => goToIndex(currentIdx + 1)}
-        disabled={currentIdx === questions.length - 1}
-        className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
-      >
-        <ChevronRight className="w-6 h-6" />
-      </button>
+      <div className="flex mt-2 gap-2">
+        <button
+          aria-label="Prev"
+          onClick={() => goToIndex(currentIdx - 1)}
+          disabled={currentIdx === 0}
+          className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+        <button
+          aria-label="Next"
+          onClick={() => goToIndex(currentIdx + 1)}
+          disabled={currentIdx === questions.length - 1}
+          className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
+        >
+          <ChevronRight className="w-6 h-6" />
+        </button>
+      </div>
     </div>
   );
 
@@ -220,7 +238,7 @@ export default function DynamicPage({ params }) {
             : "Click Start to record"}
         </div>
         {/* Controls */}
-        <div className="flex gap-3 mt-4">
+        <div className="flex gap-3 mt-4 flex-wrap">
           <button
             className="flex items-center gap-1 px-4 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-100 font-medium text-sm"
             onClick={() => {
@@ -235,7 +253,7 @@ export default function DynamicPage({ params }) {
           <button
             className="flex items-center gap-1 px-4 py-1 rounded bg-[#810000] text-white font-medium text-sm hover:bg-[#5d0000] disabled:bg-gray-300 disabled:text-gray-400"
             onClick={handleSubmit}
-            disabled={!audioBlob || isRecording || timeLeft === 0}
+            disabled={!audioBlob}
           >
             <span>Submit</span>
           </button>
@@ -262,6 +280,16 @@ export default function DynamicPage({ params }) {
         </div>
       </div>
       {renderPagination()}
+      <style jsx>{`
+        .dropdown-scroll::-webkit-scrollbar {
+          width: 4px;
+          background: #eee;
+        }
+        .dropdown-scroll::-webkit-scrollbar-thumb {
+          background: #dedede;
+          border-radius: 2px;
+        }
+      `}</style>
     </div>
   );
 }
