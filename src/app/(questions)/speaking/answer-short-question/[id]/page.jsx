@@ -75,7 +75,7 @@ export default function RepeatSentencePage({ params }) {
     async function getQuestions() {
       setLoading(true);
       try {
-        const res = await fetchWithAuth(`/test/speaking/repeat_sentence`);
+        const res = await fetchWithAuth(`/test/speaking/answer_short_question`);
         const data = await res.json();
         const arr = data?.questions && data.questions.length ? data.questions : FAKE_QUESTIONS;
         setQuestions(arr);
