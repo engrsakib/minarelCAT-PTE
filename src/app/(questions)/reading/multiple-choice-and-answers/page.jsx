@@ -20,7 +20,7 @@ function trimText(text, max = 34) {
   return text.slice(0, max - 1) + "…";
 }
 
-export default function ReadAloud() {
+export default function multipleChoiceAndAnswers() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
