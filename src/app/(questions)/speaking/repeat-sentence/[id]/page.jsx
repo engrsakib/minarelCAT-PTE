@@ -23,27 +23,28 @@ const AudioRecorder = dynamic(
   { ssr: false }
 );
 
-const RECORD_SECONDS = 35;
+const RECORD_SECONDS = 40; // Answer time
+const AUDIO_DURATION = 35; // For the audio player bar (UI, not actual duration)
+const PREPARE_SECONDS = 35; // Beginning time as per your latest request
 
-// Fake questions fallback (1-100 for pagination)
+// Fake fallback data for pagination
 const FAKE_QUESTIONS = Array.from({ length: 100 }, (_, i) => ({
   _id: String(1001635 + i),
   type: "speaking",
-  subtype: "read_aloud",
+  subtype: "repeat_sentence",
   heading: i === 0 ? "Parent Teacher Conference" : `Fake Heading ${i + 1}`,
   prompt:
     i === 0
       ? `Write an email to the manager of a restaurant inquiring about the process for making online reservations.
-
 In your email, include:
-
 - Ask for information on how the online reservation system works.
 - Clarify if special requests (e.g., dietary preferences or seating arrangements) can be made online.
 - Inquire about confirmation details and how far reservations should be made in advance.`
       : `Fake prompt for question #${i + 1}`,
+  audioUrl: "", // Put a fake audio url if needed
 }));
 
-export default function DynamicPage({ params }) {
+export default function RepeatSentencePage({ params }) {
   const { id } = params;
   const router = useRouter();
 
@@ -54,25 +55,29 @@ export default function DynamicPage({ params }) {
   const [loading, setLoading] = useState(true);
 
   // Timer
+  const [prepTime, setPrepTime] = useState(PREPARE_SECONDS);
+  const [isThinking, setIsThinking] = useState(true);
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const timerRef = useRef();
 
+  // Audio player
+  const [audioProgress, setAudioProgress] = useState(0);
+  const [audioPlaying, setAudioPlaying] = useState(false);
+  const audioRef = useRef();
+
   // Pagination dropdown
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Fetch all questions and find current index
+  // Fetch questions
   useEffect(() => {
     async function getQuestions() {
       setLoading(true);
       try {
-        const res = await fetchWithAuth(`/test/speaking/read_aloud`);
+        const res = await fetchWithAuth(`/test/speaking/repeat_sentence`);
         const data = await res.json();
-        const arr =
-          data?.questions && data.questions.length
-            ? data.questions
-            : FAKE_QUESTIONS;
+        const arr = data?.questions && data.questions.length ? data.questions : FAKE_QUESTIONS;
         setQuestions(arr);
         const idx = arr.findIndex((q) => q._id === id);
         setCurrentIdx(idx !== -1 ? idx : 0);
@@ -83,7 +88,10 @@ export default function DynamicPage({ params }) {
         setCurrentQ(FAKE_QUESTIONS[0]);
       }
       setLoading(false);
+      setPrepTime(PREPARE_SECONDS);
+      setIsThinking(true);
       setTimeLeft(RECORD_SECONDS);
+      setAudioProgress(0);
       setAudioBlob(null);
       setIsRecording(false);
     }
@@ -91,17 +99,62 @@ export default function DynamicPage({ params }) {
     // eslint-disable-next-line
   }, [id]);
 
-  // Timer logic
+  // Prepare/Thinking timer logic
+  useEffect(() => {
+    if (!isThinking) return;
+    if (prepTime === 0) {
+      setIsThinking(false);
+      setTimeout(() => {
+        if (audioRef.current) {
+          audioRef.current.currentTime = 0;
+          audioRef.current.play();
+        }
+      }, 500); // small delay after thinking
+      return;
+    }
+    timerRef.current = setTimeout(() => setPrepTime((t) => t - 1), 1000);
+    return () => clearTimeout(timerRef.current);
+  }, [isThinking, prepTime]);
+
+  // Answer timer logic
   useEffect(() => {
     if (!isRecording) return;
     if (timeLeft === 0) {
       setIsRecording(false);
-      // Timer stop, but allow submit and restart
       return;
     }
     timerRef.current = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearTimeout(timerRef.current);
   }, [isRecording, timeLeft]);
+
+  // Audio player progress bar
+  useEffect(() => {
+    if (!audioPlaying) return;
+    const handler = setInterval(() => {
+      if (!audioRef.current) return;
+      if (audioRef.current.ended || audioRef.current.paused) {
+        setAudioPlaying(false);
+        clearInterval(handler);
+        setIsRecording(true);
+        setTimeLeft(RECORD_SECONDS);
+      } else {
+        setAudioProgress(audioRef.current.currentTime);
+      }
+    }, 100);
+    return () => clearInterval(handler);
+  }, [audioPlaying]);
+
+  // Play/Pause audio
+  const handleAudioPlayPause = () => {
+    if (!audioRef.current) return;
+    if (audioPlaying) {
+      audioRef.current.pause();
+      setAudioPlaying(false);
+    } else {
+      audioRef.current.play();
+      setAudioPlaying(true);
+    }
+  };
 
   // react-mic will send blob to this
   const handleMicStop = (recorded) => {
@@ -115,9 +168,8 @@ export default function DynamicPage({ params }) {
     const formData = new FormData();
     formData.append("voice", audioBlob, "voice.wav");
     formData.append("questionId", currentQ._id);
-
     try {
-      await fetchWithAuth("/test/speaking/read_aloud/submit", {
+      await fetchWithAuth("/test/speaking/repeat_sentence/submit", {
         method: "POST",
         body: formData,
       });
@@ -130,7 +182,7 @@ export default function DynamicPage({ params }) {
   // Pagination controls
   const goToIndex = (idx) => {
     if (idx < 0 || idx >= questions.length) return;
-    router.push(`/question/read-aloud/${questions[idx]._id}`);
+    router.push(`/question/repeat-sentence/${questions[idx]._id}`);
     setDropdownOpen(false);
   };
 
@@ -193,10 +245,11 @@ export default function DynamicPage({ params }) {
   return (
     <div className="max-w-3xl mx-auto py-6 px-2 relative">
       <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
-        Read Aloud
+        Respond to a Situation
       </div>
       <p className="text-gray-700 mb-6">
-        Look at the text below. In 35 seconds, you must read this text aloud as naturally and clearly as possible. You have 35 seconds to read aloud.
+        Listen to and read a description of a situation. You will have 35 seconds to think about your answer. Then you will hear a beep. You will have 40 seconds to answer the question. <br />
+        Please answer as completely as you can.
       </p>
       {/* Question Heading */}
       <div className="bg-[#810000] text-white px-5 py-2 rounded mb-2 text-lg font-semibold tracking-wide flex items-center gap-2">
@@ -206,11 +259,53 @@ export default function DynamicPage({ params }) {
       </div>
       {/* Timer */}
       <div className="mb-2 text-[#810000] font-medium text-base">
-        Beginning in <span className="font-bold">{timeLeft} sec</span>
+        Beginning in <span className="font-bold">{isThinking ? prepTime : "0"}</span> sec
       </div>
       {/* Prompt */}
-      <div className="border border-[#810000] rounded p-4 mb-4 bg-white text-gray-900 whitespace-pre-line">
+      {/* <div className="border border-[#810000] rounded p-4 mb-4 bg-white text-gray-900 whitespace-pre-line">
         {currentQ.prompt}
+      </div> */}
+      {/* Audio Player */}
+      <div className="border border-[#810000] rounded p-4 mb-4 bg-[#faf9f9] flex flex-col items-center">
+        <div className="w-full flex items-center gap-2">
+          <button
+            className="w-12 h-12 rounded-full flex items-center justify-center shadow bg-[#810000] text-white hover:bg-[#5d0000] mr-3"
+            onClick={handleAudioPlayPause}
+            disabled={isThinking}
+            aria-label={audioPlaying ? "Pause audio" : "Play audio"}
+            style={{ minWidth: 48 }}
+          >
+            {audioPlaying ? (
+              // Pause icon
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" fill="currentColor" /><rect x="14" y="5" width="4" height="14" fill="currentColor" /></svg>
+            ) : (
+              // Play icon
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7L8 5Z"/></svg>
+            )}
+          </button>
+          <audio
+            ref={audioRef}
+            src={currentQ.audioUrl || ""}
+            preload="auto"
+            style={{ display: "none" }}
+            onEnded={() => setAudioPlaying(false)}
+            onPause={() => setAudioPlaying(false)}
+            onPlay={() => setAudioPlaying(true)}
+          />
+          <span className="text-xs text-gray-600">{audioProgress.toFixed(2).padStart(4, "0")}</span>
+          <div className="flex-1 h-2 rounded bg-gray-200 overflow-hidden relative">
+            <div
+              className="h-2 rounded bg-[#810000] transition-all duration-200"
+              style={{
+                width: `${((audioProgress || 0) / AUDIO_DURATION) * 100}%`,
+              }}
+            />
+          </div>
+          <span className="text-xs text-gray-600">{AUDIO_DURATION.toFixed(2)}</span>
+          <span className="ml-2">
+            <svg width="22" height="22" fill="#810000" viewBox="0 0 24 24"><path d="M17 7v10M21 9v6M13 5v14M9 7v10M5 9v6"/></svg>
+          </span>
+        </div>
       </div>
       {/* Audio Recorder */}
       <div className="border border-[#810000] rounded p-4 mb-6 bg-[#faf9f9] flex flex-col items-center">
@@ -260,13 +355,13 @@ export default function DynamicPage({ params }) {
           <button
             className="flex items-center gap-1 px-4 py-1 rounded bg-[#810000] text-white font-medium text-sm hover:bg-[#5d0000] disabled:bg-gray-300 disabled:text-gray-400"
             onClick={() => {
-              if (!isRecording && timeLeft > 0) {
+              if (!isRecording && timeLeft > 0 && !isThinking) {
                 setTimeLeft(RECORD_SECONDS);
                 setAudioBlob(null);
                 setIsRecording(true);
               }
             }}
-            disabled={isRecording || timeLeft === 0}
+            disabled={isRecording || timeLeft === 0 || isThinking || audioPlaying}
           >
             <span>Start</span>
           </button>
