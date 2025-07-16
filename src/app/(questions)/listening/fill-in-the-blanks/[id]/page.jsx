@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import AudioPlayer from "../../../../../components/audio/AudioPlayer";
 
 // 9:59 minutes in seconds
 const RECORD_SECONDS = 599;
@@ -227,6 +228,10 @@ export default function DynamicPage({ params }) {
           Remaining Time:{" "}
           <span className="font-bold">00: {formatTime(timeLeft)} sec</span>
         </span>
+      </div>
+      {/* Audio Player */}
+      <div className="border border-[#810000] rounded bg-[#faf9f9] p-5 mb-4 text-gray-900 text-base whitespace-pre-line">
+        <AudioPlayer src={currentQ.audio} />
       </div>
       {/* Prompt with answer dropdowns */}
       <div className="border border-[#810000] rounded bg-[#faf9f9] p-5 mb-4 text-gray-900 text-base whitespace-pre-line">
