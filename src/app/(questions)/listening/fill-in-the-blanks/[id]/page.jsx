@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
 import AudioPlayer from "../../../../../components/audio/AudioPlayer";
 
 // 9:59 minutes in seconds
@@ -60,7 +60,7 @@ export default function DynamicPage({ params }) {
   const [answers, setAnswers] = useState([]);
 
   // Pagination dropdown
-  // const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Fetch all questions and find current index
   useEffect(() => {
@@ -117,7 +117,6 @@ export default function DynamicPage({ params }) {
   // Submit handler
   const handleSubmit = async () => {
     if (!currentQ) return;
-    // In real scenario, send answers as array or keyed object
     const payload = {
       questionId: currentQ._id,
       answers,
@@ -136,41 +135,86 @@ export default function DynamicPage({ params }) {
     }
   };
 
-  // Pagination controls
+  // Pagination controls (sticky bottom right)
   const goToIndex = (idx) => {
     if (idx < 0 || idx >= questions.length) return;
     router.push(`/question/reading-writing-blanks/${questions[idx]._id}`);
-    // setDropdownOpen(false);
+    setDropdownOpen(false);
   };
 
   // Render pagination (bottom right, sticky dropdown)
   const renderPagination = () => (
-    <div className="flex items-center justify-end gap-2 mt-6">
-      <button
-        aria-label="Prev"
-        onClick={() => goToIndex(currentIdx - 1)}
-        disabled={currentIdx === 0}
-        className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
-      >
-        <ChevronLeft className="w-6 h-6" />
-      </button>
+    <div className="pagination-sticky">
       <div className="flex items-center gap-2">
-        <span className="rounded border border-[#810000] px-3 py-1 font-bold text-[#810000] bg-white">
-          {String(currentIdx + 1).padStart(3, "0")}
-        </span>
-        <span className="text-gray-500 font-medium">/</span>
-        <span className="rounded border border-[#810000] px-3 py-1 font-bold text-[#810000] bg-white">
-          {String(questions.length).padStart(3, "0")}
-        </span>
+        <button
+          aria-label="Prev"
+          onClick={() => goToIndex(currentIdx - 1)}
+          disabled={currentIdx === 0}
+          className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+        <div className="relative">
+          <button
+            className="rounded border border-[#810000] bg-white px-4 py-2 shadow text-[#810000] font-bold flex items-center gap-2"
+            onClick={() => setDropdownOpen((o) => !o)}
+          >
+            {String(currentIdx + 1).padStart(3, "0")}
+            {dropdownOpen ? (
+              <ChevronUp className="w-5 h-5" />
+            ) : (
+              <ChevronDown className="w-5 h-5" />
+            )}
+          </button>
+          {dropdownOpen && (
+            <div className="absolute left-0 bottom-12 w-44 max-h-64 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg z-50 dropdown-scroll">
+              {questions.slice(0, 100).map((q, i) => (
+                <button
+                  key={q._id}
+                  onClick={() => goToIndex(i)}
+                  className={`flex w-full px-4 py-2 text-left text-sm font-semibold transition
+                    ${
+                      i === currentIdx
+                        ? "bg-[#810000] text-white"
+                        : "hover:bg-[#f5eaea] text-[#810000]"
+                    }
+                  `}
+                >
+                  {String(i + 1).padStart(3, "0")}{" "}
+                  {q.heading && (
+                    <span className="ml-1 truncate w-24">{q.heading}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <button
+          aria-label="Next"
+          onClick={() => goToIndex(currentIdx + 1)}
+          disabled={currentIdx === questions.length - 1}
+          className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
+        >
+          <ChevronRight className="w-6 h-6" />
+        </button>
       </div>
-      <button
-        aria-label="Next"
-        onClick={() => goToIndex(currentIdx + 1)}
-        disabled={currentIdx === questions.length - 1}
-        className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
-      >
-        <ChevronRight className="w-6 h-6" />
-      </button>
+      <style jsx>{`
+        .pagination-sticky {
+          position: fixed;
+          right: 2.5rem;
+          bottom: 2.5rem;
+          z-index: 50;
+          background: transparent;
+        }
+        .dropdown-scroll::-webkit-scrollbar {
+          width: 4px;
+          background: #eee;
+        }
+        .dropdown-scroll::-webkit-scrollbar-thumb {
+          background: #dedede;
+          border-radius: 2px;
+        }
+      `}</style>
     </div>
   );
 
@@ -299,12 +343,6 @@ export default function DynamicPage({ params }) {
         </button>
       </div>
       {renderPagination()}
-      <style jsx>{`
-        select:disabled {
-          background: #eee;
-          color: #bbb;
-        }
-      `}</style>
     </div>
   );
 }

@@ -2,21 +2,49 @@
 import React, { useEffect, useState, useRef } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import AudioPlayer from "../../../../../components/audio/AudioPlayer";
+import dynamic from "next/dynamic";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 
-// 9:59 minutes in seconds
-const RECORD_SECONDS = 599;
+// Next.js-compatible dynamic import for react-mic
+const AudioRecorder = dynamic(
+  () =>
+    import("react-mic").then((mod) => {
+      return ({ onStop, record, ...props }) => (
+        <mod.ReactMic
+          record={record}
+          onStop={onStop}
+          strokeColor="#810000"
+          backgroundColor="#f9f9f9"
+          mimeType="audio/wav"
+          {...props}
+        />
+      );
+    }),
+  { ssr: false }
+);
+
+const RECORD_SECONDS = 35;
 
 // Fake questions fallback (1-100 for pagination)
 const FAKE_QUESTIONS = Array.from({ length: 100 }, (_, i) => ({
   _id: String(1001635 + i),
-  type: "spoken_summary",
-  heading: i === 0 ? "Skin Cancer" : `Fake Heading ${i + 1}`,
-  audio: `https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3`,
+  type: "speaking",
+  subtype: "read_aloud",
+  heading: i === 0 ? "Parent Teacher Conference" : `Fake Heading ${i + 1}`,
   prompt:
     i === 0
-      ? `You will hear a short lecture. Write a summary for a fellow student who was not present at the lecture. You should write 20 - 30 words. You have 8 minutes to finish this task. Your response will be judged on the quality of your writing and on how well your response presents the key points presented in the lecture.`
+      ? `Write an email to the manager of a restaurant inquiring about the process for making online reservations.
+
+In your email, include:
+
+- Ask for information on how the online reservation system works.
+- Clarify if special requests (e.g., dietary preferences or seating arrangements) can be made online.
+- Inquire about confirmation details and how far reservations should be made in advance.`
       : `Fake prompt for question #${i + 1}`,
 }));
 
@@ -24,26 +52,24 @@ export default function DynamicPage({ params }) {
   const { id } = params;
   const router = useRouter();
 
-  // State
   const [questions, setQuestions] = useState([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [currentQ, setCurrentQ] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Timer
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState(null);
   const timerRef = useRef();
-  const [timerStarted, setTimerStarted] = useState(false);
 
-  // Answer (text summary)
-  const [answer, setAnswer] = useState("");
+  // Pagination dropdown
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Fetch all questions and find current index
   useEffect(() => {
     async function getQuestions() {
       setLoading(true);
       try {
-        const res = await fetchWithAuth(`/test/spoken-summary`);
+        const res = await fetchWithAuth(`/test/speaking/read_aloud`);
         const data = await res.json();
         const arr =
           data?.questions && data.questions.length
@@ -53,47 +79,46 @@ export default function DynamicPage({ params }) {
         const idx = arr.findIndex((q) => q._id === id);
         setCurrentIdx(idx !== -1 ? idx : 0);
         setCurrentQ(arr[idx !== -1 ? idx : 0]);
-        setAnswer("");
       } catch {
         setQuestions(FAKE_QUESTIONS);
         setCurrentIdx(0);
         setCurrentQ(FAKE_QUESTIONS[0]);
-        setAnswer("");
       }
       setLoading(false);
       setTimeLeft(RECORD_SECONDS);
-      setTimerStarted(false);
+      setAudioBlob(null);
+      setIsRecording(false);
     }
     getQuestions();
     // eslint-disable-next-line
   }, [id]);
 
-  // Timer logic (start on page load)
+  // Timer logic
   useEffect(() => {
-    if (loading) return;
-    if (!timerStarted) setTimerStarted(true);
-  }, [loading]);
-
-  useEffect(() => {
-    if (!timerStarted) return;
-    if (timeLeft === 0) return;
+    if (!isRecording) return;
+    if (timeLeft === 0) {
+      setIsRecording(false);
+      return;
+    }
     timerRef.current = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearTimeout(timerRef.current);
-  }, [timerStarted, timeLeft]);
+  }, [isRecording, timeLeft]);
 
-  // Submit handler
+  const handleMicStop = (recorded) => {
+    setAudioBlob(recorded.blob);
+    setIsRecording(false);
+  };
+
   const handleSubmit = async () => {
-    if (!currentQ || !answer.trim()) return;
-    // Send answer as text
-    const payload = {
-      questionId: currentQ._id,
-      summary: answer.trim(),
-    };
+    if (!audioBlob || !currentQ) return;
+    const formData = new FormData();
+    formData.append("voice", audioBlob, "voice.wav");
+    formData.append("questionId", currentQ._id);
+
     try {
-      await fetchWithAuth("/test/spoken-summary/submit", {
+      await fetchWithAuth("/test/speaking/read_aloud/submit", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: formData,
       });
       alert(
         "Your answer has been submitted! (Demo: backend response not shown)"
@@ -103,49 +128,87 @@ export default function DynamicPage({ params }) {
     }
   };
 
-  // Pagination controls
+  // Pagination controls (sticky bottom right)
   const goToIndex = (idx) => {
     if (idx < 0 || idx >= questions.length) return;
-    router.push(`/question/spoken-summary/${questions[idx]._id}`);
+    router.push(`/question/read-aloud/${questions[idx]._id}`);
+    setDropdownOpen(false);
   };
 
   const renderPagination = () => (
-    <div className="flex items-center justify-end gap-2 mt-6">
-      <button
-        aria-label="Prev"
-        onClick={() => goToIndex(currentIdx - 1)}
-        disabled={currentIdx === 0}
-        className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
-      >
-        <ChevronLeft className="w-6 h-6" />
-      </button>
+    <div className="pagination-sticky">
       <div className="flex items-center gap-2">
-        <span className="rounded border border-[#810000] px-3 py-1 font-bold text-[#810000] bg-white">
-          {String(currentIdx + 1).padStart(3, "0")}
-        </span>
-        <span className="text-gray-500 font-medium">/</span>
-        <span className="rounded border border-[#810000] px-3 py-1 font-bold text-[#810000] bg-white">
-          {String(questions.length).padStart(3, "0")}
-        </span>
+        <button
+          aria-label="Prev"
+          onClick={() => goToIndex(currentIdx - 1)}
+          disabled={currentIdx === 0}
+          className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+        <div className="relative">
+          <button
+            className="rounded border border-[#810000] bg-white px-4 py-2 shadow text-[#810000] font-bold flex items-center gap-2"
+            onClick={() => setDropdownOpen((o) => !o)}
+          >
+            {String(currentIdx + 1).padStart(3, "0")}
+            {dropdownOpen ? (
+              <ChevronUp className="w-5 h-5" />
+            ) : (
+              <ChevronDown className="w-5 h-5" />
+            )}
+          </button>
+          {dropdownOpen && (
+            <div className="absolute left-0 bottom-12 w-44 max-h-64 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg z-50 dropdown-scroll">
+              {questions.slice(0, 100).map((q, i) => (
+                <button
+                  key={q._id}
+                  onClick={() => goToIndex(i)}
+                  className={`flex w-full px-4 py-2 text-left text-sm font-semibold transition
+                    ${
+                      i === currentIdx
+                        ? "bg-[#810000] text-white"
+                        : "hover:bg-[#f5eaea] text-[#810000]"
+                    }
+                  `}
+                >
+                  {String(i + 1).padStart(3, "0")}{" "}
+                  {q.heading && (
+                    <span className="ml-1 truncate w-24">{q.heading}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <button
+          aria-label="Next"
+          onClick={() => goToIndex(currentIdx + 1)}
+          disabled={currentIdx === questions.length - 1}
+          className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
+        >
+          <ChevronRight className="w-6 h-6" />
+        </button>
       </div>
-      <button
-        aria-label="Next"
-        onClick={() => goToIndex(currentIdx + 1)}
-        disabled={currentIdx === questions.length - 1}
-        className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
-      >
-        <ChevronRight className="w-6 h-6" />
-      </button>
+      <style jsx>{`
+        .pagination-sticky {
+          position: fixed;
+          right: 2.5rem;
+          bottom: 2.5rem;
+          z-index: 50;
+          background: transparent;
+        }
+        .dropdown-scroll::-webkit-scrollbar {
+          width: 4px;
+          background: #eee;
+        }
+        .dropdown-scroll::-webkit-scrollbar-thumb {
+          background: #dedede;
+          border-radius: 2px;
+        }
+      `}</style>
     </div>
   );
-
-  const formatTime = (sec) => {
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-  };
-
-  const wordCount = answer.trim() ? answer.trim().split(/\s+/).length : 0;
 
   if (loading || !currentQ) {
     return (
@@ -156,75 +219,101 @@ export default function DynamicPage({ params }) {
   }
 
   return (
-    <div className="w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
+    <div className="w-full lg:w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
       <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
-        Summarize Spoken Text
+        Read Aloud
       </div>
       <p className="text-gray-700 mb-6">
-        {currentQ.prompt}
+        Look at the text below. In 35 seconds, you must read this text aloud as
+        naturally and clearly as possible. You have 35 seconds to read aloud.
       </p>
       {/* Question Heading */}
-      <div className="flex items-center gap-2 mb-4">
-        <span className="rounded px-4 py-2 font-bold text-white bg-[#810000] text-base tracking-wide">
-          #{currentQ._id}
-        </span>
-        <span className="text-lg font-semibold text-[#810000]">
-          {currentQ.heading}
-        </span>
+      <div className="bg-[#810000] text-white px-5 py-2 rounded mb-2 text-lg font-semibold tracking-wide flex items-center gap-2">
+        <span>#{currentQ._id}</span>
+        <span>|</span>
+        <span>{currentQ.heading}</span>
       </div>
       {/* Timer */}
-      <div className="mb-4 flex items-center gap-3">
-        <span className="text-[#810000] font-medium text-base">
-          Remaining Time:{" "}
-          <span className="font-bold">00: {formatTime(timeLeft)} sec</span>
-        </span>
+      <div className="mb-2 text-[#810000] font-medium text-base">
+        Beginning in <span className="font-bold">{timeLeft} sec</span>
       </div>
-      {/* Audio Player */}
-      <div className="border border-[#810000] rounded p-4 mb-4 bg-white flex flex-col items-center">
-        <AudioPlayer src={currentQ.audio} />
+      {/* Prompt */}
+      <div className="border border-[#810000] rounded p-4 mb-4 bg-white text-gray-900 whitespace-pre-line">
+        {currentQ.prompt}
       </div>
-      {/* Textarea for summary */}
-      <div className="mb-2">
-        <textarea
-          className="w-full min-h-[120px] border-2 border-[#810000] rounded bg-white p-4 text-base text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#810000] resize-none"
-          placeholder="Type your summary here..."
-          value={answer}
-          onChange={e => setAnswer(e.target.value)}
-          maxLength={600}
-          disabled={timeLeft === 0}
-        />
-        <div className="text-right text-gray-600 text-sm mt-1 mr-1">
-          Word count: {wordCount.toString().padStart(2, "0")}
+      {/* Audio Recorder */}
+      <div className="border border-[#810000] rounded p-4 mb-6 bg-[#faf9f9] flex flex-col items-center">
+        <AudioRecorder record={isRecording} onStop={handleMicStop} />
+        <div className="flex items-center w-full gap-2 mt-2">
+          <span className="text-xs text-gray-600">
+            {new Date((RECORD_SECONDS - timeLeft) * 1000)
+              .toISOString()
+              .substr(14, 5)}
+          </span>
+          <div className="flex-1 h-2 rounded bg-gray-200 overflow-hidden relative">
+            <div
+              className="h-2 rounded bg-[#810000] transition-all duration-200"
+              style={{
+                width: `${
+                  ((RECORD_SECONDS - timeLeft) / RECORD_SECONDS) * 100
+                }%`,
+              }}
+            />
+          </div>
+          <span className="text-xs text-gray-600">
+            {new Date(RECORD_SECONDS * 1000).toISOString().substr(14, 5)}
+          </span>
+        </div>
+        <div className="mt-2 text-center w-full text-gray-500 font-medium">
+          {isRecording
+            ? "Recording... Speak now"
+            : audioBlob
+            ? "Recording complete"
+            : "Click Start to record"}
+        </div>
+        {/* Controls */}
+        <div className="flex gap-3 mt-4 flex-wrap">
+          <button
+            className="flex items-center gap-1 px-4 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-100 font-medium text-sm"
+            onClick={() => {
+              setAudioBlob(null);
+              setTimeLeft(RECORD_SECONDS);
+              setIsRecording(false);
+            }}
+            disabled={isRecording}
+          >
+            Restart
+          </button>
+          <button
+            className="flex items-center gap-1 px-4 py-1 rounded bg-[#810000] text-white font-medium text-sm hover:bg-[#5d0000] disabled:bg-gray-300 disabled:text-gray-400"
+            onClick={handleSubmit}
+            disabled={!audioBlob}
+          >
+            <span>Submit</span>
+          </button>
+          <button
+            className="flex items-center gap-1 px-4 py-1 rounded bg-[#810000] text-white font-medium text-sm hover:bg-[#5d0000] disabled:bg-gray-300 disabled:text-gray-400"
+            onClick={() => {
+              if (!isRecording && timeLeft > 0) {
+                setTimeLeft(RECORD_SECONDS);
+                setAudioBlob(null);
+                setIsRecording(true);
+              }
+            }}
+            disabled={isRecording || timeLeft === 0}
+          >
+            <span>Start</span>
+          </button>
+          <button
+            className="flex items-center gap-1 px-4 py-1 rounded bg-gray-500 text-white font-medium text-sm hover:bg-gray-700 disabled:bg-gray-300 disabled:text-gray-400"
+            onClick={() => setIsRecording(false)}
+            disabled={!isRecording}
+          >
+            <span>Stop</span>
+          </button>
         </div>
       </div>
-      {/* Controls */}
-      <div className="flex gap-3 mb-2 mt-3">
-        <button
-          className="flex items-center gap-1 px-6 py-2 rounded border border-gray-400 text-gray-700 hover:bg-gray-100 font-medium text-base"
-          onClick={() => {
-            setAnswer("");
-            setTimeLeft(RECORD_SECONDS);
-            setTimerStarted(false);
-          }}
-          disabled={timeLeft === 0}
-        >
-          Restart
-        </button>
-        <button
-          className="flex items-center gap-1 px-6 py-2 rounded border-2 border-[#810000] bg-white text-[#810000] font-semibold text-base hover:bg-[#810000] hover:text-white transition"
-          onClick={handleSubmit}
-          disabled={answer.trim() === "" || timeLeft === 0}
-        >
-          Submit
-        </button>
-      </div>
       {renderPagination()}
-      <style jsx>{`
-        textarea:disabled {
-          background: #eee;
-          color: #bbb;
-        }
-      `}</style>
     </div>
   );
 }
