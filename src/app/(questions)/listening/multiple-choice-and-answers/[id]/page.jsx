@@ -8,6 +8,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import AudioPlayer from "../../../../../components/audio/AudioPlayer";
 
 // 9:59 minutes in seconds
 const RECORD_SECONDS = 599;
@@ -17,6 +18,7 @@ const FAKE_QUESTIONS = Array.from({ length: 100 }, (_, i) => ({
   _id: String(1234560 + i),
   type: "mcq_multiple",
   heading: i === 0 ? "Skin Cancer" : `Fake Heading ${i + 1}`,
+  audio: "https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3",
   prompt:
     i === 0
       ? `Write an email to the manager of a restaurant inquiring about the process for making online reservations.
@@ -263,7 +265,7 @@ export default function DynamicPage({ params }) {
       </div>
       {/* Prompt */}
       <div className="border border-[#810000] rounded bg-[#faf9f9] p-5 mb-4 text-gray-900 text-base whitespace-pre-line">
-        {currentQ.prompt}
+        <AudioPlayer src={currentQ.audio} />
       </div>
       {/* MCQ Question */}
       <div className="border border-[#810000] rounded bg-white p-3 mb-2 text-[#810000] text-base font-semibold">
