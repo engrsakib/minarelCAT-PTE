@@ -98,7 +98,7 @@ export default function multipleChoiceAndAnswers() {
 
   // Handle Appeared click (can be customized for your use)
   const handleAppearedClick = (item) => {
-    router.push(`multiple-choice-and-answers/${item._id}`);
+    router.push(`/listening/multiple-choice-and-answers/${item._id}`);
   };
 
   const renderPageNumbers = () => {
