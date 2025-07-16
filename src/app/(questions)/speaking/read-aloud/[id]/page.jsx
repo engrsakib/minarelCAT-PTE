@@ -3,7 +3,12 @@ import React, { useEffect, useState, useRef } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 
 // Next.js-compatible dynamic import for react-mic
 const AudioRecorder = dynamic(
@@ -121,7 +126,9 @@ export default function DynamicPage({ params }) {
         method: "POST",
         body: formData,
       });
-      alert("Your answer has been submitted! (Demo: backend response not shown)");
+      alert(
+        "Your answer has been submitted! (Demo: backend response not shown)"
+      );
     } catch (e) {
       alert("Something went wrong! Try again.");
     }
@@ -143,7 +150,11 @@ export default function DynamicPage({ params }) {
           onClick={() => setDropdownOpen((o) => !o)}
         >
           {String(currentIdx + 1).padStart(3, "0")}
-          {dropdownOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+          {dropdownOpen ? (
+            <ChevronUp className="w-5 h-5" />
+          ) : (
+            <ChevronDown className="w-5 h-5" />
+          )}
         </button>
         {dropdownOpen && (
           <div className="absolute right-0 bottom-11 w-36 max-h-72 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg z-50">
@@ -152,10 +163,15 @@ export default function DynamicPage({ params }) {
                 key={q._id}
                 onClick={() => goToIndex(i)}
                 className={`flex w-full px-4 py-2 text-left text-sm font-semibold transition
-                  ${i === currentIdx ? "bg-[#810000] text-white" : "hover:bg-[#f5eaea] text-[#810000]"}
+                  ${
+                    i === currentIdx
+                      ? "bg-[#810000] text-white"
+                      : "hover:bg-[#f5eaea] text-[#810000]"
+                  }
                 `}
               >
-                {String(i + 1).padStart(3, "0")} {q.heading && (
+                {String(i + 1).padStart(3, "0")}{" "}
+                {q.heading && (
                   <span className="ml-1 truncate w-24">{q.heading}</span>
                 )}
               </button>
@@ -186,17 +202,20 @@ export default function DynamicPage({ params }) {
 
   if (loading || !currentQ) {
     return (
-      <div className="flex justify-center items-center min-h-[40vh]">Loading...</div>
+      <div className="flex justify-center items-center min-h-[40vh]">
+        Loading...
+      </div>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto py-6 px-2 relative">
+    <div className="w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
       <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
         Read Aloud
       </div>
       <p className="text-gray-700 mb-6">
-        Look at the text below. In 35 seconds, you must read this text aloud as naturally and clearly as possible. You have 35 seconds to read aloud.
+        Look at the text below. In 35 seconds, you must read this text aloud as
+        naturally and clearly as possible. You have 35 seconds to read aloud.
       </p>
       {/* Question Heading */}
       <div className="bg-[#810000] text-white px-5 py-2 rounded mb-2 text-lg font-semibold tracking-wide flex items-center gap-2">
@@ -214,21 +233,26 @@ export default function DynamicPage({ params }) {
       </div>
       {/* Audio Recorder */}
       <div className="border border-[#810000] rounded p-4 mb-6 bg-[#faf9f9] flex flex-col items-center">
-        <AudioRecorder
-          record={isRecording}
-          onStop={handleMicStop}
-        />
+        <AudioRecorder record={isRecording} onStop={handleMicStop} />
         <div className="flex items-center w-full gap-2 mt-2">
-          <span className="text-xs text-gray-600">{new Date((RECORD_SECONDS - timeLeft) * 1000).toISOString().substr(14, 5)}</span>
+          <span className="text-xs text-gray-600">
+            {new Date((RECORD_SECONDS - timeLeft) * 1000)
+              .toISOString()
+              .substr(14, 5)}
+          </span>
           <div className="flex-1 h-2 rounded bg-gray-200 overflow-hidden relative">
             <div
               className="h-2 rounded bg-[#810000] transition-all duration-200"
               style={{
-                width: `${((RECORD_SECONDS - timeLeft) / RECORD_SECONDS) * 100}%`,
+                width: `${
+                  ((RECORD_SECONDS - timeLeft) / RECORD_SECONDS) * 100
+                }%`,
               }}
             />
           </div>
-          <span className="text-xs text-gray-600">{new Date(RECORD_SECONDS * 1000).toISOString().substr(14, 5)}</span>
+          <span className="text-xs text-gray-600">
+            {new Date(RECORD_SECONDS * 1000).toISOString().substr(14, 5)}
+          </span>
         </div>
         <div className="mt-2 text-center w-full text-gray-500 font-medium">
           {isRecording

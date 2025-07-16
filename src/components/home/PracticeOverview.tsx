@@ -1,60 +1,64 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Mic, PenTool, BookOpen, Volume2 } from "lucide-react"
-import practiceData from "@/../public/data.json"
+import { useState } from "react";
+import { Mic, PenTool, BookOpen, Volume2 } from "lucide-react";
+import practiceData from "@/../public/data.json";
 
 interface PracticeData {
-  title: string
-  count: number
-  label: string
-  icon: string
-  details: string[]
+  title: string;
+  count: number;
+  label: string;
+  icon: string;
+  details: string[];
 }
 
 interface PracticeDataSet {
-  speaking: PracticeData
-  writing: PracticeData
-  reading: PracticeData
-  listening: PracticeData
+  speaking: PracticeData;
+  writing: PracticeData;
+  reading: PracticeData;
+  listening: PracticeData;
 }
 
-type PracticeType = keyof PracticeDataSet
+type PracticeType = keyof PracticeDataSet;
 
 export default function PracticeOverview() {
-  const [activeCategory, setActiveCategory] = useState<PracticeType>("speaking")
-  const data = practiceData as PracticeDataSet
+  const [activeCategory, setActiveCategory] =
+    useState<PracticeType>("speaking");
+  const data = practiceData as PracticeDataSet;
 
   const getActiveIcon = (category: PracticeType) => {
-    const iconClass = activeCategory === category ? "w-6 h-6 text-white" : "w-6 h-6 text-gray-600"
+    const iconClass =
+      activeCategory === category
+        ? "w-6 h-6 text-white"
+        : "w-6 h-6 text-gray-600";
     switch (category) {
       case "speaking":
-        return <Mic className={iconClass} />
+        return <Mic className={iconClass} />;
       case "writing":
-        return <PenTool className={iconClass} />
+        return <PenTool className={iconClass} />;
       case "reading":
-        return <BookOpen className={iconClass} />
+        return <BookOpen className={iconClass} />;
       case "listening":
-        return <Volume2 className={iconClass} />
+        return <Volume2 className={iconClass} />;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
-  const currentData = data[activeCategory]
+  const currentData = data[activeCategory];
 
   return (
     <div className="min-h-screen  relative overflow-hidden">
       {/* Decorative curved lines */}
-      
 
       <div className="relative z-10 container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            <span className="text-red-900">Practice</span> <span className="text-gray-800">Overview</span>
+            <span className="text-red-900">Practice</span>{" "}
+            <span className="text-gray-800">Overview</span>
           </h1>
-          <p className="text-gray-600 text-lg md:text-xl max-w-3xl mx-auto">
+          <p className="text-gray-600 text-lg md:text-xl w-full lg:max-w-[80%] mx-auto">
             Comprehensive PTE Training – Everything You Need to Succeed!
           </p>
         </div>
@@ -76,7 +80,9 @@ export default function PracticeOverview() {
             >
               <div className="flex flex-col items-center space-y-3">
                 {getActiveIcon(category)}
-                <span className="font-semibold text-sm md:text-base capitalize">{category} Practice</span>
+                <span className="font-semibold text-sm md:text-base capitalize">
+                  {category} Practice
+                </span>
               </div>
             </button>
           ))}
@@ -87,18 +93,26 @@ export default function PracticeOverview() {
           <div className="grid md:grid-cols-2 gap-8 items-start">
             {/* Left side - Number and label */}
             <div className="text-center md:text-left">
-              <div className="text-6xl md:text-8xl font-bold text-red-900 mb-2">{currentData.count}</div>
-              <div className="text-gray-600 text-lg md:text-xl font-medium">{currentData.label}</div>
+              <div className="text-6xl md:text-8xl font-bold text-red-900 mb-2">
+                {currentData.count}
+              </div>
+              <div className="text-gray-600 text-lg md:text-xl font-medium">
+                {currentData.label}
+              </div>
             </div>
 
             {/* Right side - Details */}
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-red-800 mb-6">{currentData.title}</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-red-800 mb-6">
+                {currentData.title}
+              </h2>
               <ul className="space-y-4">
                 {currentData.details.map((detail, index) => (
                   <li key={index} className="flex items-start space-x-3">
                     <div className="w-2 h-2 bg-gray-800 rounded-full mt-2 flex-shrink-0"></div>
-                    <span className="text-gray-700 text-base md:text-lg leading-relaxed">{detail}</span>
+                    <span className="text-gray-700 text-base md:text-lg leading-relaxed">
+                      {detail}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -107,5 +121,5 @@ export default function PracticeOverview() {
         </div>
       </div>
     </div>
-  )
+  );
 }

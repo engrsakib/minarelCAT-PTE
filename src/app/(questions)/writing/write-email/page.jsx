@@ -40,7 +40,9 @@ export default function repeatSentence() {
       let query = `page=${currentPage}&limit=${itemsPerPage}`;
       if (tab === "not_practiced") query += "&type=not_practiced";
       if (tab === "bookmark") query += "&type=bookmark";
-      const response = await fetchWithAuth(`${baseUrl}/test/writing/write_email?${query}`);
+      const response = await fetchWithAuth(
+        `${baseUrl}/test/writing/write_email?${query}`
+      );
       const result = await response.json();
       if (result?.questions) {
         setData(result.questions);
@@ -72,11 +74,14 @@ export default function repeatSentence() {
     setBookmarkLoadingId(item._id);
     try {
       // Toggle bookmark: if true, remove; if false, add
-      const res = await fetchWithAuth(`${baseUrl}/test/speaking/read_aloud/bookmark`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: item._id }),
-      });
+      const res = await fetchWithAuth(
+        `${baseUrl}/test/speaking/read_aloud/bookmark`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: item._id }),
+        }
+      );
       if (res.ok) {
         // Update only the specific item's bookmark status
         setData((prev) =>
@@ -87,7 +92,6 @@ export default function repeatSentence() {
       }
     } catch {
       // ignore error
-      
     }
     setBookmarkLoadingId(null);
   };
@@ -105,9 +109,10 @@ export default function repeatSentence() {
           key={i}
           onClick={() => handlePageChange(i)}
           className={`px-3 py-1 text-sm border rounded 
-            ${currentPage === i
-              ? "bg-[#810000] text-white border-[#810000]"
-              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+            ${
+              currentPage === i
+                ? "bg-[#810000] text-white border-[#810000]"
+                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
             }`}
         >
           {i}
@@ -120,13 +125,20 @@ export default function repeatSentence() {
   // Tab styles
   const tabStyle = (active) =>
     `px-4 py-2 text-base font-medium cursor-pointer border-b-2 transition-all duration-150
-    ${active ? "border-[#810000] text-[#810000] bg-white" : "border-transparent text-gray-400 bg-white hover:text-[#810000]"}`;
+    ${
+      active
+        ? "border-[#810000] text-[#810000] bg-white"
+        : "border-transparent text-gray-400 bg-white hover:text-[#810000]"
+    }`;
 
   return (
-    <div className="w-full max-w-[98vw] sm:max-w-3xl md:max-w-4xl lg:max-w-5xl mx-auto py-4 px-0 sm:px-4">
+    <div className="w-full lg:max-w-[80%] mx-auto py-4 px-0 sm:px-4">
       {/* Header */}
       <div className="bg-[#810000] text-white px-2 sm:px-4 py-3 rounded-md flex items-center justify-between mb-6">
-        <button onClick={() => router.push("/")} className="flex items-center gap-2">
+        <button
+          onClick={() => router.push("/")}
+          className="flex items-center gap-2"
+        >
           <ChevronLeft className="w-5 h-5" />
           <h1 className="text-lg font-medium whitespace-nowrap">Read Aloud</h1>
         </button>
@@ -153,9 +165,7 @@ export default function repeatSentence() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#810000]"></div>
           </div>
         ) : error ? (
-          <div className="text-center py-8 text-red-500">
-            {error}
-          </div>
+          <div className="text-center py-8 text-red-500">{error}</div>
         ) : (
           <div className="flex flex-col gap-4">
             {data && data.length > 0 ? (
@@ -172,14 +182,19 @@ export default function repeatSentence() {
                       <span className="text-[#810000] font-bold tracking-wider text-[15px] shrink-0 whitespace-nowrap">
                         #{item._id.slice(-6)}
                       </span>
-                      <span className="text-gray-400 font-bold text-xl shrink-0">|</span>
+                      <span className="text-gray-400 font-bold text-xl shrink-0">
+                        |
+                      </span>
                     </div>
                     <span
                       className="text-gray-700 font-medium truncate w-full block text-[15px] sm:text-base"
                       title={item.heading}
-                      style={{maxWidth: "100%"}}
+                      style={{ maxWidth: "100%" }}
                     >
-                      {trimText(item.heading, window.innerWidth < 480 ? 22 : 36)}
+                      {trimText(
+                        item.heading,
+                        window.innerWidth < 480 ? 22 : 36
+                      )}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 sm:gap-3 mt-1 sm:mt-0 w-full sm:w-auto justify-between sm:justify-end">
@@ -188,20 +203,29 @@ export default function repeatSentence() {
                       className="bg-[#810000] text-white px-4 sm:px-6 py-1 rounded-full font-medium text-base min-w-[72px] sm:min-w-[90px] text-center shadow hover:bg-[#5d0000] transition"
                       tabIndex={0}
                       aria-label="Go to details"
-                      style={{ fontSize: window.innerWidth < 480 ? "13px" : "" }}
+                      style={{
+                        fontSize: window.innerWidth < 480 ? "13px" : "",
+                      }}
                     >
                       Appeared
                     </button>
                     <button
                       onClick={() => handleBookmark(item)}
                       className={`border-2 rounded p-1 transition-all duration-200
-                        ${item.bookmark
-                          ? "bg-[#810000] border-[#810000] text-white"
-                          : "text-[#810000] border-transparent hover:border-[#810000] hover:bg-[#fceeee]"
+                        ${
+                          item.bookmark
+                            ? "bg-[#810000] border-[#810000] text-white"
+                            : "text-[#810000] border-transparent hover:border-[#810000] hover:bg-[#fceeee]"
                         }
-                        ${bookmarkLoadingId === item._id ? "opacity-60 pointer-events-none" : ""}
+                        ${
+                          bookmarkLoadingId === item._id
+                            ? "opacity-60 pointer-events-none"
+                            : ""
+                        }
                       `}
-                      aria-label={item.bookmark ? "Remove bookmark" : "Add bookmark"}
+                      aria-label={
+                        item.bookmark ? "Remove bookmark" : "Add bookmark"
+                      }
                       disabled={bookmarkLoadingId === item._id}
                     >
                       <Bookmark
@@ -215,7 +239,9 @@ export default function repeatSentence() {
                 </div>
               ))
             ) : (
-              <div className="text-center py-8 text-gray-500">No data available</div>
+              <div className="text-center py-8 text-gray-500">
+                No data available
+              </div>
             )}
           </div>
         )}
@@ -271,10 +297,14 @@ export default function repeatSentence() {
             max-width: 160px;
           }
           /* Smaller font for buttons and text on mobile */
-          button, .text-base, .font-medium, .text-lg {
+          button,
+          .text-base,
+          .font-medium,
+          .text-lg {
             font-size: 14px !important;
           }
-          .py-4, .sm\\:py-4 {
+          .py-4,
+          .sm\\:py-4 {
             padding-top: 0.65rem !important;
             padding-bottom: 0.65rem !important;
           }

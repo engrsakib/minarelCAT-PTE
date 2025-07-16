@@ -3,7 +3,12 @@ import React, { useEffect, useState, useRef } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 
 // Next.js-compatible dynamic import for react-mic
 const AudioRecorder = dynamic(
@@ -77,7 +82,10 @@ export default function RepeatSentencePage({ params }) {
       try {
         const res = await fetchWithAuth(`/test/speaking/answer_short_question`);
         const data = await res.json();
-        const arr = data?.questions && data.questions.length ? data.questions : FAKE_QUESTIONS;
+        const arr =
+          data?.questions && data.questions.length
+            ? data.questions
+            : FAKE_QUESTIONS;
         setQuestions(arr);
         const idx = arr.findIndex((q) => q._id === id);
         setCurrentIdx(idx !== -1 ? idx : 0);
@@ -173,7 +181,9 @@ export default function RepeatSentencePage({ params }) {
         method: "POST",
         body: formData,
       });
-      alert("Your answer has been submitted! (Demo: backend response not shown)");
+      alert(
+        "Your answer has been submitted! (Demo: backend response not shown)"
+      );
     } catch (e) {
       alert("Something went wrong! Try again.");
     }
@@ -195,7 +205,11 @@ export default function RepeatSentencePage({ params }) {
           onClick={() => setDropdownOpen((o) => !o)}
         >
           {String(currentIdx + 1).padStart(3, "0")}
-          {dropdownOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+          {dropdownOpen ? (
+            <ChevronUp className="w-5 h-5" />
+          ) : (
+            <ChevronDown className="w-5 h-5" />
+          )}
         </button>
         {dropdownOpen && (
           <div className="absolute right-0 bottom-11 w-36 max-h-72 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg z-50">
@@ -204,10 +218,15 @@ export default function RepeatSentencePage({ params }) {
                 key={q._id}
                 onClick={() => goToIndex(i)}
                 className={`flex w-full px-4 py-2 text-left text-sm font-semibold transition
-                  ${i === currentIdx ? "bg-[#810000] text-white" : "hover:bg-[#f5eaea] text-[#810000]"}
+                  ${
+                    i === currentIdx
+                      ? "bg-[#810000] text-white"
+                      : "hover:bg-[#f5eaea] text-[#810000]"
+                  }
                 `}
               >
-                {String(i + 1).padStart(3, "0")} {q.heading && (
+                {String(i + 1).padStart(3, "0")}{" "}
+                {q.heading && (
                   <span className="ml-1 truncate w-24">{q.heading}</span>
                 )}
               </button>
@@ -238,17 +257,21 @@ export default function RepeatSentencePage({ params }) {
 
   if (loading || !currentQ) {
     return (
-      <div className="flex justify-center items-center min-h-[40vh]">Loading...</div>
+      <div className="flex justify-center items-center min-h-[40vh]">
+        Loading...
+      </div>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto py-6 px-2 relative">
+    <div className="w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
       <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
         Respond to a Situation
       </div>
       <p className="text-gray-700 mb-6">
-        Listen to and read a description of a situation. You will have 35 seconds to think about your answer. Then you will hear a beep. You will have 40 seconds to answer the question. <br />
+        Listen to and read a description of a situation. You will have 35
+        seconds to think about your answer. Then you will hear a beep. You will
+        have 40 seconds to answer the question. <br />
         Please answer as completely as you can.
       </p>
       {/* Question Heading */}
@@ -259,7 +282,8 @@ export default function RepeatSentencePage({ params }) {
       </div>
       {/* Timer */}
       <div className="mb-2 text-[#810000] font-medium text-base">
-        Beginning in <span className="font-bold">{isThinking ? prepTime : "0"}</span> sec
+        Beginning in{" "}
+        <span className="font-bold">{isThinking ? prepTime : "0"}</span> sec
       </div>
       {/* Prompt */}
       {/* <div className="border border-[#810000] rounded p-4 mb-4 bg-white text-gray-900 whitespace-pre-line">
@@ -277,10 +301,27 @@ export default function RepeatSentencePage({ params }) {
           >
             {audioPlaying ? (
               // Pause icon
-              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" fill="currentColor" /><rect x="14" y="5" width="4" height="14" fill="currentColor" /></svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="28"
+                height="28"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <rect x="6" y="5" width="4" height="14" fill="currentColor" />
+                <rect x="14" y="5" width="4" height="14" fill="currentColor" />
+              </svg>
             ) : (
               // Play icon
-              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7L8 5Z"/></svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="28"
+                height="28"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path fill="currentColor" d="M8 5v14l11-7L8 5Z" />
+              </svg>
             )}
           </button>
           <audio
@@ -292,7 +333,9 @@ export default function RepeatSentencePage({ params }) {
             onPause={() => setAudioPlaying(false)}
             onPlay={() => setAudioPlaying(true)}
           />
-          <span className="text-xs text-gray-600">{audioProgress.toFixed(2).padStart(4, "0")}</span>
+          <span className="text-xs text-gray-600">
+            {audioProgress.toFixed(2).padStart(4, "0")}
+          </span>
           <div className="flex-1 h-2 rounded bg-gray-200 overflow-hidden relative">
             <div
               className="h-2 rounded bg-[#810000] transition-all duration-200"
@@ -301,29 +344,38 @@ export default function RepeatSentencePage({ params }) {
               }}
             />
           </div>
-          <span className="text-xs text-gray-600">{AUDIO_DURATION.toFixed(2)}</span>
+          <span className="text-xs text-gray-600">
+            {AUDIO_DURATION.toFixed(2)}
+          </span>
           <span className="ml-2">
-            <svg width="22" height="22" fill="#810000" viewBox="0 0 24 24"><path d="M17 7v10M21 9v6M13 5v14M9 7v10M5 9v6"/></svg>
+            <svg width="22" height="22" fill="#810000" viewBox="0 0 24 24">
+              <path d="M17 7v10M21 9v6M13 5v14M9 7v10M5 9v6" />
+            </svg>
           </span>
         </div>
       </div>
       {/* Audio Recorder */}
       <div className="border border-[#810000] rounded p-4 mb-6 bg-[#faf9f9] flex flex-col items-center">
-        <AudioRecorder
-          record={isRecording}
-          onStop={handleMicStop}
-        />
+        <AudioRecorder record={isRecording} onStop={handleMicStop} />
         <div className="flex items-center w-full gap-2 mt-2">
-          <span className="text-xs text-gray-600">{new Date((RECORD_SECONDS - timeLeft) * 1000).toISOString().substr(14, 5)}</span>
+          <span className="text-xs text-gray-600">
+            {new Date((RECORD_SECONDS - timeLeft) * 1000)
+              .toISOString()
+              .substr(14, 5)}
+          </span>
           <div className="flex-1 h-2 rounded bg-gray-200 overflow-hidden relative">
             <div
               className="h-2 rounded bg-[#810000] transition-all duration-200"
               style={{
-                width: `${((RECORD_SECONDS - timeLeft) / RECORD_SECONDS) * 100}%`,
+                width: `${
+                  ((RECORD_SECONDS - timeLeft) / RECORD_SECONDS) * 100
+                }%`,
               }}
             />
           </div>
-          <span className="text-xs text-gray-600">{new Date(RECORD_SECONDS * 1000).toISOString().substr(14, 5)}</span>
+          <span className="text-xs text-gray-600">
+            {new Date(RECORD_SECONDS * 1000).toISOString().substr(14, 5)}
+          </span>
         </div>
         <div className="mt-2 text-center w-full text-gray-500 font-medium">
           {isRecording
@@ -361,7 +413,9 @@ export default function RepeatSentencePage({ params }) {
                 setIsRecording(true);
               }
             }}
-            disabled={isRecording || timeLeft === 0 || isThinking || audioPlaying}
+            disabled={
+              isRecording || timeLeft === 0 || isThinking || audioPlaying
+            }
           >
             <span>Start</span>
           </button>
