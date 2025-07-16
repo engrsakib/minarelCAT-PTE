@@ -9,6 +9,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import AudioPlayer from "../../../../../components/audio/AudioPlayer";
 
 // Next.js-compatible dynamic import for react-mic
 const AudioRecorder = dynamic(
@@ -38,6 +39,7 @@ const FAKE_QUESTIONS = Array.from({ length: 100 }, (_, i) => ({
   type: "speaking",
   subtype: "repeat_sentence",
   heading: i === 0 ? "Parent Teacher Conference" : `Fake Heading ${i + 1}`,
+  audio: `https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3`,
   prompt:
     i === 0
       ? `Write an email to the manager of a restaurant inquiring about the process for making online reservations.
@@ -294,66 +296,7 @@ export default function RepeatSentencePage({ params }) {
       {/* Audio Player */}
       <div className="border border-[#810000] rounded p-4 mb-4 bg-[#faf9f9] flex flex-col items-center">
         <div className="w-full flex items-center gap-2">
-          <button
-            className="w-12 h-12 rounded-full flex items-center justify-center shadow bg-[#810000] text-white hover:bg-[#5d0000] mr-3"
-            onClick={handleAudioPlayPause}
-            disabled={isThinking}
-            aria-label={audioPlaying ? "Pause audio" : "Play audio"}
-            style={{ minWidth: 48 }}
-          >
-            {audioPlaying ? (
-              // Pause icon
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="28"
-                height="28"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <rect x="6" y="5" width="4" height="14" fill="currentColor" />
-                <rect x="14" y="5" width="4" height="14" fill="currentColor" />
-              </svg>
-            ) : (
-              // Play icon
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="28"
-                height="28"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path fill="currentColor" d="M8 5v14l11-7L8 5Z" />
-              </svg>
-            )}
-          </button>
-          <audio
-            ref={audioRef}
-            src={currentQ.audioUrl || ""}
-            preload="auto"
-            style={{ display: "none" }}
-            onEnded={() => setAudioPlaying(false)}
-            onPause={() => setAudioPlaying(false)}
-            onPlay={() => setAudioPlaying(true)}
-          />
-          <span className="text-xs text-gray-600">
-            {audioProgress.toFixed(2).padStart(4, "0")}
-          </span>
-          <div className="flex-1 h-2 rounded bg-gray-200 overflow-hidden relative">
-            <div
-              className="h-2 rounded bg-[#810000] transition-all duration-200"
-              style={{
-                width: `${((audioProgress || 0) / AUDIO_DURATION) * 100}%`,
-              }}
-            />
-          </div>
-          <span className="text-xs text-gray-600">
-            {AUDIO_DURATION.toFixed(2)}
-          </span>
-          <span className="ml-2">
-            <svg width="22" height="22" fill="#810000" viewBox="0 0 24 24">
-              <path d="M17 7v10M21 9v6M13 5v14M9 7v10M5 9v6" />
-            </svg>
-          </span>
+          <AudioPlayer src={currentQ.audio} />
         </div>
       </div>
       {/* Audio Recorder */}
