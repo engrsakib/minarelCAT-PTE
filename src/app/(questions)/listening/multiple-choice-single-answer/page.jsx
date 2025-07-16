@@ -41,7 +41,7 @@ export default function ReadAloud() {
       if (tab === "not_practiced") query += "&type=not_practiced";
       if (tab === "bookmark") query += "&type=bookmark";
       const response = await fetchWithAuth(
-        `${baseUrl}/test/reading/mcq_single?${query}`
+        `${baseUrl}/test/listening/multiple-choice-single-answers?${query}`
       );
       const result = await response.json();
       if (result?.questions) {
@@ -98,7 +98,7 @@ export default function ReadAloud() {
 
   // Handle Appeared click (can be customized for your use)
   const handleAppearedClick = (item) => {
-    router.push(`/reading/multiple-choice-single-answer/${item._id}`);
+    router.push(`/listening/multiple-choice-single-answer/${item._id}`);
   };
 
   const renderPageNumbers = () => {
