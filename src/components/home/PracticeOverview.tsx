@@ -58,7 +58,7 @@ export default function PracticeOverview() {
             <span className="text-red-900">Practice</span>{" "}
             <span className="text-gray-800">Overview</span>
           </h1>
-          <p className="text-gray-600 text-lg md:text-xl w-full lg:max-w-[80%] mx-auto">
+          <p className="text-gray-600 text-lg md:text-xl w-full lg:w-full lg:max-w-[80%] mx-auto">
             Comprehensive PTE Training – Everything You Need to Succeed!
           </p>
         </div>

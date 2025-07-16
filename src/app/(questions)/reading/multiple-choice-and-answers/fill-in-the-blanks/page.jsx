@@ -132,7 +132,7 @@ export default function ReadAloud() {
     }`;
 
   return (
-    <div className="w-full lg:max-w-[80%] mx-auto py-4 px-0 sm:px-4">
+    <div className="w-full lg:w-full lg:max-w-[80%] mx-auto py-4 px-0 sm:px-4">
       {/* Header */}
       <div className="bg-[#810000] text-white px-2 sm:px-4 py-3 rounded-md flex items-center justify-between mb-6">
         <button

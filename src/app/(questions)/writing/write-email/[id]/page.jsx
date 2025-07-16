@@ -217,7 +217,7 @@ export default function RepeatSentencePage({ params }) {
   }
 
   return (
-    <div className="w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
+    <div className="w-full lg:w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
       <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
         Respond to a Situation (Writing)
       </div>

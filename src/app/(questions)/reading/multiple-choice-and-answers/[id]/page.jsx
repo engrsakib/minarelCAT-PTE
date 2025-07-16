@@ -2,7 +2,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 
 // 9:59 minutes in seconds
 const RECORD_SECONDS = 599;
@@ -99,11 +104,11 @@ export default function DynamicPage({ params }) {
   }, [timerStarted, timeLeft]);
 
   // Handle option change (multiple)
-  const handleOptionChange = idx => {
-    setSelected(prev => {
+  const handleOptionChange = (idx) => {
+    setSelected((prev) => {
       if (prev.includes(idx)) {
         // deselect if already selected
-        return prev.filter(i => i !== idx);
+        return prev.filter((i) => i !== idx);
       } else {
         // select new
         return [...prev, idx];
@@ -124,7 +129,9 @@ export default function DynamicPage({ params }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      alert("Your answer has been submitted! (Demo: backend response not shown)");
+      alert(
+        "Your answer has been submitted! (Demo: backend response not shown)"
+      );
     } catch (e) {
       alert("Something went wrong! Try again.");
     }
@@ -139,7 +146,11 @@ export default function DynamicPage({ params }) {
           onClick={() => setDropdownOpen((o) => !o)}
         >
           {String(currentIdx + 1).padStart(3, "0")}
-          {dropdownOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+          {dropdownOpen ? (
+            <ChevronUp className="w-5 h-5" />
+          ) : (
+            <ChevronDown className="w-5 h-5" />
+          )}
         </button>
         {dropdownOpen && (
           <div className="absolute right-0 bottom-11 w-36 max-h-72 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg z-50 dropdown-scroll">
@@ -151,10 +162,15 @@ export default function DynamicPage({ params }) {
                   setDropdownOpen(false);
                 }}
                 className={`flex w-full px-4 py-2 text-left text-sm font-semibold transition
-                  ${i === currentIdx ? "bg-[#810000] text-white" : "hover:bg-[#f5eaea] text-[#810000]"}
+                  ${
+                    i === currentIdx
+                      ? "bg-[#810000] text-white"
+                      : "hover:bg-[#f5eaea] text-[#810000]"
+                  }
                 `}
               >
-                {String(i + 1).padStart(3, "0")} {q.heading && (
+                {String(i + 1).padStart(3, "0")}{" "}
+                {q.heading && (
                   <span className="ml-1 truncate w-24">{q.heading}</span>
                 )}
               </button>
@@ -167,7 +183,9 @@ export default function DynamicPage({ params }) {
           aria-label="Prev"
           onClick={() => {
             if (currentIdx > 0) {
-              router.push(`/question/mcq-multiple/${questions[currentIdx - 1]._id}`);
+              router.push(
+                `/question/mcq-multiple/${questions[currentIdx - 1]._id}`
+              );
             }
           }}
           disabled={currentIdx === 0}
@@ -179,7 +197,9 @@ export default function DynamicPage({ params }) {
           aria-label="Next"
           onClick={() => {
             if (currentIdx < questions.length - 1) {
-              router.push(`/question/mcq-multiple/${questions[currentIdx + 1]._id}`);
+              router.push(
+                `/question/mcq-multiple/${questions[currentIdx + 1]._id}`
+              );
             }
           }}
           disabled={currentIdx === questions.length - 1}
@@ -210,29 +230,35 @@ export default function DynamicPage({ params }) {
 
   if (loading || !currentQ) {
     return (
-      <div className="flex justify-center items-center min-h-[40vh]">Loading...</div>
+      <div className="flex justify-center items-center min-h-[40vh]">
+        Loading...
+      </div>
     );
   }
 
   return (
-    <div className="max-w-[80%] mx-auto py-6 px-2 relative">
+    <div className="w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
       <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
         Multiple Choice &amp; Multiple answer
       </div>
       <p className="text-gray-700 mb-6">
-        Read the text and answer the multiple-choice question by selecting all correct responses. You may select more than one response.
+        Read the text and answer the multiple-choice question by selecting all
+        correct responses. You may select more than one response.
       </p>
       {/* Question Heading */}
       <div className="flex items-center gap-2 mb-4">
         <span className="rounded px-4 py-2 font-bold text-white bg-[#810000] text-base tracking-wide">
           #{currentQ._id}
         </span>
-        <span className="text-lg font-semibold text-[#810000]">{currentQ.heading}</span>
+        <span className="text-lg font-semibold text-[#810000]">
+          {currentQ.heading}
+        </span>
       </div>
       {/* Timer */}
       <div className="mb-4 flex items-center gap-3">
         <span className="text-[#810000] font-medium text-base">
-          Remaining Time: <span className="font-bold">00: {formatTime(timeLeft)} sec</span>
+          Remaining Time:{" "}
+          <span className="font-bold">00: {formatTime(timeLeft)} sec</span>
         </span>
       </div>
       {/* Prompt */}

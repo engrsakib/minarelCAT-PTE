@@ -26,12 +26,17 @@ Did you know there are going to be (c) ____________ for summer clerkship trainin
 Lisa: Well, don't forget, you're only about 25% of the courses at this stage is elective-based and you'll still have that core of subjects - you, legal institutions, (e) ____________ property law, general commercial and factors law, all of which would be of interest to a lot of firms. So if I were you, which I'm not, I'd stay put with what you're thinking on and enjoy the chance to complete some work in areas that will be, to pursue. Don't you think? There's an awful lot of law in this profession where you'll be undertaking long, stressful hours on projects that don't really interest you as much.`
       : `Fake prompt for question #${i + 1}`,
   options: [
-    ["Taxation Law", "Company Law", "Intellectual Property", "Constitutional Law"],
+    [
+      "Taxation Law",
+      "Company Law",
+      "Intellectual Property",
+      "Constitutional Law",
+    ],
     ["Discipline", "Subject", "Area", "Course"],
     ["Vacancies", "Positions", "Options", "Offers"],
     ["Firm", "Chamber", "Practice", "Institution"],
     ["Intellectual", "Corporate", "Family", "International"],
-  ]
+  ],
 }));
 
 export default function DynamicPage({ params }) {
@@ -70,7 +75,9 @@ export default function DynamicPage({ params }) {
         const idx = arr.findIndex((q) => q._id === id);
         setCurrentIdx(idx !== -1 ? idx : 0);
         setCurrentQ(arr[idx !== -1 ? idx : 0]);
-        setAnswers(Array(arr[idx !== -1 ? idx : 0]?.options?.length || 0).fill(""));
+        setAnswers(
+          Array(arr[idx !== -1 ? idx : 0]?.options?.length || 0).fill("")
+        );
       } catch {
         setQuestions(FAKE_QUESTIONS);
         setCurrentIdx(0);
@@ -99,7 +106,7 @@ export default function DynamicPage({ params }) {
   }, [timerStarted, timeLeft]);
 
   // Answer change handler
-  const handleAnswerChange = idx => e => {
+  const handleAnswerChange = (idx) => (e) => {
     const arr = [...answers];
     arr[idx] = e.target.value;
     setAnswers(arr);
@@ -111,7 +118,7 @@ export default function DynamicPage({ params }) {
     // In real scenario, send answers as array or keyed object
     const payload = {
       questionId: currentQ._id,
-      answers
+      answers,
     };
     try {
       await fetchWithAuth("/test/reading-writing-blanks/submit", {
@@ -119,7 +126,9 @@ export default function DynamicPage({ params }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      alert("Your answer has been submitted! (Demo: backend response not shown)");
+      alert(
+        "Your answer has been submitted! (Demo: backend response not shown)"
+      );
     } catch (e) {
       alert("Something went wrong! Try again.");
     }
@@ -144,9 +153,13 @@ export default function DynamicPage({ params }) {
         <ChevronLeft className="w-6 h-6" />
       </button>
       <div className="flex items-center gap-2">
-        <span className="rounded border border-[#810000] px-3 py-1 font-bold text-[#810000] bg-white">{String(currentIdx + 1).padStart(3, "0")}</span>
+        <span className="rounded border border-[#810000] px-3 py-1 font-bold text-[#810000] bg-white">
+          {String(currentIdx + 1).padStart(3, "0")}
+        </span>
         <span className="text-gray-500 font-medium">/</span>
-        <span className="rounded border border-[#810000] px-3 py-1 font-bold text-[#810000] bg-white">{String(questions.length).padStart(3, "0")}</span>
+        <span className="rounded border border-[#810000] px-3 py-1 font-bold text-[#810000] bg-white">
+          {String(questions.length).padStart(3, "0")}
+        </span>
       </div>
       <button
         aria-label="Next"
@@ -168,7 +181,9 @@ export default function DynamicPage({ params }) {
 
   if (loading || !currentQ) {
     return (
-      <div className="flex justify-center items-center min-h-[40vh]">Loading...</div>
+      <div className="flex justify-center items-center min-h-[40vh]">
+        Loading...
+      </div>
     );
   }
 
@@ -188,24 +203,28 @@ export default function DynamicPage({ params }) {
   splitParts.push(prompt.slice(cursor));
 
   return (
-    <div className="max-w-[80%] mx-auto py-6 px-2 relative">
+    <div className="w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
       <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
         Reading & Writing Blanks
       </div>
       <p className="text-gray-700 mb-6">
-        Below is a text with blanks. Click on each blank, a list of choices will appear. Select the appropriate answer choice for each blank.
+        Below is a text with blanks. Click on each blank, a list of choices will
+        appear. Select the appropriate answer choice for each blank.
       </p>
       {/* Question Heading */}
       <div className="flex items-center gap-2 mb-4">
         <span className="rounded px-4 py-2 font-bold text-white bg-[#810000] text-base tracking-wide">
           #{currentQ._id}
         </span>
-        <span className="text-lg font-semibold text-[#810000]">{currentQ.heading}</span>
+        <span className="text-lg font-semibold text-[#810000]">
+          {currentQ.heading}
+        </span>
       </div>
       {/* Timer */}
       <div className="mb-4 flex items-center gap-3">
         <span className="text-[#810000] font-medium text-base">
-          Remaining Time: <span className="font-bold">00: {formatTime(timeLeft)} sec</span>
+          Remaining Time:{" "}
+          <span className="font-bold">00: {formatTime(timeLeft)} sec</span>
         </span>
       </div>
       {/* Prompt with answer dropdowns */}
@@ -215,7 +234,9 @@ export default function DynamicPage({ params }) {
             {part}
             {i < blanks.length && (
               <span className="inline-block align-middle mx-1">
-                <span className="font-bold text-[#810000] mr-1">{blanks[i]}</span>
+                <span className="font-bold text-[#810000] mr-1">
+                  {blanks[i]}
+                </span>
                 {/* nothing here, options below */}
               </span>
             )}
@@ -231,15 +252,20 @@ export default function DynamicPage({ params }) {
               onChange={handleAnswerChange(i)}
               className="w-full border border-[#810000] bg-white rounded px-2 py-2 text-[#810000] font-semibold focus:outline-none focus:ring-2 focus:ring-[#810000] appearance-none mb-1"
               style={{
-                backgroundImage: "url(\"data:image/svg+xml;charset=UTF-8,%3Csvg width='24' height='24' fill='none' stroke='%23810000' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
+                backgroundImage:
+                  "url(\"data:image/svg+xml;charset=UTF-8,%3Csvg width='24' height='24' fill='none' stroke='%23810000' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
                 backgroundPosition: "right 0.75rem center",
                 backgroundRepeat: "no-repeat",
-                backgroundSize: "1em"
+                backgroundSize: "1em",
               }}
             >
-              <option value="">{`(${String.fromCharCode(97 + i)})Select answer`}</option>
+              <option value="">{`(${String.fromCharCode(
+                97 + i
+              )})Select answer`}</option>
               {opts.map((opt, j) => (
-                <option key={j} value={opt}>{opt}</option>
+                <option key={j} value={opt}>
+                  {opt}
+                </option>
               ))}
             </select>
           </div>

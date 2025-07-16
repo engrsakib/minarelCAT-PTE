@@ -3,7 +3,12 @@ import React, { useEffect, useState, useRef } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 
 const FAKE_QUESTIONS = Array.from({ length: 100 }, (_, i) => ({
   _id: String(1001635 + i),
@@ -53,7 +58,10 @@ export default function RepeatSentencePage({ params }) {
       try {
         const res = await fetchWithAuth(`/test/writing/write_essay`);
         const data = await res.json();
-        const arr = data?.questions && data.questions.length ? data.questions : FAKE_QUESTIONS;
+        const arr =
+          data?.questions && data.questions.length
+            ? data.questions
+            : FAKE_QUESTIONS;
         setQuestions(arr);
         const idx = arr.findIndex((q) => q._id === id);
         setCurrentIdx(idx !== -1 ? idx : 0);
@@ -119,7 +127,9 @@ export default function RepeatSentencePage({ params }) {
         method: "POST",
         body: formData,
       });
-      alert("Your answer has been submitted! (Demo: backend response not shown)");
+      alert(
+        "Your answer has been submitted! (Demo: backend response not shown)"
+      );
     } catch (e) {
       alert("Something went wrong! Try again.");
     }
@@ -141,7 +151,11 @@ export default function RepeatSentencePage({ params }) {
           onClick={() => setDropdownOpen((o) => !o)}
         >
           {String(currentIdx + 1).padStart(3, "0")}
-          {dropdownOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+          {dropdownOpen ? (
+            <ChevronUp className="w-5 h-5" />
+          ) : (
+            <ChevronDown className="w-5 h-5" />
+          )}
         </button>
         {dropdownOpen && (
           <div className="absolute right-0 bottom-11 w-36 max-h-72 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg z-50">
@@ -150,10 +164,15 @@ export default function RepeatSentencePage({ params }) {
                 key={q._id}
                 onClick={() => goToIndex(i)}
                 className={`flex w-full px-4 py-2 text-left text-sm font-semibold transition
-                  ${i === currentIdx ? "bg-[#810000] text-white" : "hover:bg-[#f5eaea] text-[#810000]"}
+                  ${
+                    i === currentIdx
+                      ? "bg-[#810000] text-white"
+                      : "hover:bg-[#f5eaea] text-[#810000]"
+                  }
                 `}
               >
-                {String(i + 1).padStart(3, "0")} {q.heading && (
+                {String(i + 1).padStart(3, "0")}{" "}
+                {q.heading && (
                   <span className="ml-1 truncate w-24">{q.heading}</span>
                 )}
               </button>
@@ -186,22 +205,26 @@ export default function RepeatSentencePage({ params }) {
   const formatTime = (sec) => {
     const m = Math.floor(sec / 60);
     const s = sec % 60;
-    return `${m}:${s.toString().padStart(2, '0')}`;
+    return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
   if (loading || !currentQ) {
     return (
-      <div className="flex justify-center items-center min-h-[40vh]">Loading...</div>
+      <div className="flex justify-center items-center min-h-[40vh]">
+        Loading...
+      </div>
     );
   }
 
   return (
-    <div className="w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
+    <div className="w-full lg:w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
       <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
         Respond to a Situation (Writing)
       </div>
       <p className="text-gray-700 mb-6">
-        Read a description of a situation. You will have <span className="font-bold">9:59 minutes</span> to write your answer. <br />
+        Read a description of a situation. You will have{" "}
+        <span className="font-bold">9:59 minutes</span> to write your answer.{" "}
+        <br />
         Please answer as completely as you can. (Max {WORD_LIMIT} words)
       </p>
       {/* Question Heading */}
@@ -212,7 +235,15 @@ export default function RepeatSentencePage({ params }) {
       </div>
       {/* Timer */}
       <div className="mb-2 text-[#810000] font-medium text-base flex items-center gap-2">
-        <svg width="21" height="21" fill="#810000" className="inline" viewBox="0 0 24 24"><path d="M12 7v5l4 2M12 1a11 11 0 1 1 0 22 11 11 0 0 1 0-22Z"/></svg>
+        <svg
+          width="21"
+          height="21"
+          fill="#810000"
+          className="inline"
+          viewBox="0 0 24 24"
+        >
+          <path d="M12 7v5l4 2M12 1a11 11 0 1 1 0 22 11 11 0 0 1 0-22Z" />
+        </svg>
         <span className="font-bold text-lg">{formatTime(writingTime)}</span>
       </div>
       {/* Prompt */}
@@ -264,15 +295,22 @@ export default function RepeatSentencePage({ params }) {
         <button
           className="flex items-center gap-1 px-4 py-1 rounded bg-[#810000] text-white font-medium text-sm hover:bg-[#5d0000] disabled:bg-gray-300 disabled:text-gray-400"
           onClick={handleSubmit}
-          disabled={!answer.trim() || wordCount > WORD_LIMIT || writingTime === 0}
+          disabled={
+            !answer.trim() || wordCount > WORD_LIMIT || writingTime === 0
+          }
         >
           <span>Submit</span>
         </button>
       </div>
       {renderPagination()}
       <style jsx>{`
-        textarea::placeholder { color: #bbb; }
-        textarea:disabled { background: #f5f5f5; color: #aaa; }
+        textarea::placeholder {
+          color: #bbb;
+        }
+        textarea:disabled {
+          background: #f5f5f5;
+          color: #aaa;
+        }
       `}</style>
     </div>
   );

@@ -2,7 +2,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 
 // 9:59 minutes in seconds
 const RECORD_SECONDS = 599;
@@ -141,7 +146,7 @@ export default function DynamicPage({ params }) {
 
   // Allow reordering inside target
   const handleDragOverTarget = (overIdx) => {
-    if (!dragged || !(!dragged.fromSource)) return;
+    if (!dragged || !!dragged.fromSource) return;
     setTarget((prev) => {
       const arr = prev.slice();
       arr.splice(dragged.idx, 1);
@@ -165,7 +170,9 @@ export default function DynamicPage({ params }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      alert("Your answer has been submitted! (Demo: backend response not shown)");
+      alert(
+        "Your answer has been submitted! (Demo: backend response not shown)"
+      );
     } catch (e) {
       alert("Something went wrong! Try again.");
     }
@@ -197,7 +204,11 @@ export default function DynamicPage({ params }) {
           onClick={() => setDropdownOpen((o) => !o)}
         >
           {String(currentIdx + 1).padStart(3, "0")}
-          {dropdownOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+          {dropdownOpen ? (
+            <ChevronUp className="w-5 h-5" />
+          ) : (
+            <ChevronDown className="w-5 h-5" />
+          )}
         </button>
         {dropdownOpen && (
           <div className="absolute right-0 bottom-11 w-36 max-h-72 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg z-50 dropdown-scroll">
@@ -209,10 +220,15 @@ export default function DynamicPage({ params }) {
                   setDropdownOpen(false);
                 }}
                 className={`flex w-full px-4 py-2 text-left text-sm font-semibold transition
-                  ${i === currentIdx ? "bg-[#810000] text-white" : "hover:bg-[#f5eaea] text-[#810000]"}
+                  ${
+                    i === currentIdx
+                      ? "bg-[#810000] text-white"
+                      : "hover:bg-[#f5eaea] text-[#810000]"
+                  }
                 `}
               >
-                {String(i + 1).padStart(3, "0")} {q.heading && (
+                {String(i + 1).padStart(3, "0")}{" "}
+                {q.heading && (
                   <span className="ml-1 truncate w-24">{q.heading}</span>
                 )}
               </button>
@@ -225,7 +241,9 @@ export default function DynamicPage({ params }) {
           aria-label="Prev"
           onClick={() => {
             if (currentIdx > 0) {
-              router.push(`/question/reorder-paragraphs/${questions[currentIdx - 1]._id}`);
+              router.push(
+                `/question/reorder-paragraphs/${questions[currentIdx - 1]._id}`
+              );
             }
           }}
           disabled={currentIdx === 0}
@@ -237,7 +255,9 @@ export default function DynamicPage({ params }) {
           aria-label="Next"
           onClick={() => {
             if (currentIdx < questions.length - 1) {
-              router.push(`/question/reorder-paragraphs/${questions[currentIdx + 1]._id}`);
+              router.push(
+                `/question/reorder-paragraphs/${questions[currentIdx + 1]._id}`
+              );
             }
           }}
           disabled={currentIdx === questions.length - 1}
@@ -268,29 +288,32 @@ export default function DynamicPage({ params }) {
 
   if (loading || !currentQ) {
     return (
-      <div className="flex justify-center items-center min-h-[40vh]">Loading...</div>
+      <div className="flex justify-center items-center min-h-[40vh]">
+        Loading...
+      </div>
     );
   }
 
   return (
-    <div className="max-w-[80%] mx-auto py-6 px-2 relative">
+    <div className="w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
       <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
         Re-order Paragraphs
       </div>
-      <p className="text-gray-700 mb-6">
-        {currentQ.prompt}
-      </p>
+      <p className="text-gray-700 mb-6">{currentQ.prompt}</p>
       {/* Question Heading */}
       <div className="flex items-center gap-2 mb-4">
         <span className="rounded px-4 py-2 font-bold text-white bg-[#810000] text-base tracking-wide">
           #{currentQ._id}
         </span>
-        <span className="text-lg font-semibold text-[#810000]">{currentQ.heading}</span>
+        <span className="text-lg font-semibold text-[#810000]">
+          {currentQ.heading}
+        </span>
       </div>
       {/* Timer */}
       <div className="mb-6 flex items-center gap-3">
         <span className="text-[#810000] font-medium text-base">
-          Remaining Time: <span className="font-bold">00: {formatTime(timeLeft)} sec</span>
+          Remaining Time:{" "}
+          <span className="font-bold">00: {formatTime(timeLeft)} sec</span>
         </span>
       </div>
       {/* Drag-drop panels */}
@@ -302,13 +325,15 @@ export default function DynamicPage({ params }) {
           </div>
           <div
             className="border border-[#810000] border-t-0 rounded-b min-h-[320px] pb-2 pt-2 bg-white flex flex-col gap-3"
-            onDragOver={e => {
+            onDragOver={(e) => {
               e.preventDefault();
             }}
             onDrop={handleDropSource}
           >
             {source.length === 0 && (
-              <div className="text-center text-gray-400 py-10">No items left</div>
+              <div className="text-center text-gray-400 py-10">
+                No items left
+              </div>
             )}
             {source.map((item, i) => (
               <div
@@ -316,9 +341,18 @@ export default function DynamicPage({ params }) {
                 className="flex items-center gap-3 bg-[#faf9f9] border border-[#810000] rounded px-4 py-3 cursor-grab select-none shadow-sm"
                 draggable
                 onDragStart={() => handleDragStart(item, true, i)}
-                style={{ opacity: dragged && dragged.label === item.label && dragged.fromSource ? 0.4 : 1 }}
+                style={{
+                  opacity:
+                    dragged &&
+                    dragged.label === item.label &&
+                    dragged.fromSource
+                      ? 0.4
+                      : 1,
+                }}
               >
-                <span className="w-7 h-7 flex items-center justify-center rounded-full border border-[#810000] bg-white text-[#810000] font-bold">{item.label}</span>
+                <span className="w-7 h-7 flex items-center justify-center rounded-full border border-[#810000] bg-white text-[#810000] font-bold">
+                  {item.label}
+                </span>
                 <span className="flex-1 text-gray-800">{item.text}</span>
               </div>
             ))}
@@ -326,7 +360,7 @@ export default function DynamicPage({ params }) {
         </div>
         {/* Arrow */}
         <div className="flex items-center justify-center px-1 py-1">
-          <span className="text-[#810000] text-3xl font-bold">{'>>'}</span>
+          <span className="text-[#810000] text-3xl font-bold">{">>"}</span>
         </div>
         {/* Target */}
         <div className="flex-1 min-w-[260px] max-w-[50%]">
@@ -335,13 +369,15 @@ export default function DynamicPage({ params }) {
           </div>
           <div
             className="border border-[#810000] border-t-0 rounded-b min-h-[320px] pb-2 pt-2 bg-white flex flex-col gap-3"
-            onDragOver={e => {
+            onDragOver={(e) => {
               e.preventDefault();
             }}
             onDrop={handleDropTarget}
           >
             {target.length === 0 && (
-              <div className="text-center text-gray-400 py-10">Drag paragraphs here</div>
+              <div className="text-center text-gray-400 py-10">
+                Drag paragraphs here
+              </div>
             )}
             {target.map((item, i) => (
               <div
@@ -349,13 +385,22 @@ export default function DynamicPage({ params }) {
                 className="flex items-center gap-3 bg-[#faf9f9] border border-[#810000] rounded px-4 py-3 cursor-grab select-none shadow-sm"
                 draggable
                 onDragStart={() => handleDragStart(item, false, i)}
-                onDragOver={e => {
+                onDragOver={(e) => {
                   e.preventDefault();
                   handleDragOverTarget(i);
                 }}
-                style={{ opacity: dragged && dragged.label === item.label && !dragged.fromSource ? 0.4 : 1 }}
+                style={{
+                  opacity:
+                    dragged &&
+                    dragged.label === item.label &&
+                    !dragged.fromSource
+                      ? 0.4
+                      : 1,
+                }}
               >
-                <span className="w-7 h-7 flex items-center justify-center rounded-full border border-[#810000] bg-white text-[#810000] font-bold">{item.label}</span>
+                <span className="w-7 h-7 flex items-center justify-center rounded-full border border-[#810000] bg-white text-[#810000] font-bold">
+                  {item.label}
+                </span>
                 <span className="flex-1 text-gray-800">{item.text}</span>
               </div>
             ))}
@@ -374,7 +419,9 @@ export default function DynamicPage({ params }) {
         <button
           className="flex items-center gap-1 px-6 py-2 rounded border-2 border-[#810000] bg-white text-[#810000] font-semibold text-base hover:bg-[#810000] hover:text-white transition"
           onClick={handleSubmit}
-          disabled={target.length !== (currentQ.options?.length || 0) || timeLeft === 0}
+          disabled={
+            target.length !== (currentQ.options?.length || 0) || timeLeft === 0
+          }
         >
           Submit
         </button>
