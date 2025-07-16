@@ -41,7 +41,7 @@ export default function multipleChoiceAndAnswers() {
       if (tab === "not_practiced") query += "&type=not_practiced";
       if (tab === "bookmark") query += "&type=bookmark";
       const response = await fetchWithAuth(
-        `${baseUrl}/test/reading/mcq_multiple?${query}`
+        `${baseUrl}/test/listening/multiple-choice-multiple-answers?${query}`
       );
       const result = await response.json();
       if (result?.questions) {
