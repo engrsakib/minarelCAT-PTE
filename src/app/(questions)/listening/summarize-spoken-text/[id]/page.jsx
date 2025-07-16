@@ -2,42 +2,44 @@
 import React, { useEffect, useState, useRef } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import AudioPlayer from "../../../../../components/audio/AudioPlayer";
 
 // 9:59 minutes in seconds
 const RECORD_SECONDS = 599;
 
 // Fake questions fallback (1-100 for pagination)
 const FAKE_QUESTIONS = Array.from({ length: 100 }, (_, i) => ({
-  _id: String(1234560 + i),
-  type: "reorder_paragraphs",
-  heading: i === 0 ? "Skin Cancer" : `Fake Heading ${i + 1}`,
+  _id: String(1001635 + i),
+  type: "reading_writing_blanks",
+  heading: i === 0 ? "Driving Licenses in BC" : `Fake Heading ${i + 1}`,
+  audio: `https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3`,
   prompt:
     i === 0
-      ? `The text boxes in the left panel have been placed in random order. Restore the original order by dragging the text boxes from the left panel to the right panel.`
-      : `Fake re-order instruction for question #${i + 1}`,
+      ? `But as I was saying, Professor Wilmot ...
+Look, can please call me Lisa.
+
+Yeah, Lisa, well I'm still trying to get my head around the choice of (a) ____________ for the optional part of the third-year program. I was thinking of taking personal taxation law and company law, together with the extra five-credit-point course on goods and services and VAT type taxes, but it is the (b) ____________ that I'm going to discipline myself to study in the course.
+
+Lisa: Well, hmmm.
+
+Did you know there are going to be (c) ____________ for summer clerkship training, so I really don't want to come across as too focused on certain areas, but a lot of firms don't even do this. You know, a position in a (d) ____________.
+
+Lisa: Well, don't forget, you're only about 25% of the courses at this stage is elective-based and you'll still have that core of subjects - you, legal institutions, (e) ____________ property law, general commercial and factors law, all of which would be of interest to a lot of firms. So if I were you, which I'm not, I'd stay put with what you're thinking on and enjoy the chance to complete some work in areas that will be, to pursue. Don't you think? There's an awful lot of law in this profession where you'll be undertaking long, stressful hours on projects that don't really interest you as much.`
+      : `Fake prompt for question #${i + 1}`,
   options: [
-    "Most cases of skin cancer are linked to exposure to ultraviolet radiation.",
-    "A vaccine stimulating the production of a protein critical to the skin’s antioxidant network is helping people bolster their defenses against skin cancer.",
-    "Skin cancer is the most common cancer in the United States, and Melanoma is the most lethal form of skin cancer",
-    "There are multiple vaccines to prevent cancer.",
+    [
+      "Taxation Law",
+      "Company Law",
+      "Intellectual Property",
+      "Constitutional Law",
+    ],
+    ["Discipline", "Subject", "Area", "Course"],
+    ["Vacancies", "Positions", "Options", "Offers"],
+    ["Firm", "Chamber", "Practice", "Institution"],
+    ["Intellectual", "Corporate", "Family", "International"],
   ],
 }));
-
-function shuffle(array) {
-  // Fisher-Yates Shuffle
-  let arr = array.slice();
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
 
 export default function DynamicPage({ params }) {
   const { id } = params;
@@ -54,20 +56,18 @@ export default function DynamicPage({ params }) {
   const timerRef = useRef();
   const [timerStarted, setTimerStarted] = useState(false);
 
-  // Source (left) and Target (right) state for drag-and-drop
-  const [source, setSource] = useState([]); // shuffled [{label, text}]
-  const [target, setTarget] = useState([]); // ordered [{label, text}]
-  const [dragged, setDragged] = useState(null);
+  // Dropdown answers
+  const [answers, setAnswers] = useState([]);
 
   // Pagination dropdown
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  // const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // On mount/fetch question
+  // Fetch all questions and find current index
   useEffect(() => {
     async function getQuestions() {
       setLoading(true);
       try {
-        const res = await fetchWithAuth(`/test/reorder_paragraphs`);
+        const res = await fetchWithAuth(`/test/reading-writing-blanks`);
         const data = await res.json();
         const arr =
           data?.questions && data.questions.length
@@ -77,31 +77,14 @@ export default function DynamicPage({ params }) {
         const idx = arr.findIndex((q) => q._id === id);
         setCurrentIdx(idx !== -1 ? idx : 0);
         setCurrentQ(arr[idx !== -1 ? idx : 0]);
-        // shuffle options for source, preserve original order in options
-        const optionsArr = arr[idx !== -1 ? idx : 0].options || [];
-        const shuffled = shuffle(
-          optionsArr.map((text, i) => ({
-            label: String.fromCharCode(65 + i),
-            text,
-            idx: i,
-          }))
+        setAnswers(
+          Array(arr[idx !== -1 ? idx : 0]?.options?.length || 0).fill("")
         );
-        setSource(shuffled);
-        setTarget([]);
       } catch {
         setQuestions(FAKE_QUESTIONS);
         setCurrentIdx(0);
         setCurrentQ(FAKE_QUESTIONS[0]);
-        const optionsArr = FAKE_QUESTIONS[0].options || [];
-        const shuffled = shuffle(
-          optionsArr.map((text, i) => ({
-            label: String.fromCharCode(65 + i),
-            text,
-            idx: i,
-          }))
-        );
-        setSource(shuffled);
-        setTarget([]);
+        setAnswers(Array(FAKE_QUESTIONS[0]?.options?.length || 0).fill(""));
       }
       setLoading(false);
       setTimeLeft(RECORD_SECONDS);
@@ -116,6 +99,7 @@ export default function DynamicPage({ params }) {
     if (loading) return;
     if (!timerStarted) setTimerStarted(true);
   }, [loading]);
+
   useEffect(() => {
     if (!timerStarted) return;
     if (timeLeft === 0) return;
@@ -123,49 +107,23 @@ export default function DynamicPage({ params }) {
     return () => clearTimeout(timerRef.current);
   }, [timerStarted, timeLeft]);
 
-  // Drag/Drop handlers
-  const handleDragStart = (item, fromSource, idx) => {
-    setDragged({ ...item, fromSource, idx });
-  };
-  const handleDropTarget = () => {
-    if (dragged && dragged.fromSource) {
-      // from source to target (append at end)
-      setTarget((prev) => [...prev, dragged]);
-      setSource((prev) => prev.filter((_, i) => i !== dragged.idx));
-    }
-    setDragged(null);
-  };
-  const handleDropSource = () => {
-    if (dragged && !dragged.fromSource) {
-      // from target back to source (append at end)
-      setSource((prev) => [...prev, dragged]);
-      setTarget((prev) => prev.filter((_, i) => i !== dragged.idx));
-    }
-    setDragged(null);
-  };
-
-  // Allow reordering inside target
-  const handleDragOverTarget = (overIdx) => {
-    if (!dragged || !!dragged.fromSource) return;
-    setTarget((prev) => {
-      const arr = prev.slice();
-      arr.splice(dragged.idx, 1);
-      arr.splice(overIdx, 0, dragged);
-      return arr;
-    });
-    setDragged((d) => ({ ...d, idx: overIdx }));
+  // Answer change handler
+  const handleAnswerChange = (idx) => (e) => {
+    const arr = [...answers];
+    arr[idx] = e.target.value;
+    setAnswers(arr);
   };
 
   // Submit handler
   const handleSubmit = async () => {
-    if (!currentQ || target.length !== (currentQ.options?.length || 0)) return;
-    // send the indices of selected (ordered) paragraphs
+    if (!currentQ) return;
+    // In real scenario, send answers as array or keyed object
     const payload = {
       questionId: currentQ._id,
-      ordered: target.map((item) => item.idx), // original index order
+      answers,
     };
     try {
-      await fetchWithAuth("/test/reorder_paragraphs/submit", {
+      await fetchWithAuth("/test/reading-writing-blanks/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -178,104 +136,41 @@ export default function DynamicPage({ params }) {
     }
   };
 
-  // Restart handler
-  const handleRestart = () => {
-    if (!currentQ) return;
-    const optionsArr = currentQ.options || [];
-    const shuffled = shuffle(
-      optionsArr.map((text, i) => ({
-        label: String.fromCharCode(65 + i),
-        text,
-        idx: i,
-      }))
-    );
-    setSource(shuffled);
-    setTarget([]);
-    setTimeLeft(RECORD_SECONDS);
-    setTimerStarted(false);
+  // Pagination controls
+  const goToIndex = (idx) => {
+    if (idx < 0 || idx >= questions.length) return;
+    router.push(`/question/reading-writing-blanks/${questions[idx]._id}`);
+    // setDropdownOpen(false);
   };
 
-  // Pagination controls (dropdown + prev/next, styled right-bottom)
+  // Render pagination (bottom right, sticky dropdown)
   const renderPagination = () => (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end w-max">
-      <div className="relative">
-        <button
-          className="rounded border bg-white px-4 py-2 shadow text-[#810000] font-bold flex items-center gap-2"
-          onClick={() => setDropdownOpen((o) => !o)}
-        >
+    <div className="flex items-center justify-end gap-2 mt-6">
+      <button
+        aria-label="Prev"
+        onClick={() => goToIndex(currentIdx - 1)}
+        disabled={currentIdx === 0}
+        className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
+      >
+        <ChevronLeft className="w-6 h-6" />
+      </button>
+      <div className="flex items-center gap-2">
+        <span className="rounded border border-[#810000] px-3 py-1 font-bold text-[#810000] bg-white">
           {String(currentIdx + 1).padStart(3, "0")}
-          {dropdownOpen ? (
-            <ChevronUp className="w-5 h-5" />
-          ) : (
-            <ChevronDown className="w-5 h-5" />
-          )}
-        </button>
-        {dropdownOpen && (
-          <div className="absolute right-0 bottom-11 w-36 max-h-72 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg z-50 dropdown-scroll">
-            {questions.slice(0, 100).map((q, i) => (
-              <button
-                key={q._id}
-                onClick={() => {
-                  router.push(`/question/reorder-paragraphs/${q._id}`);
-                  setDropdownOpen(false);
-                }}
-                className={`flex w-full px-4 py-2 text-left text-sm font-semibold transition
-                  ${
-                    i === currentIdx
-                      ? "bg-[#810000] text-white"
-                      : "hover:bg-[#f5eaea] text-[#810000]"
-                  }
-                `}
-              >
-                {String(i + 1).padStart(3, "0")}{" "}
-                {q.heading && (
-                  <span className="ml-1 truncate w-24">{q.heading}</span>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
+        </span>
+        <span className="text-gray-500 font-medium">/</span>
+        <span className="rounded border border-[#810000] px-3 py-1 font-bold text-[#810000] bg-white">
+          {String(questions.length).padStart(3, "0")}
+        </span>
       </div>
-      <div className="flex mt-2 gap-2">
-        <button
-          aria-label="Prev"
-          onClick={() => {
-            if (currentIdx > 0) {
-              router.push(
-                `/question/reorder-paragraphs/${questions[currentIdx - 1]._id}`
-              );
-            }
-          }}
-          disabled={currentIdx === 0}
-          className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-        <button
-          aria-label="Next"
-          onClick={() => {
-            if (currentIdx < questions.length - 1) {
-              router.push(
-                `/question/reorder-paragraphs/${questions[currentIdx + 1]._id}`
-              );
-            }
-          }}
-          disabled={currentIdx === questions.length - 1}
-          className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
-      </div>
-      <style jsx>{`
-        .dropdown-scroll::-webkit-scrollbar {
-          width: 4px;
-          background: #eee;
-        }
-        .dropdown-scroll::-webkit-scrollbar-thumb {
-          background: #dedede;
-          border-radius: 2px;
-        }
-      `}</style>
+      <button
+        aria-label="Next"
+        onClick={() => goToIndex(currentIdx + 1)}
+        disabled={currentIdx === questions.length - 1}
+        className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
+      >
+        <ChevronRight className="w-6 h-6" />
+      </button>
     </div>
   );
 
@@ -294,12 +189,30 @@ export default function DynamicPage({ params }) {
     );
   }
 
+  // Prompt split for blanks (find indices for (a)...(e))
+  const prompt = currentQ.prompt;
+  const options = currentQ.options || [];
+  let blanks = [];
+  let splitParts = [];
+  let cursor = 0;
+  let regex = /\([a-e]\)/g;
+  let match;
+  while ((match = regex.exec(prompt))) {
+    splitParts.push(prompt.slice(cursor, match.index));
+    blanks.push(match[0]);
+    cursor = match.index + match[0].length;
+  }
+  splitParts.push(prompt.slice(cursor));
+
   return (
     <div className="w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
       <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
-        Re-order Paragraphs
+        Reading & Writing Blanks
       </div>
-      <p className="text-gray-700 mb-6">{currentQ.prompt}</p>
+      <p className="text-gray-700 mb-6">
+        Below is a text with blanks. Click on each blank, a list of choices will
+        appear. Select the appropriate answer choice for each blank.
+      </p>
       {/* Question Heading */}
       <div className="flex items-center gap-2 mb-4">
         <span className="rounded px-4 py-2 font-bold text-white bg-[#810000] text-base tracking-wide">
@@ -310,108 +223,69 @@ export default function DynamicPage({ params }) {
         </span>
       </div>
       {/* Timer */}
-      <div className="mb-6 flex items-center gap-3">
+      <div className="mb-4 flex items-center gap-3">
         <span className="text-[#810000] font-medium text-base">
           Remaining Time:{" "}
           <span className="font-bold">00: {formatTime(timeLeft)} sec</span>
         </span>
       </div>
-      {/* Drag-drop panels */}
-      <div className="flex flex-col md:flex-row gap-4 w-full justify-center mb-5">
-        {/* Source */}
-        <div className="flex-1 min-w-[260px] max-w-[50%]">
-          <div className="bg-[#810000] text-white text-center rounded-t px-2 py-2 font-semibold">
-            Source
-          </div>
-          <div
-            className="border border-[#810000] border-t-0 rounded-b min-h-[320px] pb-2 pt-2 bg-white flex flex-col gap-3"
-            onDragOver={(e) => {
-              e.preventDefault();
-            }}
-            onDrop={handleDropSource}
-          >
-            {source.length === 0 && (
-              <div className="text-center text-gray-400 py-10">
-                No items left
-              </div>
-            )}
-            {source.map((item, i) => (
-              <div
-                key={item.label}
-                className="flex items-center gap-3 bg-[#faf9f9] border border-[#810000] rounded px-4 py-3 cursor-grab select-none shadow-sm"
-                draggable
-                onDragStart={() => handleDragStart(item, true, i)}
-                style={{
-                  opacity:
-                    dragged &&
-                    dragged.label === item.label &&
-                    dragged.fromSource
-                      ? 0.4
-                      : 1,
-                }}
-              >
-                <span className="w-7 h-7 flex items-center justify-center rounded-full border border-[#810000] bg-white text-[#810000] font-bold">
-                  {item.label}
+      {/* Audio Player */}
+      <div className="border border-[#810000] rounded bg-[#faf9f9] p-5 mb-4 text-gray-900 text-base whitespace-pre-line">
+        <AudioPlayer src={currentQ.audio} />
+      </div>
+      {/* Prompt with answer dropdowns */}
+      <div className="border border-[#810000] rounded bg-[#faf9f9] p-5 mb-4 text-gray-900 text-base whitespace-pre-line">
+        {splitParts.map((part, i) => (
+          <React.Fragment key={i}>
+            {part}
+            {i < blanks.length && (
+              <span className="inline-block align-middle mx-1">
+                <span className="font-bold text-[#810000] mr-1">
+                  {blanks[i]}
                 </span>
-                <span className="flex-1 text-gray-800">{item.text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        {/* Arrow */}
-        <div className="flex items-center justify-center px-1 py-1">
-          <span className="text-[#810000] text-3xl font-bold">{">>"}</span>
-        </div>
-        {/* Target */}
-        <div className="flex-1 min-w-[260px] max-w-[50%]">
-          <div className="bg-[#810000] text-white text-center rounded-t px-2 py-2 font-semibold">
-            Target
-          </div>
-          <div
-            className="border border-[#810000] border-t-0 rounded-b min-h-[320px] pb-2 pt-2 bg-white flex flex-col gap-3"
-            onDragOver={(e) => {
-              e.preventDefault();
-            }}
-            onDrop={handleDropTarget}
-          >
-            {target.length === 0 && (
-              <div className="text-center text-gray-400 py-10">
-                Drag paragraphs here
-              </div>
+                {/* nothing here, options below */}
+              </span>
             )}
-            {target.map((item, i) => (
-              <div
-                key={item.label}
-                className="flex items-center gap-3 bg-[#faf9f9] border border-[#810000] rounded px-4 py-3 cursor-grab select-none shadow-sm"
-                draggable
-                onDragStart={() => handleDragStart(item, false, i)}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  handleDragOverTarget(i);
-                }}
-                style={{
-                  opacity:
-                    dragged &&
-                    dragged.label === item.label &&
-                    !dragged.fromSource
-                      ? 0.4
-                      : 1,
-                }}
-              >
-                <span className="w-7 h-7 flex items-center justify-center rounded-full border border-[#810000] bg-white text-[#810000] font-bold">
-                  {item.label}
-                </span>
-                <span className="flex-1 text-gray-800">{item.text}</span>
-              </div>
-            ))}
+          </React.Fragment>
+        ))}
+      </div>
+      {/* Answer options below */}
+      <div className="w-full flex flex-col md:flex-row gap-2 mb-4">
+        {options.map((opts, i) => (
+          <div key={i} className="flex-1">
+            <select
+              value={answers[i] || ""}
+              onChange={handleAnswerChange(i)}
+              className="w-full border border-[#810000] bg-white rounded px-2 py-2 text-[#810000] font-semibold focus:outline-none focus:ring-2 focus:ring-[#810000] appearance-none mb-1"
+              style={{
+                backgroundImage:
+                  "url(\"data:image/svg+xml;charset=UTF-8,%3Csvg width='24' height='24' fill='none' stroke='%23810000' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
+                backgroundPosition: "right 0.75rem center",
+                backgroundRepeat: "no-repeat",
+                backgroundSize: "1em",
+              }}
+            >
+              <option value="">{`(${String.fromCharCode(
+                97 + i
+              )})Select answer`}</option>
+              {opts.map((opt, j) => (
+                <option key={j} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
           </div>
-        </div>
+        ))}
       </div>
       {/* Controls */}
-      <div className="flex gap-3 justify-center mb-2 mt-3">
+      <div className="flex gap-3 mb-2 mt-3">
         <button
           className="flex items-center gap-1 px-6 py-2 rounded border border-gray-400 text-gray-700 hover:bg-gray-100 font-medium text-base"
-          onClick={handleRestart}
+          onClick={() => {
+            setAnswers(Array(currentQ.options?.length || 0).fill(""));
+            setTimeLeft(RECORD_SECONDS);
+            setTimerStarted(false);
+          }}
           disabled={timeLeft === 0}
         >
           Restart
@@ -419,14 +293,18 @@ export default function DynamicPage({ params }) {
         <button
           className="flex items-center gap-1 px-6 py-2 rounded border-2 border-[#810000] bg-white text-[#810000] font-semibold text-base hover:bg-[#810000] hover:text-white transition"
           onClick={handleSubmit}
-          disabled={
-            target.length !== (currentQ.options?.length || 0) || timeLeft === 0
-          }
+          disabled={answers.some((a) => !a) || timeLeft === 0}
         >
           Submit
         </button>
       </div>
       {renderPagination()}
+      <style jsx>{`
+        select:disabled {
+          background: #eee;
+          color: #bbb;
+        }
+      `}</style>
     </div>
   );
 }
