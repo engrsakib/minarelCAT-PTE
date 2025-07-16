@@ -12,19 +12,7 @@ const FAKE_QUESTIONS = Array.from({ length: 100 }, (_, i) => ({
   _id: String(1001635 + i),
   type: "reading_writing_blanks",
   heading: i === 0 ? "Driving Licenses in BC" : `Fake Heading ${i + 1}`,
-  prompt:
-    i === 0
-      ? `But as I was saying, Professor Wilmot ...
-Look, can please call me Lisa.
-
-Yeah, Lisa, well I'm still trying to get my head around the choice of (a) ____________ for the optional part of the third-year program. I was thinking of taking personal taxation law and company law, together with the extra five-credit-point course on goods and services and VAT type taxes, but it is the (b) ____________ that I'm going to discipline myself to study in the course.
-
-Lisa: Well, hmmm.
-
-Did you know there are going to be (c) ____________ for summer clerkship training, so I really don't want to come across as too focused on certain areas, but a lot of firms don't even do this. You know, a position in a (d) ____________.
-
-Lisa: Well, don't forget, you're only about 25% of the courses at this stage is elective-based and you'll still have that core of subjects - you, legal institutions, (e) ____________ property law, general commercial and factors law, all of which would be of interest to a lot of firms. So if I were you, which I'm not, I'd stay put with what you're thinking on and enjoy the chance to complete some work in areas that will be, to pursue. Don't you think? There's an awful lot of law in this profession where you'll be undertaking long, stressful hours on projects that don't really interest you as much.`
-      : `Fake prompt for question #${i + 1}`,
+  prompt: " https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3",
   options: [
     [
       "Taxation Law",
@@ -227,21 +215,9 @@ export default function DynamicPage({ params }) {
           <span className="font-bold">00: {formatTime(timeLeft)} sec</span>
         </span>
       </div>
-      {/* Prompt with answer dropdowns */}
+      {/* audio player */}
       <div className="border border-[#810000] rounded bg-[#faf9f9] p-5 mb-4 text-gray-900 text-base whitespace-pre-line">
-        {splitParts.map((part, i) => (
-          <React.Fragment key={i}>
-            {part}
-            {i < blanks.length && (
-              <span className="inline-block align-middle mx-1">
-                <span className="font-bold text-[#810000] mr-1">
-                  {blanks[i]}
-                </span>
-                {/* nothing here, options below */}
-              </span>
-            )}
-          </React.Fragment>
-        ))}
+        
       </div>
       {/* Answer options below */}
       <div className="w-full flex flex-col md:flex-row gap-2 mb-4">
