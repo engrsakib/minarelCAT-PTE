@@ -41,7 +41,7 @@ export default function reorderParagraphs() {
       if (tab === "not_practiced") query += "&type=not_practiced";
       if (tab === "bookmark") query += "&type=bookmark";
       const response = await fetchWithAuth(
-        `${baseUrl}/test/reading/reorder-paragraphs?${query}`
+        `${baseUrl}/test/listening/summarize-spoken-text?${query}`
       );
       const result = await response.json();
       if (result?.questions) {
@@ -98,7 +98,7 @@ export default function reorderParagraphs() {
 
   // Handle Appeared click (can be customized for your use)
   const handleAppearedClick = (item) => {
-    router.push(`/reading/re-order-paragraphs/${item._id}`);
+    router.push(`/listening/summarize-spoken-text/${item._id}`);
   };
 
   const renderPageNumbers = () => {
