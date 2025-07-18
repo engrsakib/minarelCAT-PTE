@@ -67,7 +67,7 @@ export default function DynamicPage({ params }) {
     async function getQuestions() {
       setLoading(true);
       try {
-        const res = await fetchWithAuth(`/test/reading-writing-blanks`);
+        const res = await fetchWithAuth(`/test/reading-writing-blanks/${id}`);
         const data = await res.json();
         const arr =
           data?.questions && data.questions.length
@@ -118,7 +118,7 @@ export default function DynamicPage({ params }) {
   const handleSubmit = async () => {
     if (!currentQ) return;
     const payload = {
-      questionId: currentQ._id,
+      questionId: currentQ._id, 
       answers,
     };
     try {
