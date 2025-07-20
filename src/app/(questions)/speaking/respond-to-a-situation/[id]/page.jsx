@@ -29,39 +29,19 @@ const AudioRecorder = dynamic(
   { ssr: false }
 );
 
-const RECORD_SECONDS = 40; // Answer time
-const AUDIO_DURATION = 35; // For the audio player bar (UI, not actual duration)
-const PREPARE_SECONDS = 35; // Beginning time as per your latest request
-
-// Fake fallback data for pagination
-const FAKE_QUESTIONS = Array.from({ length: 100 }, (_, i) => ({
-  _id: String(1001635 + i),
-  type: "speaking",
-  subtype: "repeat_sentence",
-  heading: i === 0 ? "Parent Teacher Conference" : `Fake Heading ${i + 1}`,
-  audio: `https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3`,
-  prompt:
-    i === 0
-      ? `Write an email to the manager of a restaurant inquiring about the process for making online reservations.
-In your email, include:
-- Ask for information on how the online reservation system works.
-- Clarify if special requests (e.g., dietary preferences or seating arrangements) can be made online.
-- Inquire about confirmation details and how far reservations should be made in advance.`
-      : `Fake prompt for question #${i + 1}`,
-  audioUrl: "", // Put a fake audio url if needed
-}));
+const RECORD_SECONDS = 40;
+const PREPARE_SECONDS = 35;
 
 export default function RepeatSentencePage({ params }) {
   const { id } = params;
   const router = useRouter();
+  const baseUrl = process.env.NEXT_PUBLIC_URL;
 
   // State
-  const [questions, setQuestions] = useState([]);
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [currentQ, setCurrentQ] = useState(null);
+  const [question, setQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Timer
+  // Timers
   const [prepTime, setPrepTime] = useState(PREPARE_SECONDS);
   const [isThinking, setIsThinking] = useState(true);
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);
@@ -70,44 +50,30 @@ export default function RepeatSentencePage({ params }) {
   const timerRef = useRef();
 
   // Audio player
-  const [audioProgress, setAudioProgress] = useState(0);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const audioRef = useRef();
 
-  // Pagination dropdown
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-
-  // Fetch questions
+  // Fetch question
   useEffect(() => {
-    async function getQuestions() {
+    async function getQuestion() {
       setLoading(true);
       try {
         const res = await fetchWithAuth(
-          `/test/speaking/respond-to-a-situation`
+          `${baseUrl}/user/get-question/${id}`,
         );
         const data = await res.json();
-        const arr =
-          data?.questions && data.questions.length
-            ? data.questions
-            : FAKE_QUESTIONS;
-        setQuestions(arr);
-        const idx = arr.findIndex((q) => q._id === id);
-        setCurrentIdx(idx !== -1 ? idx : 0);
-        setCurrentQ(arr[idx !== -1 ? idx : 0]);
+        setQuestion(data?.question || null);
       } catch {
-        setQuestions(FAKE_QUESTIONS);
-        setCurrentIdx(0);
-        setCurrentQ(FAKE_QUESTIONS[0]);
+        setQuestion(null);
       }
       setLoading(false);
       setPrepTime(PREPARE_SECONDS);
       setIsThinking(true);
       setTimeLeft(RECORD_SECONDS);
-      setAudioProgress(0);
       setAudioBlob(null);
       setIsRecording(false);
     }
-    getQuestions();
+    getQuestion();
     // eslint-disable-next-line
   }, [id]);
 
@@ -121,7 +87,7 @@ export default function RepeatSentencePage({ params }) {
           audioRef.current.currentTime = 0;
           audioRef.current.play();
         }
-      }, 500); // small delay after thinking
+      }, 500);
       return;
     }
     timerRef.current = setTimeout(() => setPrepTime((t) => t - 1), 1000);
@@ -139,33 +105,14 @@ export default function RepeatSentencePage({ params }) {
     return () => clearTimeout(timerRef.current);
   }, [isRecording, timeLeft]);
 
-  // Audio player progress bar
-  useEffect(() => {
-    if (!audioPlaying) return;
-    const handler = setInterval(() => {
-      if (!audioRef.current) return;
-      if (audioRef.current.ended || audioRef.current.paused) {
-        setAudioPlaying(false);
-        clearInterval(handler);
-        setIsRecording(true);
-        setTimeLeft(RECORD_SECONDS);
-      } else {
-        setAudioProgress(audioRef.current.currentTime);
-      }
-    }, 100);
-    return () => clearInterval(handler);
-  }, [audioPlaying]);
-
-  // Play/Pause audio
-  const handleAudioPlayPause = () => {
-    if (!audioRef.current) return;
-    if (audioPlaying) {
-      audioRef.current.pause();
-      setAudioPlaying(false);
-    } else {
-      audioRef.current.play();
-      setAudioPlaying(true);
-    }
+  // Audio play handler
+  const handleAudioPlay = () => {
+    setAudioPlaying(true);
+  };
+  const handleAudioEnded = () => {
+    setAudioPlaying(false);
+    setIsRecording(true);
+    setTimeLeft(RECORD_SECONDS);
   };
 
   // react-mic will send blob to this
@@ -176,10 +123,10 @@ export default function RepeatSentencePage({ params }) {
 
   // Submit handler
   const handleSubmit = async () => {
-    if (!audioBlob || !currentQ) return;
+    if (!audioBlob || !question) return;
     const formData = new FormData();
     formData.append("voice", audioBlob, "voice.wav");
-    formData.append("questionId", currentQ._id);
+    formData.append("questionId", question._id);
     try {
       await fetchWithAuth("/test/speaking/repeat_sentence/submit", {
         method: "POST",
@@ -193,73 +140,7 @@ export default function RepeatSentencePage({ params }) {
     }
   };
 
-  // Pagination controls
-  const goToIndex = (idx) => {
-    if (idx < 0 || idx >= questions.length) return;
-    router.push(`/question/repeat-sentence/${questions[idx]._id}`);
-    setDropdownOpen(false);
-  };
-
-  // Render pagination (bottom right, sticky dropdown)
-  const renderPagination = () => (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end w-max">
-      <div className="relative">
-        <button
-          className="rounded border bg-white px-4 py-2 shadow text-[#810000] font-bold flex items-center gap-2"
-          onClick={() => setDropdownOpen((o) => !o)}
-        >
-          {String(currentIdx + 1).padStart(3, "0")}
-          {dropdownOpen ? (
-            <ChevronUp className="w-5 h-5" />
-          ) : (
-            <ChevronDown className="w-5 h-5" />
-          )}
-        </button>
-        {dropdownOpen && (
-          <div className="absolute right-0 bottom-11 w-36 max-h-72 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg z-50">
-            {questions.slice(0, 100).map((q, i) => (
-              <button
-                key={q._id}
-                onClick={() => goToIndex(i)}
-                className={`flex w-full px-4 py-2 text-left text-sm font-semibold transition
-                  ${
-                    i === currentIdx
-                      ? "bg-[#810000] text-white"
-                      : "hover:bg-[#f5eaea] text-[#810000]"
-                  }
-                `}
-              >
-                {String(i + 1).padStart(3, "0")}{" "}
-                {q.heading && (
-                  <span className="ml-1 truncate w-24">{q.heading}</span>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-      <div className="flex mt-2 gap-2">
-        <button
-          aria-label="Prev"
-          onClick={() => goToIndex(currentIdx - 1)}
-          disabled={currentIdx === 0}
-          className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-        <button
-          aria-label="Next"
-          onClick={() => goToIndex(currentIdx + 1)}
-          disabled={currentIdx === questions.length - 1}
-          className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
-      </div>
-    </div>
-  );
-
-  if (loading || !currentQ) {
+  if (loading || !question) {
     return (
       <div className="flex justify-center items-center min-h-[40vh]">
         Loading...
@@ -269,8 +150,9 @@ export default function RepeatSentencePage({ params }) {
 
   return (
     <div className="w-full lg:w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
+      {/* Title/Heading */}
       <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
-        Respond to a Situation
+        {question.heading}
       </div>
       <p className="text-gray-700 mb-6">
         Listen to and read a description of a situation. You will have 35
@@ -278,26 +160,27 @@ export default function RepeatSentencePage({ params }) {
         have 40 seconds to answer the question. <br />
         Please answer as completely as you can.
       </p>
-      {/* Question Heading */}
-      <div className="bg-[#810000] text-white px-5 py-2 rounded mb-2 text-lg font-semibold tracking-wide flex items-center gap-2">
-        <span>#{currentQ._id}</span>
-        <span>|</span>
-        <span>{currentQ.heading}</span>
-      </div>
       {/* Timer */}
       <div className="mb-2 text-[#810000] font-medium text-base">
         Beginning in{" "}
         <span className="font-bold">{isThinking ? prepTime : "0"}</span> sec
       </div>
-      {/* Prompt */}
-      <div className="border border-[#810000] rounded p-4 mb-4 bg-white text-gray-900 whitespace-pre-line">
-        {currentQ.prompt}
-      </div>
       {/* Audio Player */}
       <div className="border border-[#810000] rounded p-4 mb-4 bg-[#faf9f9] flex flex-col items-center">
-        <div className="w-full flex items-center gap-2">
-          <AudioPlayer src={currentQ.audio} />
-        </div>
+        {question.audioUrl && (
+          <audio
+            ref={audioRef}
+            src={question.audioUrl}
+            onPlay={handleAudioPlay}
+            onEnded={handleAudioEnded}
+            controls
+            style={{ width: "100%" }}
+          />
+        )}
+      </div>
+      {/* Prompt */}
+      <div className="border border-[#810000] rounded p-4 mb-4 bg-white text-gray-900 whitespace-pre-line">
+        {question.prompt}
       </div>
       {/* Audio Recorder */}
       <div className="border border-[#810000] rounded p-4 mb-6 bg-[#faf9f9] flex flex-col items-center">
@@ -373,7 +256,6 @@ export default function RepeatSentencePage({ params }) {
           </button>
         </div>
       </div>
-      {renderPagination()}
       <style jsx>{`
         .dropdown-scroll::-webkit-scrollbar {
           width: 4px;
