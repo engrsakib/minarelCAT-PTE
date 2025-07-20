@@ -34,31 +34,30 @@ export default function ReadAloud() {
 
   // Fetch data with filters
   const fetchData = async () => {
-    setIsLoading(true);
-    setError("");
-    try {
-      let query = `page=${currentPage}&limit=${itemsPerPage}`;
-      if (tab === "not_practiced") query += "&type=not_practiced";
-      if (tab === "bookmark") query += "&type=bookmark";
-      const response = await fetchWithAuth(
-        `${baseUrl}/test/speaking/read_aloud?${query}`
-      );
-      const result = await response.json();
-      if (result?.questions) {
-        setData(result.questions);
-        setTotalPages(Math.ceil(result.questionsCount / itemsPerPage));
-      } else {
-        setData([]);
-        setTotalPages(1);
-        setError("No data found");
-      }
-    } catch (err) {
-      setError("An error occurred");
+  setIsLoading(true);
+  setError("");
+  try {
+    // tab-এর মানই হবে query-এর মান
+    const query = tab;
+    const response = await fetchWithAuth(
+      `${baseUrl}/test/speaking/read_aloud?query=${query}`
+    );
+    const result = await response.json();
+    if (result?.questions) {
+      setData(result.questions);
+      setTotalPages(Math.ceil(result.questionsCount / itemsPerPage));
+    } else {
       setData([]);
       setTotalPages(1);
+      setError("No data found");
     }
-    setIsLoading(false);
-  };
+  } catch (err) {
+    setError("An error occurred");
+    setData([]);
+    setTotalPages(1);
+  }
+  setIsLoading(false);
+};
 
   useEffect(() => {
     fetchData();
