@@ -2,29 +2,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
 import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-
-const FAKE_QUESTIONS = Array.from({ length: 100 }, (_, i) => ({
-  _id: String(1001635 + i),
-  type: "writing",
-  subtype: "write_essay",
-  heading: i === 0 ? "Parent Teacher Conference" : `Fake Heading ${i + 1}`,
-  prompt:
-    i === 0
-      ? `Write an email to the manager of a restaurant inquiring about the process for making online reservations.
-In your email, include:
-- Ask for information on how the online reservation system works.
-- Clarify if special requests (e.g., dietary preferences or seating arrangements) can be made online.
-- Inquire about confirmation details and how far reservations should be made in advance.`
-      : `Fake prompt for question #${i + 1}`,
-  audioUrl: "",
-}));
 
 const WRITING_SECONDS = 599; // 9:59min
 const WORD_LIMIT = 1000;
@@ -34,9 +17,7 @@ export default function RepeatSentencePage({ params }) {
   const router = useRouter();
 
   // State
-  const [questions, setQuestions] = useState([]);
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [currentQ, setCurrentQ] = useState(null);
+  const [question, setQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Writing timer
@@ -48,29 +29,20 @@ export default function RepeatSentencePage({ params }) {
   const [answer, setAnswer] = useState("");
   const [wordCount, setWordCount] = useState(0);
 
-  // Pagination dropdown
+  // Pagination dropdown (not used but kept for future)
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const baseUrl = process.env.NEXT_BASE_URL || "";
+  const baseUrl = process.env.NEXT_PUBLIC_URL || "";
 
-  // Fetch questions
+  // Fetch question
   useEffect(() => {
-    async function getQuestions() {
+    async function getQuestion() {
       setLoading(true);
       try {
         const res = await fetchWithAuth(`${baseUrl}/user/get-question/${id}`);
         const data = await res.json();
-        const arr =
-          data?.questions && data.questions.length
-            ? data.questions
-            : FAKE_QUESTIONS;
-        setQuestions(arr);
-        const idx = arr.findIndex((q) => q._id === id);
-        setCurrentIdx(idx !== -1 ? idx : 0);
-        setCurrentQ(arr[idx !== -1 ? idx : 0]);
+        setQuestion(data?.question || null);
       } catch {
-        setQuestions(FAKE_QUESTIONS);
-        setCurrentIdx(0);
-        setCurrentQ(FAKE_QUESTIONS[0]);
+        setQuestion(null);
       }
       setLoading(false);
       setWritingTime(WRITING_SECONDS);
@@ -78,7 +50,7 @@ export default function RepeatSentencePage({ params }) {
       setAnswer("");
       setWordCount(0);
     }
-    getQuestions();
+    getQuestion();
     // eslint-disable-next-line
   }, [id]);
 
@@ -119,10 +91,10 @@ export default function RepeatSentencePage({ params }) {
 
   // Submit handler
   const handleSubmit = async () => {
-    if (!answer.trim() || !currentQ) return;
+    if (!answer.trim() || !question) return;
     const formData = new FormData();
     formData.append("text", answer.trim());
-    formData.append("questionId", currentQ._id);
+    formData.append("questionId", question._id);
     try {
       await fetchWithAuth("/test/writing/write_essay/submit", {
         method: "POST",
@@ -136,72 +108,6 @@ export default function RepeatSentencePage({ params }) {
     }
   };
 
-  // Pagination controls
-  const goToIndex = (idx) => {
-    if (idx < 0 || idx >= questions.length) return;
-    router.push(`/question/write-essay/${questions[idx]._id}`);
-    setDropdownOpen(false);
-  };
-
-  // Render pagination (bottom right, sticky dropdown)
-  const renderPagination = () => (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end w-max">
-      <div className="relative">
-        <button
-          className="rounded border bg-white px-4 py-2 shadow text-[#810000] font-bold flex items-center gap-2"
-          onClick={() => setDropdownOpen((o) => !o)}
-        >
-          {String(currentIdx + 1).padStart(3, "0")}
-          {dropdownOpen ? (
-            <ChevronUp className="w-5 h-5" />
-          ) : (
-            <ChevronDown className="w-5 h-5" />
-          )}
-        </button>
-        {dropdownOpen && (
-          <div className="absolute right-0 bottom-11 w-36 max-h-72 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg z-50">
-            {questions.slice(0, 100).map((q, i) => (
-              <button
-                key={q._id}
-                onClick={() => goToIndex(i)}
-                className={`flex w-full px-4 py-2 text-left text-sm font-semibold transition
-                  ${
-                    i === currentIdx
-                      ? "bg-[#810000] text-white"
-                      : "hover:bg-[#f5eaea] text-[#810000]"
-                  }
-                `}
-              >
-                {String(i + 1).padStart(3, "0")}{" "}
-                {q.heading && (
-                  <span className="ml-1 truncate w-24">{q.heading}</span>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-      <div className="flex mt-2 gap-2">
-        <button
-          aria-label="Prev"
-          onClick={() => goToIndex(currentIdx - 1)}
-          disabled={currentIdx === 0}
-          className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-        <button
-          aria-label="Next"
-          onClick={() => goToIndex(currentIdx + 1)}
-          disabled={currentIdx === questions.length - 1}
-          className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
-      </div>
-    </div>
-  );
-
   // mm:ss format for timer
   const formatTime = (sec) => {
     const m = Math.floor(sec / 60);
@@ -209,7 +115,7 @@ export default function RepeatSentencePage({ params }) {
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
-  if (loading || !currentQ) {
+  if (loading || !question) {
     return (
       <div className="flex justify-center items-center min-h-[40vh]">
         Loading...
@@ -230,9 +136,9 @@ export default function RepeatSentencePage({ params }) {
       </p>
       {/* Question Heading */}
       <div className="bg-[#810000] text-white px-5 py-2 rounded mb-2 text-lg font-semibold tracking-wide flex items-center gap-2">
-        <span>#{currentQ._id}</span>
+        <span>#{question._id}</span>
         <span>|</span>
-        <span>{currentQ.heading}</span>
+        <span>{question.heading}</span>
       </div>
       {/* Timer */}
       <div className="mb-2 text-[#810000] font-medium text-base flex items-center gap-2">
@@ -249,7 +155,7 @@ export default function RepeatSentencePage({ params }) {
       </div>
       {/* Prompt */}
       <div className="border border-[#810000] rounded p-4 mb-4 bg-white text-gray-900 whitespace-pre-line">
-        {currentQ.prompt}
+        {question.prompt}
       </div>
       {/* Writing Box */}
       <div className="border border-[#810000] rounded p-0 mb-3 bg-[#faf9f9] flex flex-col items-stretch relative">
@@ -303,7 +209,7 @@ export default function RepeatSentencePage({ params }) {
           <span>Submit</span>
         </button>
       </div>
-      {renderPagination()}
+      {/* Pagination removed as per updated requirement */}
       <style jsx>{`
         textarea::placeholder {
           color: #bbb;
