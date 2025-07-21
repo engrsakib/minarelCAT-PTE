@@ -50,13 +50,14 @@ export default function RepeatSentencePage({ params }) {
 
   // Pagination dropdown
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const baseUrl = process.env.NEXT_BASE_URL || "";
 
   // Fetch questions
   useEffect(() => {
     async function getQuestions() {
       setLoading(true);
       try {
-        const res = await fetchWithAuth(`/test/writing/write_essay`);
+        const res = await fetchWithAuth(`${baseUrl}/user/get-question/${id}`);
         const data = await res.json();
         const arr =
           data?.questions && data.questions.length

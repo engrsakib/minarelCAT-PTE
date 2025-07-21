@@ -40,7 +40,7 @@ export default function repeatSentence() {
     // tab-এর মানই হবে query-এর মান
     const query = tab;
     const response = await fetchWithAuth(
-      `${baseUrl}/test/speaking/answer_short_question?query=${query}`
+      `${baseUrl}/test/writing/summarize-written-text?query=${query}`
     );
     const result = await response.json();
     if (result?.questions) {
