@@ -93,10 +93,10 @@ export default function RepeatSentencePage({ params }) {
   const handleSubmit = async () => {
     if (!answer.trim() || !question) return;
     const formData = new FormData();
-    formData.append("text", answer.trim());
+    formData.append("userSummary", answer.trim());
     formData.append("questionId", question._id);
     try {
-      await fetchWithAuth("/test/writing/write_essay/submit", {
+      await fetchWithAuth(`${baseUrl}/test/writing/summerize-written-text/result`, {
         method: "POST",
         body: formData,
       });
