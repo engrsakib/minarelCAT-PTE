@@ -263,7 +263,7 @@ export default function RepeatSentencePage({ params }) {
         }
         .dropdown-scroll::-webkit-scrollbar-thumb {
           background: #dedede;
-          border-radius: 2px;
+          border-radius: 2px; 
         }
       `}</style>
     </div>
