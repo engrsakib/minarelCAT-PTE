@@ -7,38 +7,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 // 9:59 minutes in seconds
 const RECORD_SECONDS = 599;
 
-// Fake questions fallback (1-100 for pagination)
-const FAKE_QUESTIONS = Array.from({ length: 100 }, (_, i) => ({
-  _id: String(1001635 + i),
-  type: "reading_writing_blanks",
-  heading: i === 0 ? "Driving Licenses in BC" : `Fake Heading ${i + 1}`,
-  prompt:
-    i === 0
-      ? `But as I was saying, Professor Wilmot ...
-Look, can please call me Lisa.
-
-Yeah, Lisa, well I'm still trying to get my head around the choice of (a) ____________ for the optional part of the third-year program. I was thinking of taking personal taxation law and company law, together with the extra five-credit-point course on goods and services and VAT type taxes, but it is the (b) ____________ that I'm going to discipline myself to study in the course.
-
-Lisa: Well, hmmm.
-
-Did you know there are going to be (c) ____________ for summer clerkship training, so I really don't want to come across as too focused on certain areas, but a lot of firms don't even do this. You know, a position in a (d) ____________.
-
-Lisa: Well, don't forget, you're only about 25% of the courses at this stage is elective-based and you'll still have that core of subjects - you, legal institutions, (e) ____________ property law, general commercial and factors law, all of which would be of interest to a lot of firms. So if I were you, which I'm not, I'd stay put with what you're thinking on and enjoy the chance to complete some work in areas that will be, to pursue. Don't you think? There's an awful lot of law in this profession where you'll be undertaking long, stressful hours on projects that don't really interest you as much.`
-      : `Fake prompt for question #${i + 1}`,
-  options: [
-    [
-      "Taxation Law",
-      "Company Law",
-      "Intellectual Property",
-      "Constitutional Law",
-    ],
-    ["Discipline", "Subject", "Area", "Course"],
-    ["Vacancies", "Positions", "Options", "Offers"],
-    ["Firm", "Chamber", "Practice", "Institution"],
-    ["Intellectual", "Corporate", "Family", "International"],
-  ],
-}));
-
 export default function DynamicPage({ params }) {
   const { id } = params;
   const router = useRouter();
@@ -57,32 +25,42 @@ export default function DynamicPage({ params }) {
   // Dropdown answers
   const [answers, setAnswers] = useState([]);
 
-  // Pagination dropdown
-  // const [dropdownOpen, setDropdownOpen] = useState(false);
-
   // Fetch all questions and find current index
+  const baseUrl = process.env.NEXT_PUBLIC_URL || "";
   useEffect(() => {
     async function getQuestions() {
       setLoading(true);
       try {
-        const res = await fetchWithAuth(`/test/reading-writing-blanks`);
-        const data = await res.json();
-        const arr =
-          data?.questions && data.questions.length
-            ? data.questions
-            : FAKE_QUESTIONS;
+        // Fetch the question list for pagination
+        const res = await fetchWithAuth(`${baseUrl}/user/get-question/${id}`);
+        let arr = [];
+        let idx = 0;
+        let questionObj = null;
+        if (res.ok) {
+          const data = await res.json();
+          // If API gives multiple questions (pagination), else fallback to single
+          if (data.questions && Array.isArray(data.questions) && data.questions.length) {
+            arr = data.questions;
+            idx = arr.findIndex((q) => q._id === id);
+            questionObj = arr[idx !== -1 ? idx : 0];
+          } else if (data.question) {
+            arr = [data.question];
+            idx = 0;
+            questionObj = data.question;
+          }
+        }
         setQuestions(arr);
-        const idx = arr.findIndex((q) => q._id === id);
-        setCurrentIdx(idx !== -1 ? idx : 0);
-        setCurrentQ(arr[idx !== -1 ? idx : 0]);
+        setCurrentIdx(idx);
+        setCurrentQ(questionObj);
+        // Answers array is based on blanks length
         setAnswers(
-          Array(arr[idx !== -1 ? idx : 0]?.options?.length || 0).fill("")
+          Array(questionObj?.blanks?.length || 0).fill("")
         );
       } catch {
-        setQuestions(FAKE_QUESTIONS);
+        setQuestions([]);
         setCurrentIdx(0);
-        setCurrentQ(FAKE_QUESTIONS[0]);
-        setAnswers(Array(FAKE_QUESTIONS[0]?.options?.length || 0).fill(""));
+        setCurrentQ(null);
+        setAnswers([]);
       }
       setLoading(false);
       setTimeLeft(RECORD_SECONDS);
@@ -115,7 +93,6 @@ export default function DynamicPage({ params }) {
   // Submit handler
   const handleSubmit = async () => {
     if (!currentQ) return;
-    // In real scenario, send answers as array or keyed object
     const payload = {
       questionId: currentQ._id,
       answers,
@@ -138,7 +115,6 @@ export default function DynamicPage({ params }) {
   const goToIndex = (idx) => {
     if (idx < 0 || idx >= questions.length) return;
     router.push(`/question/reading-writing-blanks/${questions[idx]._id}`);
-    // setDropdownOpen(false);
   };
 
   // Render pagination (bottom right, sticky dropdown)
@@ -187,17 +163,23 @@ export default function DynamicPage({ params }) {
     );
   }
 
-  // Prompt split for blanks (find indices for (a)...(e))
-  const prompt = currentQ.prompt;
-  const options = currentQ.options || [];
-  let blanks = [];
+  // Prompt split for blanks (replace ___ or (a)/(b) style)
+  const prompt = currentQ.prompt || "";
+  const blanks = currentQ.blanks || [];
   let splitParts = [];
-  let cursor = 0;
-  let regex = /\([a-e]\)/g;
+  let regex = /___/g;
   let match;
+  let cursor = 0;
+  let blankCount = 0;
+
+  // Support both ___ and (a)/(b) style (optional, fallback to ___)
+  if (prompt.match(/\([a-e]\)/g)) {
+    regex = /\([a-e]\)/g;
+  }
+
   while ((match = regex.exec(prompt))) {
     splitParts.push(prompt.slice(cursor, match.index));
-    blanks.push(match[0]);
+    blankCount++;
     cursor = match.index + match[0].length;
   }
   splitParts.push(prompt.slice(cursor));
@@ -217,7 +199,7 @@ export default function DynamicPage({ params }) {
           #{currentQ._id}
         </span>
         <span className="text-lg font-semibold text-[#810000]">
-          {currentQ.heading}
+          {currentQ.heading ? currentQ.heading : ""}
         </span>
       </div>
       {/* Timer */}
@@ -235,9 +217,10 @@ export default function DynamicPage({ params }) {
             {i < blanks.length && (
               <span className="inline-block align-middle mx-1">
                 <span className="font-bold text-[#810000] mr-1">
-                  {blanks[i]}
+                  {/* For (a)/(b) style, show (a), else show (i) */}
+                  {(prompt.match(/\([a-e]\)/g) && prompt.match(/\([a-e]\)/g)[i]) ||
+                    `(${String.fromCharCode(97 + i)})`}
                 </span>
-                {/* nothing here, options below */}
               </span>
             )}
           </React.Fragment>
@@ -245,7 +228,7 @@ export default function DynamicPage({ params }) {
       </div>
       {/* Answer options below */}
       <div className="w-full flex flex-col md:flex-row gap-2 mb-4">
-        {options.map((opts, i) => (
+        {blanks.map((blank, i) => (
           <div key={i} className="flex-1">
             <select
               value={answers[i] || ""}
@@ -262,7 +245,7 @@ export default function DynamicPage({ params }) {
               <option value="">{`(${String.fromCharCode(
                 97 + i
               )})Select answer`}</option>
-              {opts.map((opt, j) => (
+              {blank.options.map((opt, j) => (
                 <option key={j} value={opt}>
                   {opt}
                 </option>
@@ -276,7 +259,7 @@ export default function DynamicPage({ params }) {
         <button
           className="flex items-center gap-1 px-6 py-2 rounded border border-gray-400 text-gray-700 hover:bg-gray-100 font-medium text-base"
           onClick={() => {
-            setAnswers(Array(currentQ.options?.length || 0).fill(""));
+            setAnswers(Array(currentQ.blanks?.length || 0).fill(""));
             setTimeLeft(RECORD_SECONDS);
             setTimerStarted(false);
           }}
