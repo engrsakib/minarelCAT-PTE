@@ -12,33 +12,6 @@ import {
 // 9:59 minutes in seconds
 const RECORD_SECONDS = 599;
 
-// Fake questions fallback (1-100 for pagination)
-const FAKE_QUESTIONS = Array.from({ length: 100 }, (_, i) => ({
-  _id: String(1234560 + i),
-  type: "mcq_multiple",
-  heading: i === 0 ? "Skin Cancer" : `Fake Heading ${i + 1}`,
-  prompt:
-    i === 0
-      ? `Write an email to the manager of a restaurant inquiring about the process for making online reservations.
-
-In your email, include:
-
--Ask for information on how the online reservation system works.
--Clarify if special requests (e.g., dietary preferences or seating arrangements) can be made online.
--Inquire about confirmation details and how far reservations should be made in advance.`
-      : `Fake prompt for question #${i + 1}`,
-  questionText:
-    i === 0
-      ? "Which of the following statements about the vaccine are incorrect?"
-      : `Fake MCQ question #${i + 1}`,
-  options: [
-    "Most cases of skin cancer are linked to exposure to ultraviolet radiation.",
-    "A vaccine stimulating the production of a protein critical to the skin’s antioxidant network is helping people bolster their defenses against skin cancer.",
-    "Skin cancer is the most common cancer in the United States, and Melanoma is the most lethal form of skin cancer",
-    "There are multiple vaccines to prevent cancer.",
-  ],
-}));
-
 export default function DynamicPage({ params }) {
   const { id } = params;
   const router = useRouter();
@@ -59,27 +32,39 @@ export default function DynamicPage({ params }) {
 
   // Pagination dropdown
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const baseUrl = process.env.NEXT_PUBLIC_URL || "";
 
   // Fetch all questions and find current index
   useEffect(() => {
     async function getQuestions() {
       setLoading(true);
       try {
-        const res = await fetchWithAuth(`/test/mcq_multiple`);
+        const res = await fetchWithAuth(`${baseUrl}/user/get-question/${id}`);
         const data = await res.json();
-        const arr =
-          data?.questions && data.questions.length
-            ? data.questions
-            : FAKE_QUESTIONS;
+
+        let arr = [];
+        let idx = 0;
+        let questionObj = null;
+
+        // API can send as {questions:[]} or {question:{}}
+        if (data.questions && Array.isArray(data.questions) && data.questions.length) {
+          arr = data.questions;
+          idx = arr.findIndex((q) => q._id === id);
+          questionObj = arr[idx !== -1 ? idx : 0];
+        } else if (data.question) {
+          arr = [data.question];
+          idx = 0;
+          questionObj = data.question;
+        }
+
         setQuestions(arr);
-        const idx = arr.findIndex((q) => q._id === id);
-        setCurrentIdx(idx !== -1 ? idx : 0);
-        setCurrentQ(arr[idx !== -1 ? idx : 0]);
+        setCurrentIdx(idx);
+        setCurrentQ(questionObj);
         setSelected([]);
       } catch {
-        setQuestions(FAKE_QUESTIONS);
+        setQuestions([]);
         setCurrentIdx(0);
-        setCurrentQ(FAKE_QUESTIONS[0]);
+        setCurrentQ(null);
         setSelected([]);
       }
       setLoading(false);
@@ -154,7 +139,7 @@ export default function DynamicPage({ params }) {
         </button>
         {dropdownOpen && (
           <div className="absolute right-0 bottom-11 w-36 max-h-72 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg z-50 dropdown-scroll">
-            {questions.slice(0, 100).map((q, i) => (
+            {questions.map((q, i) => (
               <button
                 key={q._id}
                 onClick={() => {
@@ -267,7 +252,8 @@ export default function DynamicPage({ params }) {
       </div>
       {/* MCQ Question */}
       <div className="border border-[#810000] rounded bg-white p-3 mb-2 text-[#810000] text-base font-semibold">
-        {currentQ.questionText}
+        {/* Use 'text' field from API for MCQ question */}
+        {currentQ.text}
       </div>
       {/* Options */}
       <div className="border border-[#810000] rounded bg-[#faf9f9] p-4 mb-2">
