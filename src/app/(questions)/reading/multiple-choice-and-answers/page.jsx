@@ -40,7 +40,7 @@ export default function multipleChoiceAndAnswers() {
       // tab-এর মানই হবে query-এর মান
       const query = tab;
       const response = await fetchWithAuth(
-        `${baseUrl}/test/reading/mcq_single?query=${query}`
+        `${baseUrl}/test/reading/mcq_multiple?query=${query}`
       );
       const result = await response.json();
       if (result?.questions) {
