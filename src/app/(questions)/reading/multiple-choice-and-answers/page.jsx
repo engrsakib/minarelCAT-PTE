@@ -33,15 +33,14 @@ export default function multipleChoiceAndAnswers() {
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
 
   // Fetch data with filters
-  const fetchData = async () => {
+         const fetchData = async () => {
     setIsLoading(true);
     setError("");
     try {
-      let query = `page=${currentPage}&limit=${itemsPerPage}`;
-      if (tab === "not_practiced") query += "&type=not_practiced";
-      if (tab === "bookmark") query += "&type=bookmark";
+      // tab-এর মানই হবে query-এর মান
+      const query = tab;
       const response = await fetchWithAuth(
-        `${baseUrl}/test/reading/mcq_multiple?${query}`
+        `${baseUrl}/test/reading/mcq_single?query=${query}`
       );
       const result = await response.json();
       if (result?.questions) {
@@ -59,6 +58,7 @@ export default function multipleChoiceAndAnswers() {
     }
     setIsLoading(false);
   };
+  
 
   useEffect(() => {
     fetchData();
