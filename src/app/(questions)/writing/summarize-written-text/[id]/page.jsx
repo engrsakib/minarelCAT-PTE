@@ -92,14 +92,24 @@ export default function RepeatSentencePage({ params }) {
   // Submit handler
   const handleSubmit = async () => {
     if (!answer.trim() || !question) return;
-    const formData = new FormData();
-    formData.append("userSummary", answer.trim());
-    formData.append("questionId", question._id);
+
+    const userSummary = answer.trim();
+    const questionId = id;
+    console.log(questionId, userSummary);
     try {
-      await fetchWithAuth(`${baseUrl}/test/writing/summerize-written-text/result`, {
-        method: "POST",
-        body: formData,
-      });
+      await fetchWithAuth(
+        `${baseUrl}/test/writing/summerize-written-text/result`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json", // Specify that the body contains JSON
+          },
+          body: JSON.stringify({
+            userSummary,
+            questionId,
+          }),
+        }
+      );
       alert(
         "Your answer has been submitted! (Demo: backend response not shown)"
       );
