@@ -12,23 +12,6 @@ import {
 // 9:59 minutes in seconds
 const RECORD_SECONDS = 599;
 
-// Fake questions fallback (1-100 for pagination)
-const FAKE_QUESTIONS = Array.from({ length: 100 }, (_, i) => ({
-  _id: String(1234560 + i),
-  type: "reorder_paragraphs",
-  heading: i === 0 ? "Skin Cancer" : `Fake Heading ${i + 1}`,
-  prompt:
-    i === 0
-      ? `The text boxes in the left panel have been placed in random order. Restore the original order by dragging the text boxes from the left panel to the right panel.`
-      : `Fake re-order instruction for question #${i + 1}`,
-  options: [
-    "Most cases of skin cancer are linked to exposure to ultraviolet radiation.",
-    "A vaccine stimulating the production of a protein critical to the skin’s antioxidant network is helping people bolster their defenses against skin cancer.",
-    "Skin cancer is the most common cancer in the United States, and Melanoma is the most lethal form of skin cancer",
-    "There are multiple vaccines to prevent cancer.",
-  ],
-}));
-
 function shuffle(array) {
   // Fisher-Yates Shuffle
   let arr = array.slice();
@@ -55,33 +38,46 @@ export default function DynamicPage({ params }) {
   const [timerStarted, setTimerStarted] = useState(false);
 
   // Source (left) and Target (right) state for drag-and-drop
-  const [source, setSource] = useState([]); // shuffled [{label, text}]
-  const [target, setTarget] = useState([]); // ordered [{label, text}]
+  const [source, setSource] = useState([]); // shuffled [{label, text, idx}]
+  const [target, setTarget] = useState([]); // ordered [{label, text, idx}]
   const [dragged, setDragged] = useState(null);
 
   // Pagination dropdown
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const baseUrl = process.env.NEXT_PUBLIC_URL || "";
 
   // On mount/fetch question
   useEffect(() => {
     async function getQuestions() {
       setLoading(true);
       try {
-        const res = await fetchWithAuth(`/test/reorder_paragraphs`);
+        const res = await fetchWithAuth(`${baseUrl}/user/get-question/${id}`);
         const data = await res.json();
-        const arr =
-          data?.questions && data.questions.length
-            ? data.questions
-            : FAKE_QUESTIONS;
+
+        let arr = [];
+        let idx = 0;
+        let questionObj = null;
+
+        // Support both {questions:[]} and {question:{}}
+        if (data.questions && Array.isArray(data.questions) && data.questions.length) {
+          arr = data.questions;
+          idx = arr.findIndex((q) => q._id === id);
+          questionObj = arr[idx !== -1 ? idx : 0];
+        } else if (data.question) {
+          arr = [data.question];
+          idx = 0;
+          questionObj = data.question;
+        }
+
         setQuestions(arr);
-        const idx = arr.findIndex((q) => q._id === id);
-        setCurrentIdx(idx !== -1 ? idx : 0);
-        setCurrentQ(arr[idx !== -1 ? idx : 0]);
+        setCurrentIdx(idx);
+        setCurrentQ(questionObj);
+
         // shuffle options for source, preserve original order in options
-        const optionsArr = arr[idx !== -1 ? idx : 0].options || [];
+        const optionsArr = questionObj?.options || [];
         const shuffled = shuffle(
           optionsArr.map((text, i) => ({
-            label: String.fromCharCode(65 + i),
+            label: String.fromCharCode(97 + i).toUpperCase(), // A, B, C, D, ...
             text,
             idx: i,
           }))
@@ -89,18 +85,10 @@ export default function DynamicPage({ params }) {
         setSource(shuffled);
         setTarget([]);
       } catch {
-        setQuestions(FAKE_QUESTIONS);
+        setQuestions([]);
         setCurrentIdx(0);
-        setCurrentQ(FAKE_QUESTIONS[0]);
-        const optionsArr = FAKE_QUESTIONS[0].options || [];
-        const shuffled = shuffle(
-          optionsArr.map((text, i) => ({
-            label: String.fromCharCode(65 + i),
-            text,
-            idx: i,
-          }))
-        );
-        setSource(shuffled);
+        setCurrentQ(null);
+        setSource([]);
         setTarget([]);
       }
       setLoading(false);
@@ -130,7 +118,10 @@ export default function DynamicPage({ params }) {
   const handleDropTarget = () => {
     if (dragged && dragged.fromSource) {
       // from source to target (append at end)
-      setTarget((prev) => [...prev, dragged]);
+      setTarget((prev) => [
+        ...prev,
+        { ...dragged, label: String.fromCharCode(97 + prev.length).toUpperCase() }
+      ]);
       setSource((prev) => prev.filter((_, i) => i !== dragged.idx));
     }
     setDragged(null);
@@ -151,7 +142,11 @@ export default function DynamicPage({ params }) {
       const arr = prev.slice();
       arr.splice(dragged.idx, 1);
       arr.splice(overIdx, 0, dragged);
-      return arr;
+      // update labels (A, B, C, ...)
+      return arr.map((item, i) => ({
+        ...item,
+        label: String.fromCharCode(97 + i).toUpperCase(),
+      }));
     });
     setDragged((d) => ({ ...d, idx: overIdx }));
   };
@@ -159,7 +154,7 @@ export default function DynamicPage({ params }) {
   // Submit handler
   const handleSubmit = async () => {
     if (!currentQ || target.length !== (currentQ.options?.length || 0)) return;
-    // send the indices of selected (ordered) paragraphs
+    // send the indices of selected (ordered) paragraphs (not labels)
     const payload = {
       questionId: currentQ._id,
       ordered: target.map((item) => item.idx), // original index order
@@ -184,7 +179,7 @@ export default function DynamicPage({ params }) {
     const optionsArr = currentQ.options || [];
     const shuffled = shuffle(
       optionsArr.map((text, i) => ({
-        label: String.fromCharCode(65 + i),
+        label: String.fromCharCode(97 + i).toUpperCase(),
         text,
         idx: i,
       }))
@@ -212,7 +207,7 @@ export default function DynamicPage({ params }) {
         </button>
         {dropdownOpen && (
           <div className="absolute right-0 bottom-11 w-36 max-h-72 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg z-50 dropdown-scroll">
-            {questions.slice(0, 100).map((q, i) => (
+            {questions.map((q, i) => (
               <button
                 key={q._id}
                 onClick={() => {
@@ -306,7 +301,7 @@ export default function DynamicPage({ params }) {
           #{currentQ._id}
         </span>
         <span className="text-lg font-semibold text-[#810000]">
-          {currentQ.heading}
+          {currentQ.heading || ""}
         </span>
       </div>
       {/* Timer */}
@@ -337,7 +332,7 @@ export default function DynamicPage({ params }) {
             )}
             {source.map((item, i) => (
               <div
-                key={item.label}
+                key={item.label + item.idx}
                 className="flex items-center gap-3 bg-[#faf9f9] border border-[#810000] rounded px-4 py-3 cursor-grab select-none shadow-sm"
                 draggable
                 onDragStart={() => handleDragStart(item, true, i)}
@@ -381,7 +376,7 @@ export default function DynamicPage({ params }) {
             )}
             {target.map((item, i) => (
               <div
-                key={item.label}
+                key={item.label + item.idx}
                 className="flex items-center gap-3 bg-[#faf9f9] border border-[#810000] rounded px-4 py-3 cursor-grab select-none shadow-sm"
                 draggable
                 onDragStart={() => handleDragStart(item, false, i)}
