@@ -12,33 +12,6 @@ import {
 // 9:59 minutes in seconds
 const RECORD_SECONDS = 599;
 
-// Fake questions fallback (1-100 for pagination)
-const FAKE_QUESTIONS = Array.from({ length: 100 }, (_, i) => ({
-  _id: String(1234560 + i),
-  type: "mcq_single",
-  heading: i === 0 ? "Skin Cancer" : `Fake Heading ${i + 1}`,
-  prompt:
-    i === 0
-      ? `Write an email to the manager of a restaurant inquiring about the process for making online reservations.
-
-In your email, include:
-
--Ask for information on how the online reservation system works.
--Clarify if special requests (e.g., dietary preferences or seating arrangements) can be made online.
--Inquire about confirmation details and how far reservations should be made in advance.`
-      : `Fake prompt for question #${i + 1}`,
-  questionText:
-    i === 0
-      ? "Which of the following statements about the vaccine are incorrect?"
-      : `Fake MCQ question #${i + 1}`,
-  options: [
-    "Most cases of skin cancer are linked to exposure to ultraviolet radiation.",
-    "A vaccine stimulating the production of a protein critical to the skin’s antioxidant network is helping people bolster their defenses against skin cancer.",
-    "Skin cancer is the most common cancer in the United States, and Melanoma is the most lethal form of skin cancer",
-    "There are multiple vaccines to prevent cancer.",
-  ],
-}));
-
 export default function DynamicPage({ params }) {
   const { id } = params;
   const router = useRouter();
@@ -59,36 +32,62 @@ export default function DynamicPage({ params }) {
 
   // Pagination dropdown
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const baseUrl = process.env.NEXT_PUBLIC_URL || "";
 
-  // Fetch all questions and find current index
+  // Fetch questions (array or single) and set current
   useEffect(() => {
     async function getQuestions() {
       setLoading(true);
       try {
-        const res = await fetchWithAuth(`/test/mcq_single`);
+        const res = await fetchWithAuth(`${baseUrl}/user/get-question/${id}`);
         const data = await res.json();
-        const arr =
-          data?.questions && data.questions.length
-            ? data.questions
-            : FAKE_QUESTIONS;
-        setQuestions(arr);
-        const idx = arr.findIndex((q) => q._id === id);
-        setCurrentIdx(idx !== -1 ? idx : 0);
-        setCurrentQ(arr[idx !== -1 ? idx : 0]);
-        setSelected(null);
+
+        let arr = [];
+        // Handle array: { questions: [...] }
+        if (Array.isArray(data?.questions) && data.questions.length > 0) {
+          if (data.questions[0]?.question) {
+            arr = data.questions.map(q => q.question);
+          } else {
+            arr = data.questions;
+          }
+          setQuestions(arr);
+          const idx = arr.findIndex((q) => q._id === id);
+          setCurrentIdx(idx !== -1 ? idx : 0);
+          setCurrentQ(arr[idx !== -1 ? idx : 0]);
+        }
+        // Handle single: { question: {...} }
+        else if (data?.question) {
+          setQuestions([data.question]);
+          setCurrentQ(data.question);
+          setCurrentIdx(0);
+        } else {
+          setQuestions([]);
+          setCurrentQ(null);
+          setCurrentIdx(0);
+        }
       } catch {
-        setQuestions(FAKE_QUESTIONS);
+        setQuestions([]);
+        setCurrentQ(null);
         setCurrentIdx(0);
-        setCurrentQ(FAKE_QUESTIONS[0]);
-        setSelected(null);
       }
       setLoading(false);
       setTimeLeft(RECORD_SECONDS);
       setTimerStarted(false);
+      setSelected(null);
     }
     getQuestions();
     // eslint-disable-next-line
   }, [id]);
+
+  // When questions or currentIdx changes, update currentQ
+  useEffect(() => {
+    if (questions.length > 0) {
+      setCurrentQ(questions[currentIdx] || null);
+      setSelected(null);
+      setTimeLeft(RECORD_SECONDS);
+      setTimerStarted(false);
+    }
+  }, [questions, currentIdx]);
 
   // Timer logic (start on page load)
   useEffect(() => {
@@ -108,7 +107,7 @@ export default function DynamicPage({ params }) {
     if (!currentQ || selected === null) return;
     const payload = {
       questionId: currentQ._id,
-      answer: selected,
+      answer: currentQ.options[selected],
     };
     try {
       await fetchWithAuth("/test/mcq_single/submit", {
@@ -116,9 +115,7 @@ export default function DynamicPage({ params }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      alert(
-        "Your answer has been submitted! (Demo: backend response not shown)"
-      );
+      alert("Your answer has been submitted! (Demo: backend response not shown)");
     } catch (e) {
       alert("Something went wrong! Try again.");
     }
@@ -215,10 +212,20 @@ export default function DynamicPage({ params }) {
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
-  if (loading || !currentQ) {
+  // Show error or empty if API returns empty/invalid
+  if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[40vh]">
         Loading...
+      </div>
+    );
+  }
+  if (!currentQ) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-[40vh] text-center">
+        <div className="text-2xl font-semibold text-[#810000] mb-2">No Question Found</div>
+        <div className="text-gray-600">Please try refreshing or contact support.</div>
+        {renderPagination()}
       </div>
     );
   }
@@ -254,50 +261,54 @@ export default function DynamicPage({ params }) {
       </div>
       {/* MCQ Question */}
       <div className="border border-[#810000] rounded bg-white p-3 mb-2 text-[#810000] text-base font-semibold">
-        {currentQ.questionText}
+        {currentQ.text}
       </div>
       {/* Options */}
       <div className="border border-[#810000] rounded bg-[#faf9f9] p-4 mb-2">
-        {currentQ.options.map((opt, i) => {
-          const abc = String.fromCharCode(65 + i);
-          return (
-            <label
-              key={i}
-              className={`flex items-center gap-3 mb-2 cursor-pointer select-none group ${
-                selected === i
-                  ? "bg-[#f5eaea] border-2 border-[#810000] rounded"
-                  : ""
-              }`}
-              style={{
-                transition: "background 0.1s, border 0.1s",
-                padding: "0.25rem 0.5rem",
-              }}
-            >
-              <input
-                type="radio"
-                name="mcq"
-                checked={selected === i}
-                onChange={() => setSelected(i)}
-                className="accent-[#810000] w-4 h-4"
-                style={{ accentColor: "#810000" }}
-              />
-              <span
-                className={`text-base font-bold flex items-center justify-center w-7 h-7 rounded-full border border-[#810000] ${
+        {currentQ.options && currentQ.options.length > 0 ? (
+          currentQ.options.map((opt, i) => {
+            const abc = String.fromCharCode(65 + i);
+            return (
+              <label
+                key={i}
+                className={`flex items-center gap-3 mb-2 cursor-pointer select-none group ${
                   selected === i
-                    ? "bg-[#810000] text-white"
-                    : "bg-white text-[#810000]"
+                    ? "bg-[#f5eaea] border-2 border-[#810000] rounded"
+                    : ""
                 }`}
                 style={{
-                  minWidth: 28,
-                  minHeight: 28,
+                  transition: "background 0.1s, border 0.1s",
+                  padding: "0.25rem 0.5rem",
                 }}
               >
-                {abc}
-              </span>
-              <span className="text-gray-800 font-normal text-base">{opt}</span>
-            </label>
-          );
-        })}
+                <input
+                  type="radio"
+                  name="mcq"
+                  checked={selected === i}
+                  onChange={() => setSelected(i)}
+                  className="accent-[#810000] w-4 h-4"
+                  style={{ accentColor: "#810000" }}
+                />
+                <span
+                  className={`text-base font-bold flex items-center justify-center w-7 h-7 rounded-full border border-[#810000] ${
+                    selected === i
+                      ? "bg-[#810000] text-white"
+                      : "bg-white text-[#810000]"
+                  }`}
+                  style={{
+                    minWidth: 28,
+                    minHeight: 28,
+                  }}
+                >
+                  {abc}
+                </span>
+                <span className="text-gray-800 font-normal text-base">{opt}</span>
+              </label>
+            );
+          })
+        ) : (
+          <div className="text-gray-500">No options found for this question.</div>
+        )}
       </div>
       {/* Controls */}
       <div className="flex gap-3 mb-2 mt-3">
