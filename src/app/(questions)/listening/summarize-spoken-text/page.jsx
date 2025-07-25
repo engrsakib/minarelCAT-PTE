@@ -33,15 +33,14 @@ export default function reorderParagraphs() {
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
 
   // Fetch data with filters
-  const fetchData = async () => {
+         const fetchData = async () => {
     setIsLoading(true);
     setError("");
     try {
-      let query = `page=${currentPage}&limit=${itemsPerPage}`;
-      if (tab === "not_practiced") query += "&type=not_practiced";
-      if (tab === "bookmark") query += "&type=bookmark";
+      // tab-এর মানই হবে query-এর মান
+      const query = tab;
       const response = await fetchWithAuth(
-        `${baseUrl}/test/listening/summarize-spoken-text?${query}`
+        `${baseUrl}/test/listening/summarize-spoken-text?query=${query}`
       );
       const result = await response.json();
       if (result?.questions) {
