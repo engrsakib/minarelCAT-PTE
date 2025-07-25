@@ -56,7 +56,7 @@ export default function multipleChoiceAndAnswers() {
       setData([]);
       setTotalPages(1);
     }
-    setIsLoading(false);
+    setIsLoading(false);  
   };
   useEffect(() => {
     fetchData();
