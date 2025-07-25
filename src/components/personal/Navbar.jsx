@@ -40,7 +40,9 @@ export default function Navbar() {
   const loadNotifications = useCallback(
     async (initial = false) => {
       try {
-        const response = await fetchWithAuth(`/api/notifications?page=${initial ? 1 : page}&limit=${PAGE_SIZE}`);
+        const response = await fetchWithAuth(
+          `/api/notifications?page=${initial ? 1 : page}&limit=${PAGE_SIZE}`
+        );
         const data = await response.json();
         let fetched = data.notifications || [];
         if (fetched.length === 0 && initial) {
@@ -52,7 +54,7 @@ export default function Navbar() {
           setPage(1);
           // নতুন আইডি চেক (শুধু যেগুলো readIds-এ নেই)
           let newIds = fetched.map((n) => n.id);
-          let newCount = newIds.filter(id => !readIds.includes(id)).length;
+          let newCount = newIds.filter((id) => !readIds.includes(id)).length;
           setUnreadCount(newCount);
         } else {
           setNotifications((prev) => [...prev, ...fetched]);
@@ -61,8 +63,8 @@ export default function Navbar() {
       } catch {
         if (initial) {
           setNotifications(FAKE_NOTIFICATIONS.slice(0, PAGE_SIZE));
-          let fakeIds = FAKE_NOTIFICATIONS.slice(0, PAGE_SIZE).map(n => n.id);
-          let newCount = fakeIds.filter(id => !readIds.includes(id)).length;
+          let fakeIds = FAKE_NOTIFICATIONS.slice(0, PAGE_SIZE).map((n) => n.id);
+          let newCount = fakeIds.filter((id) => !readIds.includes(id)).length;
           setUnreadCount(newCount);
           setHasMore(true);
         }
@@ -85,10 +87,15 @@ export default function Navbar() {
     setTimeout(async () => {
       try {
         const nextPage = page + 1;
-        const response = await fetchWithAuth(`/api/notifications?page=${nextPage}&limit=${PAGE_SIZE}`);
+        const response = await fetchWithAuth(
+          `/api/notifications?page=${nextPage}&limit=${PAGE_SIZE}`
+        );
         const data = await response.json();
         let fetched = data.notifications || [];
-        if (fetched.length === 0 && nextPage * PAGE_SIZE <= FAKE_NOTIFICATIONS.length) {
+        if (
+          fetched.length === 0 &&
+          nextPage * PAGE_SIZE <= FAKE_NOTIFICATIONS.length
+        ) {
           const start = (nextPage - 1) * PAGE_SIZE;
           fetched = FAKE_NOTIFICATIONS.slice(start, start + PAGE_SIZE);
           setHasMore(start + PAGE_SIZE < FAKE_NOTIFICATIONS.length);
@@ -112,7 +119,7 @@ export default function Navbar() {
   // Bell button click: open panel, mark all current notifications as read
   const handleNotifClick = () => {
     setNotifOpen(true);
-    setReadIds(notifications.map(n => n.id));
+    setReadIds(notifications.map((n) => n.id));
     setUnreadCount(0);
     // fetchWithAuth("/api/notifications/mark-read", { method: "POST" });
   };
@@ -159,8 +166,17 @@ export default function Navbar() {
         {user ? (
           <div className="hidden lg:flex items-center gap-4">
             {/* notifications */}
-            <div className="relative text-[#7D0000] text-[36px] cursor-pointer" onClick={handleNotifClick}>
-              <span className={`absolute -top-2 -right-2 bg-[#7D0000] text-white text-xs font-bold rounded-full p-1 w-5 h-5 ${unreadCount === 0 ? "hidden" : ""}`}>{unreadCount}</span>
+            <div
+              className="relative text-[#7D0000] text-[36px] cursor-pointer"
+              onClick={handleNotifClick}
+            >
+              <span
+                className={`absolute -top-2 -right-2 bg-[#7D0000] text-white text-xs font-bold rounded-full p-1 w-5 h-5 ${
+                  unreadCount === 0 ? "hidden" : ""
+                }`}
+              >
+                {unreadCount}
+              </span>
               <IoNotificationsOutline />
             </div>
             {/* ড্রপডাউন প্যানেল */}
