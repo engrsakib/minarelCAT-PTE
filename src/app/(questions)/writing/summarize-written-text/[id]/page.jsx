@@ -7,7 +7,11 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
+  Monitor,
+  Share2,
+  X,
 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 const WRITING_SECONDS = 599; // 9:59min
 const WORD_LIMIT = 1000;
@@ -29,9 +33,82 @@ export default function RepeatSentencePage({ params }) {
   const [answer, setAnswer] = useState("");
   const [wordCount, setWordCount] = useState(0);
 
+  // AI Score Modal state
+  const [showAiScoreModal, setShowAiScoreModal] = useState(false);
+
   // Pagination dropdown (not used but kept for future)
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
+
+  // Mock score data with progress values
+  const mockScoreData = {
+    overallScore: 14,
+    maxScore: 15,
+    enablingSkills: [
+      {
+        name: "Content",
+        score: 3,
+        max: 3,
+        progress: 100,
+        color: "hsl(var(--primary))",
+      },
+      {
+        name: "Grammar",
+        score: 2,
+        max: 2,
+        progress: 100,
+        color: "hsl(var(--primary))",
+      },
+      {
+        name: "Spelling",
+        score: 2,
+        max: 2,
+        progress: 100,
+        color: "hsl(var(--primary))",
+      },
+      {
+        name: "Form",
+        score: 2,
+        max: 2,
+        progress: 100,
+        color: "hsl(var(--primary))",
+      },
+      {
+        name: "Organization",
+        score: 2,
+        max: 2,
+        progress: 100,
+        color: "hsl(var(--primary))",
+      },
+      {
+        name: "Email Convention",
+        score: 1,
+        max: 2,
+        progress: 50,
+        color: "hsl(var(--primary))",
+      },
+      {
+        name: "Vocabulary Range",
+        score: 2,
+        max: 2,
+        progress: 100,
+        color: "hsl(var(--primary))",
+      },
+    ],
+    userResponse: {
+      text: 'The email is well written, with clear content, excellent grammar, spelling, and vocabulary. The form and organization are also well done. However, it lacks the conventional salutation at the beginning of the email. It would be better to address the manager by name, e.g., "Dear Mr./Ms. [Last Name]".',
+      totalWords: wordCount || 1,
+      time: "00:04",
+      language: "English: American",
+    },
+    suggestions: [
+      {
+        title: "Email Convention",
+        text: 'The email is well written, with clear content, excellent grammar, spelling, and vocabulary. The form and organization are also well done. However, it lacks the conventional salutation at the beginning of the email. It would be better to address the manager by name, e.g., "Dear Mr./Ms. [Last Name]".',
+      },
+    ],
+    scoreDisappearDate: "28/09/2025",
+  };
 
   // Fetch question
   useEffect(() => {
@@ -102,7 +179,7 @@ export default function RepeatSentencePage({ params }) {
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json", // Specify that the body contains JSON
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             userSummary,
@@ -110,9 +187,8 @@ export default function RepeatSentencePage({ params }) {
           }),
         }
       );
-      alert(
-        "Your answer has been submitted! (Demo: backend response not shown)"
-      );
+      // Show AI Score Modal instead of alert
+      setShowAiScoreModal(true);
     } catch (e) {
       alert("Something went wrong! Try again.");
     }
@@ -219,7 +295,7 @@ export default function RepeatSentencePage({ params }) {
           <span>Submit</span>
         </button>
       </div>
-      {/* Pagination removed as per updated requirement */}
+
       <style jsx>{`
         textarea::placeholder {
           color: #bbb;
@@ -229,6 +305,219 @@ export default function RepeatSentencePage({ params }) {
           color: #aaa;
         }
       `}</style>
+
+      {/* Custom AI Score Modal (Full Width) */}
+      {showAiScoreModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm">
+          <div className="fixed inset-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-[#810000] to-[#a50000] p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0 shadow-lg">
+              {/* Left Section */}
+              <div className="flex items-center gap-2 text-white text-base sm:text-lg font-semibold">
+                <Monitor className="w-5 h-5 sm:w-6 sm:h-6" />
+                <span>#7000475</span>
+              </div>
+
+              {/* Center Title */}
+              <div className="text-white text-xl sm:text-2xl font-bold text-center flex flex-col sm:flex-grow sm:items-center">
+                AI Score Report
+                <span className="block text-sm font-normal opacity-90 mt-1">
+                  alfapte.com
+                </span>
+              </div>
+
+              {/* Right Icons */}
+              <div className="flex items-center gap-3 mt-2 sm:mt-0">
+                <Share2 className="w-5 h-5 sm:w-6 sm:h-6 text-white cursor-pointer hover:scale-110 transition-transform" />
+                <X
+                  className="w-5 h-5 sm:w-6 sm:h-6 text-white cursor-pointer hover:scale-110 transition-transform"
+                  onClick={() => setShowAiScoreModal(false)}
+                />
+              </div>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="h-[calc(100%-84px)] overflow-y-auto">
+              <div className="p-12 space-y-12">
+                {/* Score Overview */}
+                <div className="grid grid-cols-1 xl:grid-cols-5 gap-12">
+                  {/* Overall Score */}
+                  <div className="xl:col-span-1">
+                    <div className="bg-white rounded-3xl shadow-xl p-10 border border-slate-200 hover:shadow-2xl transition-shadow">
+                      <h3 className="text-2xl font-bold text-gray-800 mb-10 text-center">
+                        Overall Score
+                      </h3>
+                      <div className="flex flex-col items-center">
+                        <div className="relative w-40 h-40 mb-6">
+                          <svg
+                            className="w-40 h-40 transform -rotate-90"
+                            viewBox="0 0 36 36"
+                          >
+                            <path
+                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                              fill="none"
+                              stroke="#e2e8f0"
+                              strokeWidth="2"
+                            />
+                            <path
+                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                              fill="none"
+                              stroke="#810000"
+                              strokeWidth="2"
+                              strokeDasharray={`${
+                                (mockScoreData.overallScore /
+                                  mockScoreData.maxScore) *
+                                100
+                              }, 100`}
+                              strokeLinecap="round"
+                            />
+                          </svg>
+                          <div className="absolute inset-0 flex flex-col items-center justify-center">
+                            <span className="text-4xl font-bold text-[#810000]">
+                              {mockScoreData.overallScore}
+                            </span>
+                            <span className="text-base text-gray-500">
+                              out of {mockScoreData.maxScore}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xl font-semibold text-gray-700 mb-2">
+                            Excellent Work!
+                          </p>
+                          <p className="text-base text-gray-500">
+                            {Math.round(
+                              (mockScoreData.overallScore /
+                                mockScoreData.maxScore) *
+                                100
+                            )}
+                            % Achievement
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Skills Breakdown */}
+                  <div className="xl:col-span-4">
+                    <div className="bg-white rounded-3xl shadow-xl p-10 border border-slate-200 hover:shadow-2xl transition-shadow">
+                      <div className="bg-gradient-to-r from-[#810000] to-[#a50000] text-white py-5 px-10 rounded-2xl mb-10">
+                        <h3 className="text-2xl font-bold text-center">
+                          Enabling Skills Breakdown
+                        </h3>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+                        {mockScoreData.enablingSkills.map((skill, index) => (
+                          <div
+                            key={index}
+                            className="bg-slate-50 rounded-2xl p-8 border border-slate-200 hover:shadow-lg transition-shadow"
+                          >
+                            <div className="flex items-center justify-between mb-6">
+                              <span className="font-bold text-gray-800 text-xl">
+                                {skill.name}
+                              </span>
+                              <span className="text-xl font-bold text-[#810000] bg-red-50 px-4 py-2 rounded-full">
+                                {skill.score}/{skill.max}
+                              </span>
+                            </div>
+                            <div className="relative">
+                              <Progress
+                                value={skill.progress}
+                                className="h-5 bg-slate-200"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <span className="text-sm font-bold text-white drop-shadow-sm">
+                                  {skill.progress}%
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* User Response Section */}
+                <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200">
+                  <div className="bg-gradient-to-r from-[#810000] to-[#a50000] text-white py-6 px-10">
+                    <h3 className="text-3xl font-bold">
+                      Your Response Analysis
+                    </h3>
+                  </div>
+
+                  <div className="p-10 space-y-8">
+                    <div className="bg-slate-50 rounded-2xl p-8 border-l-8 border-[#810000]">
+                      <p className="text-gray-800 leading-relaxed whitespace-pre-line text-xl">
+                        {answer || mockScoreData.userResponse.text}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-10">
+                      <div className="bg-blue-50 rounded-2xl p-8 text-center border border-blue-200 hover:shadow-xl transition-shadow">
+                        <p className="text-base text-blue-600 font-bold uppercase tracking-wider mb-3">
+                          Total Words
+                        </p>
+                        <p className="text-3xl font-bold text-blue-800">
+                          {wordCount}
+                        </p>
+                      </div>
+                      <div className="bg-green-50 rounded-2xl p-8 text-center border border-green-200 hover:shadow-xl transition-shadow">
+                        <p className="text-base text-green-600 font-bold uppercase tracking-wider mb-3">
+                          Time Taken
+                        </p>
+                        <p className="text-3xl font-bold text-green-800">
+                          {formatTime(WRITING_SECONDS - writingTime)}
+                        </p>
+                      </div>
+                      <div className="bg-purple-50 rounded-2xl p-8 text-center border border-purple-200 hover:shadow-xl transition-shadow">
+                        <p className="text-base text-purple-600 font-bold uppercase tracking-wider mb-3">
+                          Language
+                        </p>
+                        <p className="text-xl font-bold text-purple-800">
+                          {mockScoreData.userResponse.language}
+                        </p>
+                      </div>
+                    </div>
+
+                    <p className="text-center text-base text-gray-600 mt-8 bg-yellow-50 py-4 px-8 rounded-2xl border border-yellow-200">
+                      ⏰ This score will expire on{" "}
+                      <span className="font-bold">
+                        {mockScoreData.scoreDisappearDate}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+
+                {/* Suggestions Section */}
+                <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200">
+                  <div className="bg-gradient-to-r from-[#810000] to-[#a50000] text-white py-6 px-10 cursor-pointer hover:from-[#950000] hover:to-[#b50000] transition-colors">
+                    <h3 className="text-3xl font-bold flex items-center justify-center gap-4">
+                      💡 Detailed Feedback & Suggestions
+                    </h3>
+                  </div>
+                  <div className="p-10 bg-gradient-to-br from-slate-50 to-white">
+                    {mockScoreData.suggestions.map((suggestion, index) => (
+                      <div key={index} className="mb-8 last:mb-0">
+                        <div className="bg-white rounded-2xl p-8 border-l-8 border-[#810000] shadow-lg hover:shadow-xl transition-shadow">
+                          <h4 className="font-bold text-[#810000] mb-4 flex items-center gap-4 text-2xl">
+                            <span className="w-4 h-4 bg-[#810000] rounded-full"></span>
+                            {suggestion.title}
+                          </h4>
+                          <p className="text-gray-700 leading-relaxed text-lg">
+                            {suggestion.text}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
