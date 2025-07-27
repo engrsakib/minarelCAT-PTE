@@ -1,20 +1,22 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import fetchWithAuth from "../../../../lib/fetchWithAuth";
 import Image from "next/image";
-import { useState, useEffect } from "react";
 import frame from "../../../../../public/frame.png";
 import dummy from "../../../../../public/dummy-image.png";
 import edit from "../../../../../public/edit.png";
+import UserForm from "../../../../components/personal/UserForm";
 
 const Profile = () => {
   const [loading, setLoading] = useState(true);
-  const [userData, setUserData] = useState([]);
+  const [userData, setUserData] = useState(null);
   const baseUrl = process.env.NEXT_PUBLIC_URL;
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         setLoading(true);
+        console.log("Fetching:", `${baseUrl}/user/user-info`);
         const response = await fetchWithAuth(`${baseUrl}/user/user-info`);
 
         if (!response.ok) {
@@ -22,54 +24,92 @@ const Profile = () => {
         }
 
         const data = await response.json();
+        console.log("Fetched Data:", data);
 
         setUserData(data);
-
-        setLoading(false);
       } catch (error) {
-        console.error("Error fetching FAQs:", error);
+        console.error("Error fetching user info:", error);
+      } finally {
         setLoading(false);
-
-        // Fallback to empty array or show error message
       }
     };
 
-    // Initial fetch
-    fetchUserData();
+    if (baseUrl) fetchUserData();
   }, [baseUrl]);
-  console.log("user data", userData);
 
+  if (loading) return <p>Loading...</p>;
+  if (!userData) return <p>No user data available</p>;
+  console.log('user data: ',userData);
+  
   return (
     <div>
-      <div className="">
-        <div className="relative">
-          <Image src={frame} alt="" />
-          <div className="absolute top-25 left-6">
-            <div className="user-image relative w-[130px] h-[130px] rounded-full  border-2 border-pink-50">
-              {userData?.image ? (
+      <div className="grid">
+        
+          
+          <div className="block md:hidden rounded-full top-45 left-6 mt-10 ">
+            <div className="user-image relative w-[140px] h-[140px] rounded-full shadow-lg border-2 border-pink-50">
+              {userData?.user?.image ? (
                 <Image
                   className="rounded-full object-cover"
-                  src={userData.image}
+                  src={userData.user.image}
                   alt="User Image"
-                  width={130}
-                  height={130}
+                  fill
                 />
               ) : (
                 <Image
                   className="rounded-full object-cover"
                   src={dummy}
                   alt="Default Image"
-                  width={130}
-                  height={130}
+                  fill
                 />
               )}
-              <div className="absolute top-20 left-20">
-                <Image src={edit} alt="Edit Icon" width={30} height={30} />
+              <div className="absolute top-25 left-22">
+                <Image src={edit} alt="Edit Icon" width={40} height={40} />
               </div>
             </div>
 
-            <div className="user-name"></div>
+            <div className="user-name absolute md:left-40 md:top-20 w-100 grid gap-2">
+              <h1 className="text-[#7D0000] font-semibold text-4xl ">
+                {userData.user?.name}
+              </h1>
+              <h1 className="text-black">{userData.user?._id}</h1>
+            </div>
           </div>
+        
+        <div className="hidden md:block relative w-full h-full">
+          <Image src={frame} alt="" />
+          <div className="absolute rounded-full top-45 left-6 flex">
+            <div className="user-image relative w-[140px] h-[140px] rounded-full shadow-lg border-2 border-pink-50">
+              {userData?.user?.image ? (
+                <Image
+                  className="rounded-full object-cover"
+                  src={userData.user.image}
+                  alt="User Image"
+                  fill
+                />
+              ) : (
+                <Image
+                  className="rounded-full object-cover"
+                  src={dummy}
+                  alt="Default Image"
+                  fill
+                />
+              )}
+              <div className="absolute top-25 left-22">
+                <Image src={edit} alt="Edit Icon" width={40} height={40} />
+              </div>
+            </div>
+
+            <div className="user-name absolute left-40 top-20 w-100 grid gap-2">
+              <h1 className="text-black font-semibold text-4xl">
+                {userData.user?.name}
+              </h1>
+              <h1 className="text-black">{userData.user?._id}</h1>
+            </div>
+          </div>
+        </div>
+        <div className="mt-25">
+          <UserForm />
         </div>
       </div>
     </div>

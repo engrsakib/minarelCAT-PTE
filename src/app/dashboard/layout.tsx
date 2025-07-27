@@ -1,31 +1,62 @@
-import React from 'react'
+"use client"
+import React,{useState,useEffect} from 'react'
 import Image from 'next/image';
 import icon from '../../../public/profile-icon.png'
 import Link from 'next/link';
+import { usePathname } from "next/navigation";
 
-const layout = ({
+const Layout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
+  const pathname = usePathname(); 
+  const lastSegment = pathname.split("/").filter(Boolean).pop();
+   
+   const [bar,setBar] = useState(false);
+   const [name,setName] = useState("Profile");
+   
+  useEffect(() => {
+    const nameMap: Record<string, string> = {
+      "my-profile": "Profile",
+      "plan-info": "Plan Info",
+      "payment-history": "Payment History",
+      "notifications": "Notification",
+    };
+
+    if (lastSegment && nameMap[lastSegment]) {
+      setName(nameMap[lastSegment]);
+    } else {
+      setName("Profile"); // Default fallback
+    }
+  }, [lastSegment]);
+
+   
     
   return (
-    <div className='mx-80 mt-15'>
+    <div className='mx-10  md:mx-80 mt-5 md:mt-15'>
         <div >
-           <div className='flex gap-2 mb-2'>
+           <div className='flex relative mt-10 gap-2 mb-2' onClick={()=>setBar(!bar)}>
             <Image src={icon} alt=''/>
-           <h1 className='text-[#D80000] font-medium text-3xl'>Profile</h1>
+           <h1 className='text-[#D80000] font-medium text-3xl'>{name}</h1>
+           <div className={`${bar===false?"hidden":"block" } md:hidden grid bg-white absolute top-10 z-20 p-5 rounded`}>
+             <Link className={`${lastSegment === "my-profile" ? "text-[#EF0000]" : ""}`} href="/dashboard/profile/my-profile">My Profile</Link> 
+               <Link className={`${lastSegment === "plan-info" ? "text-[#EF0000]" : ""}`} href="/dashboard/profile/plan-info">Plan Info</Link> 
+               <Link className={`${lastSegment === "payment-history" ? "text-[#EF0000]" : ""}`} href="/dashboard/profile/payment-history">Payment History</Link>
+               <Link className={`${lastSegment === "notifications" ? "text-[#EF0000]" : ""}`} href="/dashboard/profile/notifications">Notification   </Link> 
+           </div>
            </div>
            <div className='border-b-3 border-b-[#D80000]'>
 
            </div>
         </div>
         <div className='flex'>
-            <div className='grid gap-8 p-10 pt-6 text-2xl font-medium w-90'>
-               <Link className='text-[#EF0000]' href="">My Profile</Link> 
-               <Link className='' href="">Plan Info</Link> 
-               <Link href="">Notification   </Link> 
-               <Link href="">My Profile</Link> 
+            <div className=' hidden md:grid gap-8 p-10 pt-6 text-2xl font-medium w-90 max-h-80'>
+               <Link className={`${lastSegment === "my-profile" ? "text-[#EF0000]" : ""}`} href="/dashboard/profile/my-profile">My Profile</Link> 
+               <Link className={`${lastSegment === "plan-info" ? "text-[#EF0000]" : ""}`} href="/dashboard/profile/plan-info">Plan Info</Link> 
+               <Link className={`${lastSegment === "payment-history" ? "text-[#EF0000]" : ""}`} href="/dashboard/profile/payment-history">Payment History</Link>
+               <Link className={`${lastSegment === "notifications" ? "text-[#EF0000]" : ""}`} href="/dashboard/profile/notifications">Notification   </Link> 
+                
                <button className='flex justify-start'>Log Out</button>
             </div>
             {children}
@@ -34,4 +65,4 @@ const layout = ({
   )
 }
 
-export default layout
+export default Layout
