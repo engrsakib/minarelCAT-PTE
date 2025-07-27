@@ -69,11 +69,12 @@ export default function multipleChoiceAndAnswers() {
 
   // Handle bookmark click
   const handleBookmark = async (item) => {
+    
     setBookmarkLoadingId(item._id);
     try {
       // Toggle bookmark: if true, remove; if false, add
       const res = await fetchWithAuth(
-        `${baseUrl}/test/speaking/read_aloud/bookmark`,
+        `${baseUrl}/user/bookmark`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -98,7 +99,7 @@ export default function multipleChoiceAndAnswers() {
   const handleAppearedClick = (item) => {
     router.push(`/listening/multiple-choice-and-answers/${item._id}`);
   };
-  
+
 
   const renderPageNumbers = () => {
     const pages = [];
