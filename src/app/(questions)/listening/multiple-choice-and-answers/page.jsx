@@ -98,6 +98,7 @@ export default function multipleChoiceAndAnswers() {
   const handleAppearedClick = (item) => {
     router.push(`/listening/multiple-choice-and-answers/${item._id}`);
   };
+  
 
   const renderPageNumbers = () => {
     const pages = [];
