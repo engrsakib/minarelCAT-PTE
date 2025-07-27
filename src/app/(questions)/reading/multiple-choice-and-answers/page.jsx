@@ -75,7 +75,7 @@ export default function multipleChoiceAndAnswers() {
     try {
       // Toggle bookmark: if true, remove; if false, add
       const res = await fetchWithAuth(
-        `${baseUrl}/test/speaking/read_aloud/bookmark`,
+        `${baseUrl}/user/bookmark`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
