@@ -114,8 +114,7 @@ export default function RepeatSentencePage({ params }) {
           },
           body: JSON.stringify({
             questionId: id,
-            email: answer.trim(), // The email content
-            // Add any other required fields based on your API spec
+            email: answer.trim(),
           }),
         }
       );
@@ -141,7 +140,6 @@ export default function RepeatSentencePage({ params }) {
   const closeModal = () => {
     setShowResultModal(false);
     setResultData(null);
-    // Optionally reset the form or navigate away
     setAnswer("");
     setWordCount(0);
     setWritingTime(WRITING_SECONDS);
@@ -175,12 +173,14 @@ export default function RepeatSentencePage({ params }) {
           <br />
           Please answer as completely as you can. (Max {WORD_LIMIT} words)
         </p>
+
         {/* Question Heading */}
         <div className="bg-[#810000] text-white px-5 py-2 rounded mb-2 text-lg font-semibold tracking-wide flex items-center gap-2">
           <span>#{question._id}</span>
           <span>|</span>
           <span>{question.heading}</span>
         </div>
+
         {/* Timer */}
         <div className="mb-2 text-[#810000] font-medium text-base flex items-center gap-2">
           <svg
@@ -194,10 +194,12 @@ export default function RepeatSentencePage({ params }) {
           </svg>
           <span className="font-bold text-lg">{formatTime(writingTime)}</span>
         </div>
+
         {/* Prompt */}
         <div className="border border-[#810000] rounded p-4 mb-4 bg-white text-gray-900 whitespace-pre-line">
           {question.prompt}
         </div>
+
         {/* Writing Box */}
         <div className="border border-[#810000] rounded p-0 mb-3 bg-[#faf9f9] flex flex-col items-stretch relative">
           <textarea
@@ -206,7 +208,7 @@ export default function RepeatSentencePage({ params }) {
             value={answer}
             onChange={handleInput}
             onPaste={handlePaste}
-            maxLength={WORD_LIMIT * 7} // extra limit
+            maxLength={WORD_LIMIT * 7}
             disabled={writingTime === 0 || submitting}
           />
           <div className="flex items-center justify-between px-4 pb-2 pt-1">
@@ -226,6 +228,7 @@ export default function RepeatSentencePage({ params }) {
             </span>
           </div>
         </div>
+
         {/* Controls */}
         <div className="flex gap-3 mb-2">
           <button
@@ -254,6 +257,129 @@ export default function RepeatSentencePage({ params }) {
           </button>
         </div>
 
+        {/* Result Modal */}
+        {showResultModal && resultData && (
+          <div className="absolute inset-0 flex items-center justify-center z-50 p-4 bg-white bg-opacity-90">
+            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-[#810000]">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <div className="flex items-center gap-3">
+                  <Award className="text-[#810000] w-6 h-6" />
+                  <h2 className="text-xl font-semibold text-gray-800">
+                    Writing Assessment Results
+                  </h2>
+                </div>
+                <button
+                  onClick={closeModal}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-6">
+                {/* Overall Score */}
+                <div className="text-center mb-6">
+                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-[#810000] to-[#a00000] text-white mb-3">
+                    <span className="text-2xl font-bold">
+                      {resultData.score}
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Total Score out of 20
+                  </div>
+                </div>
+
+                {/* Score Breakdown */}
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className="text-sm text-gray-600 mb-1">Content</div>
+                    <div className="text-lg font-semibold text-gray-800">
+                      {resultData.content}/5
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className="text-sm text-gray-600 mb-1">Grammar</div>
+                    <div className="text-lg font-semibold text-gray-800">
+                      {resultData.grammar}/5
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className="text-sm text-gray-600 mb-1">Spelling</div>
+                    <div className="text-lg font-semibold text-gray-800">
+                      {resultData.spelling}/5
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className="text-sm text-gray-600 mb-1">Form</div>
+                    <div className="text-lg font-semibold text-gray-800">
+                      {resultData.form}/5
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className="text-sm text-gray-600 mb-1">
+                      Organization
+                    </div>
+                    <div className="text-lg font-semibold text-gray-800">
+                      {resultData.organization}/5
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className="text-sm text-gray-600 mb-1">
+                      Email Convention
+                    </div>
+                    <div className="text-lg font-semibold text-gray-800">
+                      {resultData.emailConvention}/5
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded-lg col-span-2">
+                    <div className="text-sm text-gray-600 mb-1">
+                      Vocabulary Range
+                    </div>
+                    <div className="text-lg font-semibold text-gray-800">
+                      {resultData.vocabularyRange}/5
+                    </div>
+                  </div>
+                </div>
+
+                {/* Feedback */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                  <div className="flex items-start gap-3">
+                    <FileText className="text-blue-600 w-5 h-5 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h3 className="font-semibold text-blue-800 mb-2">
+                        Detailed Feedback
+                      </h3>
+                      <p className="text-blue-700 text-sm leading-relaxed">
+                        {resultData.feedback}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Success Message */}
+                <div className="flex items-center gap-2 text-green-600 bg-green-50 border border-green-200 rounded-lg p-3 mb-6">
+                  <CheckCircle className="w-5 h-5" />
+                  <span className="text-sm font-medium">
+                    Your answer has been successfully submitted and evaluated!
+                  </span>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="border-t border-gray-200 p-6 flex justify-end gap-3">
+                <button
+                  onClick={closeModal}
+                  className="px-6 py-2 bg-[#810000] text-white rounded-lg hover:bg-[#5d0000] transition-colors font-medium"
+                >
+                  Continue
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <style jsx>{`
           textarea::placeholder {
             color: #bbb;
@@ -264,125 +390,6 @@ export default function RepeatSentencePage({ params }) {
           }
         `}</style>
       </div>
-
-      {/* Result Modal */}
-      {showResultModal && resultData && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <div className="flex items-center gap-3">
-                <Award className="text-[#810000] w-6 h-6" />
-                <h2 className="text-xl font-semibold text-gray-800">
-                  Writing Assessment Results
-                </h2>
-              </div>
-              <button
-                onClick={closeModal}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="p-6">
-              {/* Overall Score */}
-              <div className="text-center mb-6">
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-[#810000] to-[#a00000] text-white mb-3">
-                  <span className="text-2xl font-bold">{resultData.score}</span>
-                </div>
-                <div className="text-sm text-gray-600">
-                  Total Score out of 20
-                </div>
-              </div>
-
-              {/* Score Breakdown */}
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <div className="text-sm text-gray-600 mb-1">Content</div>
-                  <div className="text-lg font-semibold text-gray-800">
-                    {resultData.content}/5
-                  </div>
-                </div>
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <div className="text-sm text-gray-600 mb-1">Grammar</div>
-                  <div className="text-lg font-semibold text-gray-800">
-                    {resultData.grammar}/5
-                  </div>
-                </div>
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <div className="text-sm text-gray-600 mb-1">Spelling</div>
-                  <div className="text-lg font-semibold text-gray-800">
-                    {resultData.spelling}/5
-                  </div>
-                </div>
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <div className="text-sm text-gray-600 mb-1">Form</div>
-                  <div className="text-lg font-semibold text-gray-800">
-                    {resultData.form}/5
-                  </div>
-                </div>
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <div className="text-sm text-gray-600 mb-1">Organization</div>
-                  <div className="text-lg font-semibold text-gray-800">
-                    {resultData.organization}/5
-                  </div>
-                </div>
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <div className="text-sm text-gray-600 mb-1">
-                    Email Convention
-                  </div>
-                  <div className="text-lg font-semibold text-gray-800">
-                    {resultData.emailConvention}/5
-                  </div>
-                </div>
-                <div className="bg-gray-50 p-3 rounded-lg col-span-2">
-                  <div className="text-sm text-gray-600 mb-1">
-                    Vocabulary Range
-                  </div>
-                  <div className="text-lg font-semibold text-gray-800">
-                    {resultData.vocabularyRange}/5
-                  </div>
-                </div>
-              </div>
-
-              {/* Feedback */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <div className="flex items-start gap-3">
-                  <FileText className="text-blue-600 w-5 h-5 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h3 className="font-semibold text-blue-800 mb-2">
-                      Detailed Feedback
-                    </h3>
-                    <p className="text-blue-700 text-sm leading-relaxed">
-                      {resultData.feedback}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Success Message */}
-              <div className="flex items-center gap-2 text-green-600 bg-green-50 border border-green-200 rounded-lg p-3 mb-6">
-                <CheckCircle className="w-5 h-5" />
-                <span className="text-sm font-medium">
-                  Your answer has been successfully submitted and evaluated!
-                </span>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="border-t border-gray-200 p-6 flex justify-end gap-3">
-              <button
-                onClick={closeModal}
-                className="px-6 py-2 bg-[#810000] text-white rounded-lg hover:bg-[#5d0000] transition-colors font-medium"
-              >
-                Continue
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
