@@ -1,9 +1,19 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
-import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Volume2 } from "lucide-react";
 import AudioPlayer from "../../../../../components/audio/AudioPlayer";
+
+// Mock fetchWithAuth for demo
+const fetchWithAuth = async (url, options = {}) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        json: () => Promise.resolve({ questions: [] })
+      });
+    }, 100);
+  });
+};
 
 // 9:59 minutes in seconds
 const RECORD_SECONDS = 599;
@@ -41,9 +51,11 @@ Lisa: Well, don't forget, you're only about 25% of the courses at this stage is 
   ],
 }));
 
-export default function DynamicPage({ params }) {
+export default function DynamicPage({ params = { id: "1001635" } }) {
   const { id } = params;
-  const router = useRouter();
+  const router = {
+    push: (url) => console.log('Navigate to:', url)
+  };
 
   // State
   const [questions, setQuestions] = useState([]);
@@ -61,6 +73,15 @@ export default function DynamicPage({ params }) {
 
   // Pagination dropdown
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  // Pronunciation play state for each blank
+  const [pronouncingIdx, setPronouncingIdx] = useState(null);
+
+  // Word hover pronunciation state
+  const [pronouncingWord, setPronouncingWord] = useState(null);
+
+  // Text selection pronunciation
+  const [selectedText, setSelectedText] = useState('');
 
   // Fetch all questions and find current index
   useEffect(() => {
@@ -112,13 +133,63 @@ export default function DynamicPage({ params }) {
     const arr = [...answers];
     arr[idx] = e.target.value;
     setAnswers(arr);
+    // Play speech when a new value is selected
+    if (e.target.value) {
+      pronounceWord(e.target.value, idx);
+    }
+  };
+
+  // SpeechSynthesis API function
+  const pronounceWord = (word, idx) => {
+    if (!window.speechSynthesis) return;
+    setPronouncingIdx(idx);
+    const utter = new window.SpeechSynthesisUtterance(word);
+    utter.onend = () => setPronouncingIdx(null);
+    utter.onerror = () => setPronouncingIdx(null);
+    window.speechSynthesis.cancel(); // cancel ongoing
+    window.speechSynthesis.speak(utter);
+  };
+
+  // Word hover pronunciation function
+  const pronounceHoveredWord = (word, wordKey) => {
+    if (!window.speechSynthesis) return;
+    setPronouncingWord(wordKey);
+    const utter = new window.SpeechSynthesisUtterance(word);
+    utter.onend = () => setPronouncingWord(null);
+    utter.onerror = () => setPronouncingWord(null);
+    window.speechSynthesis.cancel(); // cancel ongoing
+    window.speechSynthesis.speak(utter);
+  };
+
+  // Handle text selection and pronunciation
+  const handleTextSelection = () => {
+    const selection = window.getSelection();
+    const text = selection.toString().trim();
+    
+    if (text && text.length > 0) {
+      setSelectedText(text);
+      // Pronounce the selected text
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel(); // cancel any ongoing speech
+        const utter = new window.SpeechSynthesisUtterance(text);
+        utter.rate = 0.8; // Slightly slower for better comprehension
+        utter.onend = () => setSelectedText('');
+        utter.onerror = () => setSelectedText('');
+        window.speechSynthesis.speak(utter);
+      }
+    }
+  };
+
+  // For speaker icon click
+  const handlePronounceClick = (word, idx) => {
+    pronounceWord(word, idx);
   };
 
   // Submit handler
   const handleSubmit = async () => {
     if (!currentQ) return;
     const payload = {
-      questionId: currentQ._id, 
+      questionId: currentQ._id,
       answers,
     };
     try {
@@ -140,6 +211,42 @@ export default function DynamicPage({ params }) {
     if (idx < 0 || idx >= questions.length) return;
     router.push(`/question/reading-writing-blanks/${questions[idx]._id}`);
     setDropdownOpen(false);
+  };
+
+  // Function to render text with hoverable words
+  const renderHoverableText = (text, partIndex) => {
+    // Split text into words while preserving spaces and punctuation
+    const words = text.split(/(\s+)/);
+    
+    return words.map((word, wordIndex) => {
+      // Skip empty strings and pure whitespace
+      if (!word.trim()) {
+        return <span key={`${partIndex}-${wordIndex}`}>{word}</span>;
+      }
+
+      const wordKey = `${partIndex}-${wordIndex}`;
+      const cleanWord = word.replace(/[^\w\s]/g, ''); // Remove punctuation for pronunciation
+      
+      if (cleanWord.length < 2) {
+        return <span key={wordKey}>{word}</span>;
+      }
+
+      return (
+        <span
+          key={wordKey}
+          className={`hoverable-word ${pronouncingWord === wordKey ? 'pronouncing' : ''}`}
+          onMouseEnter={() => pronounceHoveredWord(cleanWord, wordKey)}
+          onMouseLeave={() => {
+            if (pronouncingWord === wordKey) {
+              window.speechSynthesis.cancel();
+              setPronouncingWord(null);
+            }
+          }}
+        >
+          {word}
+        </span>
+      );
+    });
   };
 
   // Render pagination (bottom right, sticky dropdown)
@@ -214,6 +321,39 @@ export default function DynamicPage({ params }) {
           background: #dedede;
           border-radius: 2px;
         }
+        .hoverable-word {
+          cursor: pointer;
+          transition: color 0.2s ease, background-color 0.2s ease;
+          padding: 1px 2px;
+          border-radius: 2px;
+        }
+        .hoverable-word:hover {
+          color: #dc2626 !important;
+          background-color: #fef2f2;
+        }
+        .hoverable-word.pronouncing {
+          color: #dc2626 !important;
+          background-color: #fef2f2;
+          animation: pulse 1s infinite;
+        }
+        .select-text {
+          user-select: text;
+          -webkit-user-select: text;
+          -moz-user-select: text;
+          -ms-user-select: text;
+        }
+        .select-text::selection {
+          background-color: #dc2626;
+          color: white;
+        }
+        .select-text::-moz-selection {
+          background-color: #dc2626;
+          color: white;
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
       `}</style>
     </div>
   );
@@ -250,12 +390,12 @@ export default function DynamicPage({ params }) {
 
   return (
     <div className="w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
-      <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
+      <div className="text-2xl font-semibold text-[#810000) border-b border-[#810000] pb-2 mb-6">
         Reading & Writing Blanks
       </div>
       <p className="text-gray-700 mb-6">
         Below is a text with blanks. Click on each blank, a list of choices will
-        appear. Select the appropriate answer choice for each blank.
+        appear. Select the appropriate answer choice for each blank. Hover over any word to hear its pronunciation.
       </p>
       {/* Question Heading */}
       <div className="flex items-center gap-2 mb-4">
@@ -277,17 +417,39 @@ export default function DynamicPage({ params }) {
       <div className="border border-[#810000] rounded bg-[#faf9f9] p-5 mb-4 text-gray-900 text-base whitespace-pre-line">
         <AudioPlayer src={currentQ.audio} />
       </div>
-      {/* Prompt with answer dropdowns */}
-      <div className="border border-[#810000] rounded bg-[#faf9f9] p-5 mb-4 text-gray-900 text-base whitespace-pre-line">
+      {/* Prompt with answer dropdowns and hoverable words */}
+      <div 
+        className="border border-[#810000] rounded bg-[#faf9f9] p-5 mb-4 text-gray-900 text-base whitespace-pre-line select-text cursor-text"
+        onClick={handleTextSelection}
+        onMouseUp={handleTextSelection}
+      >
         {splitParts.map((part, i) => (
           <React.Fragment key={i}>
-            {part}
+            {renderHoverableText(part, i)}
             {i < blanks.length && (
               <span className="inline-block align-middle mx-1">
                 <span className="font-bold text-[#810000] mr-1">
                   {blanks[i]}
                 </span>
-                {/* nothing here, options below */}
+                {/* Answer (if selected) shown in theme color, with speaker icon */}
+                {answers[i] && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-white bg-[#810000] font-semibold mx-1 transition-colors duration-200">
+                    {answers[i]}
+                    <button
+                      type="button"
+                      aria-label="Pronounce"
+                      className={`ml-1 p-0.5 rounded-full hover:bg-[#a91e22] focus:outline-none`}
+                      style={{ lineHeight: 0 }}
+                      onClick={() => handlePronounceClick(answers[i], i)}
+                    >
+                      <Volume2
+                        className={`w-4 h-4 ${
+                          pronouncingIdx === i ? "animate-pulse text-yellow-300" : "text-white"
+                        }`}
+                      />
+                    </button>
+                  </span>
+                )}
               </span>
             )}
           </React.Fragment>
