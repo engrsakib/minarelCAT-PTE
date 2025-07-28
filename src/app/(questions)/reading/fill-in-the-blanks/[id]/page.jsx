@@ -29,6 +29,9 @@ export default function DynamicPage({ params }) {
   const [showResponse, setShowResponse] = useState(false);
   const [responseData, setResponseData] = useState(null);
 
+  // Submitting state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Fetch all questions and find current index
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
   useEffect(() => {
@@ -74,22 +77,20 @@ export default function DynamicPage({ params }) {
     }
     getQuestions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]); // Added id to dependency array to re-fetch on ID change
+  }, [id]);
 
   // Timer logic (start on page load or when loading is complete)
   useEffect(() => {
-    if (loading) return; // Wait until content is loaded
+    if (loading) return;
     if (!timerStarted) {
       setTimerStarted(true);
     }
-  }, [loading, timerStarted]); // Added timerStarted to dependency array
+  }, [loading, timerStarted]);
 
   useEffect(() => {
     if (!timerStarted) return;
     if (timeLeft === 0) {
       clearTimeout(timerRef.current);
-      // Optionally, submit answers automatically when time runs out
-      // handleSubmit();
       return;
     }
     timerRef.current = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
@@ -107,6 +108,8 @@ export default function DynamicPage({ params }) {
   const handleSubmit = async () => {
     if (!currentQ) return;
 
+    setIsSubmitting(true); // Set submitting state
+
     // Create payload in the required format
     const payload = {
       questionId: currentQ._id,
@@ -115,10 +118,8 @@ export default function DynamicPage({ params }) {
           index: index,
           selectedAnswer: selectedAnswer,
         }))
-        .filter((blank) => blank.selectedAnswer), // Only send non-empty answers
+        .filter((blank) => blank.selectedAnswer),
     };
-
-    console.log("Payload to be sent:", payload);
 
     try {
       const response = await fetchWithAuth(
@@ -140,15 +141,18 @@ export default function DynamicPage({ params }) {
     } catch (e) {
       console.error("Submit error:", e);
       alert("Something went wrong! Try again.");
+    } finally {
+      setIsSubmitting(false); // Reset submitting state
     }
   };
+
   // Pagination controls
   const goToIndex = (idx) => {
     if (idx < 0 || idx >= questions.length) return;
     router.push(`/question/reading-writing-blanks/${questions[idx]._id}`);
   };
 
-  // Render pagination (bottom right, sticky dropdown)
+  // Render pagination
   const renderPagination = () => (
     <div className="flex items-center justify-end gap-2 mt-6">
       <button
@@ -194,7 +198,7 @@ export default function DynamicPage({ params }) {
     );
   }
 
-  // Prompt split for blanks (replace ___ or (a)/(b) style)
+  // Prompt split for blanks
   const prompt = currentQ.prompt || "";
   const blanks = currentQ.blanks || [];
   let splitParts = [];
@@ -202,7 +206,6 @@ export default function DynamicPage({ params }) {
   let match;
   let cursor = 0;
 
-  // Support both ___ and (a)/(b) style (optional, fallback to ___)
   if (prompt.match(/\([a-e]\)/g)) {
     regex = /\([a-e]\)/g;
   }
@@ -222,6 +225,7 @@ export default function DynamicPage({ params }) {
         Below is a text with blanks. Click on each blank, a list of choices will
         appear. Select the appropriate answer choice for each blank.
       </p>
+
       {/* Question Heading */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-4">
         <span className="rounded px-3 py-1 sm:px-4 sm:py-2 font-bold text-white bg-[#810000] text-sm sm:text-base tracking-wide min-w-[70px] text-center">
@@ -233,6 +237,7 @@ export default function DynamicPage({ params }) {
           </h2>
         )}
       </div>
+
       {/* Timer */}
       <div className="mb-4 flex items-center gap-3 text-sm sm:text-base">
         <span className="text-[#810000] font-medium">
@@ -240,6 +245,7 @@ export default function DynamicPage({ params }) {
           <span className="font-bold">00: {formatTime(timeLeft)} sec</span>
         </span>
       </div>
+
       {/* Prompt with answer dropdowns */}
       <div className="border border-[#810000] rounded-lg bg-[#faf9f9] p-4 sm:p-5 mb-4 text-gray-900 text-sm sm:text-base leading-relaxed whitespace-pre-line">
         {splitParts.map((part, i) => (
@@ -248,7 +254,6 @@ export default function DynamicPage({ params }) {
             {i < blanks.length && (
               <span className="inline-block align-middle mx-0.5 sm:mx-1">
                 <span className="font-bold text-[#810000] mr-1">
-                  {/* For (a)/(b) style, show (a), else show (i) */}
                   {(prompt.match(/\([a-e]\)/g) &&
                     prompt.match(/\([a-e]\)/g)[i]) ||
                     `(${String.fromCharCode(97 + i)})`}
@@ -258,6 +263,7 @@ export default function DynamicPage({ params }) {
           </React.Fragment>
         ))}
       </div>
+
       {/* Answer options below */}
       <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-4">
         {blanks.map((blank, i) => (
@@ -286,6 +292,7 @@ export default function DynamicPage({ params }) {
           </div>
         ))}
       </div>
+
       {/* Controls */}
       <div className="flex flex-wrap gap-3 mb-2 mt-3">
         <button
@@ -302,19 +309,46 @@ export default function DynamicPage({ params }) {
           Restart
         </button>
         <button
-          className="flex items-center gap-1 px-5 py-2 rounded-md border-2 border-[#810000] bg-white text-[#810000] font-semibold text-sm sm:text-base hover:bg-[#810000] hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className={`flex items-center gap-1 px-5 py-2 rounded-md border-2 border-[#810000] bg-white text-[#810000] font-semibold text-sm sm:text-base hover:bg-[#810000] hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-w-[100px] justify-center ${
+            isSubmitting ? "opacity-70" : ""
+          }`}
           onClick={handleSubmit}
-          disabled={answers.some((a) => !a) || timeLeft === 0}
+          disabled={answers.some((a) => !a) || timeLeft === 0 || isSubmitting}
         >
-          Submit
+          {isSubmitting ? (
+            <span className="inline-flex items-center">
+              <svg
+                className="animate-spin -ml-1 mr-2 h-4 w-4 text-[#810000]"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Submitting...
+            </span>
+          ) : (
+            "Submit"
+          )}
         </button>
       </div>
 
-      {/* Simple Response Display */}
+      {/* Response Modal */}
       {showResponse && responseData && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
-            {/* Header */}
             <div className="bg-gradient-to-r from-[#810000] to-[#a50000] p-4 flex items-center justify-between">
               <h3 className="text-xl font-bold text-white">Quiz Result</h3>
               <button
@@ -325,9 +359,7 @@ export default function DynamicPage({ params }) {
               </button>
             </div>
 
-            {/* Content */}
             <div className="p-6 text-center">
-              {/* Score Display */}
               <div className="mb-6">
                 <div className="text-6xl font-bold text-[#810000] mb-2">
                   {responseData.result.score}
@@ -336,7 +368,6 @@ export default function DynamicPage({ params }) {
                   out of {responseData.result.totalBlanks}
                 </div>
 
-                {/* Progress Bar */}
                 <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
                   <div
                     className="bg-[#810000] h-3 rounded-full transition-all duration-500"
@@ -350,7 +381,6 @@ export default function DynamicPage({ params }) {
                   ></div>
                 </div>
 
-                {/* Percentage */}
                 <div className="text-2xl font-semibold text-[#810000]">
                   {Math.round(
                     (responseData.result.score /
@@ -361,12 +391,10 @@ export default function DynamicPage({ params }) {
                 </div>
               </div>
 
-              {/* Feedback */}
               <div className="bg-gray-50 rounded-lg p-4 mb-6">
                 <p className="text-gray-700 text-lg">{responseData.feedback}</p>
               </div>
 
-              {/* Close Button */}
               <button
                 onClick={() => setShowResponse(false)}
                 className="w-full bg-[#810000] text-white py-3 rounded-lg font-semibold hover:bg-[#950000] transition-colors"
