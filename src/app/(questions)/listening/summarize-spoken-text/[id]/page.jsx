@@ -3,15 +3,12 @@ import React, { useEffect, useState } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
 import {
-
   ChevronLeft,
   ChevronRight,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import AudioPlayer from './../../../../../components/audio/AudioPlayer';
-// Audio Player Component (use your previous one if it was custom)
-
+import AudioPlayer from "./../../../../../components/audio/AudioPlayer";
 
 export default function DynamicPage({ params }) {
   const { id } = params;
@@ -38,7 +35,7 @@ export default function DynamicPage({ params }) {
         // Handle array: { questions: [...] }
         if (Array.isArray(data?.questions) && data.questions.length > 0) {
           if (data.questions[0]?.question) {
-            arr = data.questions.map(q => q.question);
+            arr = data.questions.map((q) => q.question);
           } else {
             arr = data.questions;
           }
@@ -153,21 +150,91 @@ export default function DynamicPage({ params }) {
 
   // Submit handler
   const handleSubmit = async () => {
-    if (!summary.trim() || !currentQ) return;
+    // Validate input
+    if (!summary.trim()) {
+      console.log("Please write a summary before submitting!");
+      return;
+    }
+
+    if (!currentQ) {
+      console.log("No question selected!");
+      return;
+    }
+
+    // Calculate word count (more accurate method)
+    const wordCount = summary
+      .trim()
+      .split(/\s+/)
+      .filter((word) => word.length > 0).length;
+
+    // Validate word count (50-70 words as per your requirements)
+
+    // Construct payload
     const payload = {
       questionId: currentQ._id,
-      summary: summary.trim(),
+      userSummary: summary.trim(),
     };
+
+    console.log(currentQ._id);
+
+    console.log("Submitting payload:", payload); // Debug log
+
     try {
-      await fetchWithAuth("/test/listening/summarize_spoken_text/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      alert("Your summary has been submitted! (Demo: backend response not shown)");
+      console.log(
+        "Making request to:",
+        `${baseUrl}/test/listening/summarize-spoken-text/result`
+      );
+
+      const res = await fetchWithAuth(
+        `${baseUrl}/test/listening/summarize-spoken-text/result`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      console.log("Response status:", res.status);
+      console.log(
+        "Response headers:",
+        Object.fromEntries(res.headers.entries())
+      );
+
+      // Handle HTTP errors
+      if (!res.ok) {
+        let errorData;
+        try {
+          const errorText = await res.text();
+          console.log("Raw error response:", errorText);
+          errorData = JSON.parse(errorText);
+        } catch (e) {
+          console.log("Failed to parse error as JSON:", e);
+          throw new Error(
+            `Server error: ${res.statusText} (Status: ${res.status})`
+          );
+        }
+
+        console.error("Backend validation errors:", errorData);
+        console.log("Error Response:", errorData);
+        throw new Error(
+          errorData.message ||
+            errorData.error ||
+            `Submission failed (Status ${res.status})`
+        );
+      }
+
+      // Success case
+      const responseData = await res.json();
+      console.log("Full Response Data:", responseData);
+
+      // Reset form and show success
       setSummary("");
-    } catch (e) {
-      alert("Something went wrong! Try again.");
+      console.log("Submission completed successfully!");
+    } catch (error) {
+      console.error("Submission error:", error);
+      console.log("Error details:", error.message);
     }
   };
 
@@ -185,7 +252,8 @@ export default function DynamicPage({ params }) {
         Summarize Spoken Text
       </div>
       <p className="text-gray-700 mb-6">
-        Listen to the recording. Write a summary. Your summary should be between 50 and 70 words. Include the question ID with your submission.
+        Listen to the recording. Write a summary. Your summary should be between
+        50 and 70 words. Include the question ID with your submission.
       </p>
       {/* Question Heading */}
       <div className="bg-[#810000] text-white px-5 py-2 rounded mb-2 text-lg font-semibold tracking-wide flex items-center gap-2">
@@ -195,7 +263,6 @@ export default function DynamicPage({ params }) {
       </div>
       {/* Audio Player */}
       <div className="border border-[#810000] rounded p-4 mb-4 bg-white text-gray-900 whitespace-pre-line">
-        {/* <AudioPlayer src={currentQ.audioUrl} /> */}
         <AudioPlayer src={currentQ.audioUrl} />
       </div>
       {/* Textarea for summary */}

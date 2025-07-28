@@ -107,38 +107,41 @@ export default function DynamicPage({ params }) {
   const handleSubmit = async () => {
     if (!currentQ) return;
 
-    // Static response data for now
-    const staticResponseData = {
-      result: {
-        score: 2,
-        totalBlanks: 2,
-      },
-      feedback: "You scored 2 out of 2.",
+    // Create payload in the required format
+    const payload = {
+      questionId: currentQ._id,
+      blanks: answers
+        .map((selectedAnswer, index) => ({
+          index: index,
+          selectedAnswer: selectedAnswer,
+        }))
+        .filter((blank) => blank.selectedAnswer), // Only send non-empty answers
     };
 
-    // Set the static response and show modal
-    setResponseData(staticResponseData);
-    setShowResponse(true);
+    console.log("Payload to be sent:", payload);
 
-    // You can add API call here later:
-    // const payload = {
-    //   questionId: currentQ._id,
-    //   answers,
-    // };
-    // try {
-    //   const response = await fetchWithAuth("/test/reading-writing-blanks/submit", {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify(payload),
-    //   });
-    //   const data = await response.json();
-    //   setResponseData(data);
-    //   setShowResponse(true);
-    // } catch (e) {
-    //   alert("Something went wrong! Try again.");
-    // }
+    try {
+      const response = await fetchWithAuth(
+        `${baseUrl}/test/reading/reading-fill-in-the-blanks/result`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setResponseData(data);
+        setShowResponse(true);
+      } else {
+        alert("Something went wrong! Try again.");
+      }
+    } catch (e) {
+      console.error("Submit error:", e);
+      alert("Something went wrong! Try again.");
+    }
   };
-
   // Pagination controls
   const goToIndex = (idx) => {
     if (idx < 0 || idx >= questions.length) return;
