@@ -30,8 +30,16 @@ export default function Banner() {
             </h1>
             <div className="w-full flex justify-center md:justify-start">
               <Button className="w-[200px] sm:w-[276px] md:w-[280px] lg:w-[436px] h-[60px] sm:h-[76px] md:h-[86px] lg:h-[96px] bg-white mt-6 sm:mt-10 md:mt-16 hover:bg-gray-200 text-black text-[18px] sm:text-[22px] md:text-[24px] font-bold flex items-center justify-center gap-2">
-                <Image src={tick} alt="tick" width={32} height={32} className="w-[24px] h-[24px] sm:w-[32px] sm:h-[32px] md:w-[40px] md:h-[40px] lg:w-[50px] lg:h-[50px]" />
-                <span className="text-[20px] sm:text-[24px] md:text-[28px] lg:text-[32px] font-[500]">PTE Made Easy!</span>
+                <Image
+                  src={tick}
+                  alt="tick"
+                  width={32}
+                  height={32}
+                  className="w-[24px] h-[24px] sm:w-[32px] sm:h-[32px] md:w-[40px] md:h-[40px] lg:w-[50px] lg:h-[50px]"
+                />
+                <span className="text-[20px] sm:text-[24px] md:text-[28px] lg:text-[32px] font-[500]">
+                  PTE Made Easy!
+                </span>
               </Button>
             </div>
           </div>

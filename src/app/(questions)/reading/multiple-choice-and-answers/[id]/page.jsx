@@ -28,6 +28,7 @@ export default function DynamicPage({ params }) {
 
   // Timer
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);
+  const [startTime, setStartTime] = useState(null);
   const timerRef = useRef();
   const [timerStarted, setTimerStarted] = useState(false);
 
@@ -42,8 +43,8 @@ export default function DynamicPage({ params }) {
 
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
 
-  // Mock score data for the modal
-  const mockScoreData = {
+  // Mock score data with time tracking
+  const [mockScoreData, setMockScoreData] = useState({
     overallScore: 13,
     maxScore: 15,
     enablingSkills: [
@@ -84,11 +85,12 @@ export default function DynamicPage({ params }) {
       },
     ],
     userResponse: {
-      selectedOptions: selected,
-      totalOptions: currentQ?.options?.length || 0,
-      time: formatTime(RECORD_SECONDS - timeLeft),
+      selectedOptions: [],
+      totalOptions: 0,
+      time: "00:00",
+      timeInSeconds: 0,
       language: "English: American",
-      correctSelections: Math.floor(Math.random() * selected.length) + 1,
+      correctSelections: 0,
     },
     suggestions: [
       {
@@ -101,7 +103,7 @@ export default function DynamicPage({ params }) {
       },
     ],
     scoreDisappearDate: "28/09/2025",
-  };
+  });
 
   // Fetch all questions and find current index
   useEffect(() => {
@@ -115,7 +117,6 @@ export default function DynamicPage({ params }) {
         let idx = 0;
         let questionObj = null;
 
-        // API can send as {questions:[]} or {question:{}}
         if (
           data.questions &&
           Array.isArray(data.questions) &&
@@ -134,6 +135,7 @@ export default function DynamicPage({ params }) {
         setCurrentIdx(idx);
         setCurrentQ(questionObj);
         setSelected([]);
+        setStartTime(null); // Reset start time on new question
       } catch {
         setQuestions([]);
         setCurrentIdx(0);
@@ -157,37 +159,68 @@ export default function DynamicPage({ params }) {
   useEffect(() => {
     if (!timerStarted) return;
     if (timeLeft === 0) return;
+
+    // Set start time when timer first starts
+    if (startTime === null) {
+      setStartTime(Date.now());
+    }
+
     timerRef.current = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearTimeout(timerRef.current);
-  }, [timerStarted, timeLeft]);
+  }, [timerStarted, timeLeft, startTime]);
 
   // Handle option change (multiple)
   const handleOptionChange = (idx) => {
     setSelected((prev) => {
       if (prev.includes(idx)) {
-        // deselect if already selected
         return prev.filter((i) => i !== idx);
       } else {
-        // select new
         return [...prev, idx];
       }
     });
   };
 
-  // Submit handler
+  // Format MM:SS
+  function formatTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
+
+  // Submit handler with time tracking
   const handleSubmit = async () => {
     if (!currentQ || selected.length === 0) return;
+
+    const timeTaken = startTime
+      ? Math.floor((Date.now() - startTime) / 1000)
+      : 0;
+
     const payload = {
       questionId: currentQ._id,
-      answers: selected, // array of selected option indexes
+      answers: selected,
+      timeTaken: timeTaken,
     };
+
     try {
       await fetchWithAuth("/test/mcq_multiple/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      // Show AI Score Modal instead of alert
+
+      // Update mock score data with actual time taken
+      setMockScoreData((prev) => ({
+        ...prev,
+        userResponse: {
+          ...prev.userResponse,
+          selectedOptions: selected,
+          totalOptions: currentQ.options?.length || 0,
+          time: formatTime(timeTaken),
+          timeInSeconds: timeTaken,
+          correctSelections: Math.floor(Math.random() * selected.length) + 1,
+        },
+      }));
+
       setShowAiScoreModal(true);
     } catch (e) {
       alert("Something went wrong! Try again.");
@@ -278,13 +311,6 @@ export default function DynamicPage({ params }) {
     </div>
   );
 
-  // Format MM:SS
-  function formatTime(sec) {
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-  }
-
   if (loading || !currentQ) {
     return (
       <div className="flex justify-center items-center min-h-[40vh]">
@@ -302,6 +328,7 @@ export default function DynamicPage({ params }) {
         Read the text and answer the multiple-choice question by selecting all
         correct responses. You may select more than one response.
       </p>
+
       {/* Question Heading */}
       <div className="flex items-center gap-2 mb-4">
         <span className="rounded px-4 py-2 font-bold text-white bg-[#810000] text-base tracking-wide">
@@ -311,6 +338,7 @@ export default function DynamicPage({ params }) {
           {currentQ.heading}
         </span>
       </div>
+
       {/* Timer */}
       <div className="mb-4 flex items-center gap-3">
         <span className="text-[#810000] font-medium text-base">
@@ -318,15 +346,17 @@ export default function DynamicPage({ params }) {
           <span className="font-bold">00: {formatTime(timeLeft)} sec</span>
         </span>
       </div>
+
       {/* Prompt */}
       <div className="border border-[#810000] rounded bg-[#faf9f9] p-5 mb-4 text-gray-900 text-base whitespace-pre-line">
         {currentQ.prompt}
       </div>
+
       {/* MCQ Question */}
       <div className="border border-[#810000] rounded bg-white p-3 mb-2 text-[#810000] text-base font-semibold">
-        {/* Use 'text' field from API for MCQ question */}
         {currentQ.text}
       </div>
+
       {/* Options */}
       <div className="border border-[#810000] rounded bg-[#faf9f9] p-4 mb-2">
         {currentQ.options.map((opt, i) => {
@@ -370,6 +400,7 @@ export default function DynamicPage({ params }) {
           );
         })}
       </div>
+
       {/* Controls */}
       <div className="flex gap-3 mb-2 mt-3">
         <button
@@ -378,6 +409,7 @@ export default function DynamicPage({ params }) {
             setSelected([]);
             setTimeLeft(RECORD_SECONDS);
             setTimerStarted(false);
+            setStartTime(null);
           }}
           disabled={timeLeft === 0}
         >
@@ -391,244 +423,107 @@ export default function DynamicPage({ params }) {
           Submit
         </button>
       </div>
+
       {renderPagination()}
 
-      {/* Custom AI Score Modal (Responsive) */}
+      {/* Enhanced AI Score Modal with Time Tracking */}
       {showAiScoreModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm">
-          <div className="fixed inset-2 sm:inset-4 lg:inset-6 xl:inset-8 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg sm:rounded-2xl shadow-2xl overflow-hidden">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-[#810000] to-[#a50000] p-3 sm:p-4 lg:p-6 flex flex-col sm:flex-row items-center justify-between shadow-lg gap-3 sm:gap-0">
-              <div className="flex items-center gap-2 sm:gap-3 text-white text-base sm:text-lg font-semibold order-2 sm:order-1">
-                <Monitor className="w-4 h-4 sm:w-6 sm:h-6" />
-                <span className="text-sm sm:text-base">#{currentQ._id}</span>
-              </div>
-              <div className="text-white text-lg sm:text-xl lg:text-2xl font-bold flex-grow text-center order-1 sm:order-2">
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-[#810000]">
                 AI Score Report
-                <span className="block text-xs sm:text-sm font-normal opacity-90 mt-1">
-                  alfapte.com
+              </h2>
+              <button
+                onClick={() => setShowAiScoreModal(false)}
+                className="text-gray-500 hover:text-[#810000]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Time Taken Section */}
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-gray-600 font-medium">Time Taken:</span>
+                <span className="font-bold text-[#810000] text-xl">
+                  {mockScoreData.userResponse.time}
                 </span>
               </div>
-              <div className="flex items-center gap-2 sm:gap-3 order-3">
-                <Share2 className="w-4 h-4 sm:w-6 sm:h-6 text-white cursor-pointer hover:scale-110 transition-transform" />
-                <X
-                  className="w-4 h-4 sm:w-6 sm:h-6 text-white cursor-pointer hover:scale-110 transition-transform"
-                  onClick={() => setShowAiScoreModal(false)}
-                />
+              <div className="flex justify-between text-sm text-gray-500 mb-2">
+                <span>
+                  Started at: {new Date(startTime).toLocaleTimeString()}
+                </span>
+                <span>{mockScoreData.userResponse.timeInSeconds} seconds</span>
+              </div>
+              <Progress
+                value={
+                  (mockScoreData.userResponse.timeInSeconds / RECORD_SECONDS) *
+                  100
+                }
+                className="h-2 bg-gray-200"
+                indicatorClassName="bg-[#810000]"
+              />
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>0:00</span>
+                <span>{formatTime(RECORD_SECONDS)}</span>
               </div>
             </div>
 
-            {/* Scrollable Content */}
-            <div className="h-[calc(100%-60px)] sm:h-[calc(100%-72px)] lg:h-[calc(100%-84px)] overflow-y-auto">
-              <div className="p-4 sm:p-6 lg:p-8 xl:p-12 space-y-6 sm:space-y-8 lg:space-y-12">
-                {/* Score Overview */}
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-12">
-                  {/* Overall Score */}
-                  <div className="lg:col-span-1">
-                    <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-6 sm:p-8 lg:p-10 border border-slate-200 hover:shadow-2xl transition-shadow">
-                      <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 mb-6 sm:mb-8 lg:mb-10 text-center">
-                        Overall Score
-                      </h3>
-                      <div className="flex flex-col items-center">
-                        <div className="relative w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 mb-4 sm:mb-6">
-                          <svg
-                            className="w-full h-full transform -rotate-90"
-                            viewBox="0 0 36 36"
-                          >
-                            <path
-                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                              fill="none"
-                              stroke="#e2e8f0"
-                              strokeWidth="2"
-                            />
-                            <path
-                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                              fill="none"
-                              stroke="#810000"
-                              strokeWidth="2"
-                              strokeDasharray={`${
-                                (mockScoreData.overallScore /
-                                  mockScoreData.maxScore) *
-                                100
-                              }, 100`}
-                              strokeLinecap="round"
-                            />
-                          </svg>
-                          <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#810000]">
-                              {mockScoreData.overallScore}
-                            </span>
-                            <span className="text-sm sm:text-base text-gray-500">
-                              out of {mockScoreData.maxScore}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-base sm:text-lg lg:text-xl font-semibold text-gray-700 mb-2">
-                            Great Performance!
-                          </p>
-                          <p className="text-sm sm:text-base text-gray-500">
-                            {Math.round(
-                              (mockScoreData.overallScore /
-                                mockScoreData.maxScore) *
-                                100
-                            )}
-                            % Achievement
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Skills Breakdown */}
-                  <div className="lg:col-span-4">
-                    <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-6 sm:p-8 lg:p-10 border border-slate-200 hover:shadow-2xl transition-shadow">
-                      <div className="bg-gradient-to-r from-[#810000] to-[#a50000] text-white py-3 sm:py-4 lg:py-5 px-6 sm:px-8 lg:px-10 rounded-xl sm:rounded-2xl mb-6 sm:mb-8 lg:mb-10">
-                        <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-center">
-                          Enabling Skills Breakdown
-                        </h3>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                        {mockScoreData.enablingSkills.map((skill, index) => (
-                          <div
-                            key={index}
-                            className="bg-slate-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 border border-slate-200 hover:shadow-lg transition-shadow"
-                          >
-                            <div className="flex items-center justify-between mb-4 sm:mb-6">
-                              <span className="font-bold text-gray-800 text-sm sm:text-base lg:text-xl">
-                                {skill.name}
-                              </span>
-                              <span className="text-sm sm:text-base lg:text-xl font-bold text-[#810000] bg-red-50 px-2 sm:px-3 lg:px-4 py-1 sm:py-2 rounded-full">
-                                {skill.score}/{skill.max}
-                              </span>
-                            </div>
-                            <div className="relative">
-                              <Progress
-                                value={skill.progress}
-                                className="h-3 sm:h-4 lg:h-5 bg-slate-200"
-                              />
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <span className="text-xs sm:text-sm font-bold text-white drop-shadow-sm">
-                                  {skill.progress}%
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* User Response Section */}
-                <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden border border-slate-200">
-                  <div className="bg-gradient-to-r from-[#810000] to-[#a50000] text-white py-4 sm:py-5 lg:py-6 px-4 sm:px-6 lg:px-10">
-                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold">
-                      Your Response Analysis
-                    </h3>
-                  </div>
-
-                  <div className="p-4 sm:p-6 lg:p-10 space-y-6 sm:space-y-8">
-                    <div className="bg-slate-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 border-l-4 sm:border-l-8 border-[#810000]">
-                      <h4 className="text-lg sm:text-xl font-bold text-[#810000] mb-4">
-                        Selected Options:
-                      </h4>
-                      <div className="grid grid-cols-1 gap-3 sm:gap-4">
-                        {currentQ.options.map((option, idx) => (
-                          <div
-                            key={idx}
-                            className={`p-3 sm:p-4 rounded-lg border ${
-                              selected.includes(idx)
-                                ? "bg-green-50 border-green-200"
-                                : "bg-white border-gray-200"
-                            }`}
-                          >
-                            <div className="flex items-start sm:items-center gap-2 sm:gap-3">
-                              <span
-                                className={`font-bold text-sm sm:text-lg w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                                  selected.includes(idx)
-                                    ? "bg-[#810000] text-white"
-                                    : "bg-gray-200 text-gray-600"
-                                }`}
-                              >
-                                {String.fromCharCode(65 + idx)}
-                              </span>
-                              <span className="text-gray-800 flex-1 text-sm sm:text-base leading-relaxed">
-                                {option}
-                              </span>
-                              {selected.includes(idx) && (
-                                <span className="text-green-600 font-bold text-lg flex-shrink-0">
-                                  ✓
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mt-6 sm:mt-10">
-                      <div className="bg-blue-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 text-center border border-blue-200 hover:shadow-xl transition-shadow">
-                        <p className="text-xs sm:text-sm lg:text-base text-blue-600 font-bold uppercase tracking-wider mb-2 sm:mb-3">
-                          Selected
-                        </p>
-                        <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-800">
-                          {selected.length}/{currentQ.options.length}
-                        </p>
-                      </div>
-                      <div className="bg-green-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 text-center border border-green-200 hover:shadow-xl transition-shadow">
-                        <p className="text-xs sm:text-sm lg:text-base text-green-600 font-bold uppercase tracking-wider mb-2 sm:mb-3">
-                          Time Taken
-                        </p>
-                        <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-800">
-                          {formatTime(RECORD_SECONDS - timeLeft)}
-                        </p>
-                      </div>
-                      <div className="bg-purple-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 text-center border border-purple-200 hover:shadow-xl transition-shadow">
-                        <p className="text-xs sm:text-sm lg:text-base text-purple-600 font-bold uppercase tracking-wider mb-2 sm:mb-3">
-                          Language
-                        </p>
-                        <p className="text-base sm:text-lg lg:text-xl font-bold text-purple-800">
-                          {mockScoreData.userResponse.language}
-                        </p>
-                      </div>
-                    </div>
-
-                    <p className="text-center text-sm sm:text-base text-gray-600 mt-6 sm:mt-8 bg-yellow-50 py-3 sm:py-4 px-4 sm:px-6 lg:px-8 rounded-xl sm:rounded-2xl border border-yellow-200">
-                      ⏰ This score will expire on{" "}
-                      <span className="font-bold">
-                        {mockScoreData.scoreDisappearDate}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-
-                {/* Suggestions Section */}
-                <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden border border-slate-200">
-                  <div className="bg-gradient-to-r from-[#810000] to-[#a50000] text-white py-4 sm:py-5 lg:py-6 px-4 sm:px-6 lg:px-10 cursor-pointer hover:from-[#950000] hover:to-[#b50000] transition-colors">
-                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold flex items-center justify-center gap-2 sm:gap-4">
-                      💡 Detailed Feedback & Suggestions
-                    </h3>
-                  </div>
-                  <div className="p-4 sm:p-6 lg:p-10 bg-gradient-to-br from-slate-50 to-white">
-                    {mockScoreData.suggestions.map((suggestion, index) => (
-                      <div key={index} className="mb-6 sm:mb-8 last:mb-0">
-                        <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 border-l-4 sm:border-l-8 border-[#810000] shadow-lg hover:shadow-xl transition-shadow">
-                          <h4 className="font-bold text-[#810000] mb-3 sm:mb-4 flex items-center gap-2 sm:gap-4 text-lg sm:text-xl lg:text-2xl">
-                            <span className="w-3 h-3 sm:w-4 sm:h-4 bg-[#810000] rounded-full flex-shrink-0"></span>
-                            {suggestion.title}
-                          </h4>
-                          <p className="text-gray-700 leading-relaxed text-sm sm:text-base lg:text-lg">
-                            {suggestion.text}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+            {/* Score Summary */}
+            <div className="text-center mb-6">
+              <p className="text-4xl font-bold text-[#810000] mb-2">
+                {mockScoreData.overallScore}/{mockScoreData.maxScore}
+              </p>
+              <p className="text-gray-600 mb-4">
+                You answered {mockScoreData.userResponse.correctSelections} out
+                of {mockScoreData.userResponse.selectedOptions.length}{" "}
+                selections correctly
+              </p>
+              <div className="bg-[#f5eaea] p-3 rounded-lg">
+                <p className="text-[#810000] font-medium">
+                  Answered in {mockScoreData.userResponse.time}
+                </p>
+                {mockScoreData.userResponse.timeInSeconds < 60 ? (
+                  <p className="text-sm text-gray-600">Very quick response!</p>
+                ) : (
+                  <p className="text-sm text-gray-600">Good timing!</p>
+                )}
               </div>
             </div>
+
+            {/* Skills Breakdown */}
+            <div className="mb-6">
+              <h3 className="font-semibold text-[#810000] mb-2">
+                Skills Breakdown:
+              </h3>
+              <div className="space-y-3">
+                {mockScoreData.enablingSkills.map((skill, index) => (
+                  <div key={index} className="flex items-center">
+                    <span className="w-32 text-sm font-medium text-gray-600">
+                      {skill.name}
+                    </span>
+                    <Progress
+                      value={skill.progress}
+                      className="h-2 flex-1 bg-gray-200 mx-2"
+                      indicatorClassName={
+                        skill.progress === 100 ? "bg-green-500" : "bg-[#810000]"
+                      }
+                    />
+                    <span className="w-10 text-sm font-medium">
+                      {skill.score}/{skill.max}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <button
+              className="w-full mt-4 px-4 py-3 bg-[#810000] text-white rounded-lg hover:bg-[#a50000] transition font-semibold"
+              onClick={() => setShowAiScoreModal(false)}
+            >
+              Close Report
+            </button>
           </div>
         </div>
       )}

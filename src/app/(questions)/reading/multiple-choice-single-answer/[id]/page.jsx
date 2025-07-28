@@ -46,7 +46,7 @@ export default function DynamicPage({ params }) {
         // Handle array: { questions: [...] }
         if (Array.isArray(data?.questions) && data.questions.length > 0) {
           if (data.questions[0]?.question) {
-            arr = data.questions.map(q => q.question);
+            arr = data.questions.map((q) => q.question);
           } else {
             arr = data.questions;
           }
@@ -104,6 +104,8 @@ export default function DynamicPage({ params }) {
 
   // Submit handler
   const handleSubmit = async () => {
+    console.log("Submitting answer...");
+
     if (!currentQ || selected === null) return;
     const payload = {
       questionId: currentQ._id,
@@ -115,7 +117,9 @@ export default function DynamicPage({ params }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      alert("Your answer has been submitted! (Demo: backend response not shown)");
+      alert(
+        "Your answer has been submitted! (Demo: backend response not shown)"
+      );
     } catch (e) {
       alert("Something went wrong! Try again.");
     }
@@ -223,8 +227,12 @@ export default function DynamicPage({ params }) {
   if (!currentQ) {
     return (
       <div className="flex flex-col justify-center items-center min-h-[40vh] text-center">
-        <div className="text-2xl font-semibold text-[#810000] mb-2">No Question Found</div>
-        <div className="text-gray-600">Please try refreshing or contact support.</div>
+        <div className="text-2xl font-semibold text-[#810000] mb-2">
+          No Question Found
+        </div>
+        <div className="text-gray-600">
+          Please try refreshing or contact support.
+        </div>
         {renderPagination()}
       </div>
     );
@@ -302,12 +310,16 @@ export default function DynamicPage({ params }) {
                 >
                   {abc}
                 </span>
-                <span className="text-gray-800 font-normal text-base">{opt}</span>
+                <span className="text-gray-800 font-normal text-base">
+                  {opt}
+                </span>
               </label>
             );
           })
         ) : (
-          <div className="text-gray-500">No options found for this question.</div>
+          <div className="text-gray-500">
+            No options found for this question.
+          </div>
         )}
       </div>
       {/* Controls */}
