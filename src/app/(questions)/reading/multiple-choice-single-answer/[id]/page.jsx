@@ -7,6 +7,9 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
+  X,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 
 // 9:59 minutes in seconds
@@ -32,6 +35,11 @@ export default function DynamicPage({ params }) {
 
   // Pagination dropdown
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  // Response state
+  const [showResponse, setShowResponse] = useState(false);
+  const [responseData, setResponseData] = useState(null);
+
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
 
   // Fetch questions (array or single) and set current
@@ -104,25 +112,35 @@ export default function DynamicPage({ params }) {
 
   // Submit handler
   const handleSubmit = async () => {
-    console.log("Submitting answer...");
-
     if (!currentQ || selected === null) return;
-    const payload = {
-      questionId: currentQ._id,
-      answer: currentQ.options[selected],
+
+    // Static response data for now
+    const staticResponseData = {
+      isCorrect: true,
+      message: "Correct answer!",
     };
-    try {
-      await fetchWithAuth("/test/mcq_single/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      alert(
-        "Your answer has been submitted! (Demo: backend response not shown)"
-      );
-    } catch (e) {
-      alert("Something went wrong! Try again.");
-    }
+
+    // Set the static response and show modal
+    setResponseData(staticResponseData);
+    setShowResponse(true);
+
+    // You can add API call here later:
+    // const payload = {
+    //   questionId: currentQ._id,
+    //   answer: currentQ.options[selected],
+    // };
+    // try {
+    //   const response = await fetchWithAuth("/test/mcq_single/submit", {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify(payload),
+    //   });
+    //   const data = await response.json();
+    //   setResponseData(data);
+    //   setShowResponse(true);
+    // } catch (e) {
+    //   alert("Something went wrong! Try again.");
+    // }
   };
 
   // Pagination controls (dropdown + prev/next, styled right-bottom)
@@ -330,6 +348,8 @@ export default function DynamicPage({ params }) {
             setSelected(null);
             setTimeLeft(RECORD_SECONDS);
             setTimerStarted(false);
+            setShowResponse(false);
+            setResponseData(null);
           }}
           disabled={timeLeft === 0}
         >
@@ -343,6 +363,107 @@ export default function DynamicPage({ params }) {
           Submit
         </button>
       </div>
+
+      {/* Simple Response Modal */}
+      {showResponse && responseData && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-[#810000] to-[#a50000] p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-white">
+                {responseData.isCorrect ? (
+                  <CheckCircle className="w-6 h-6" />
+                ) : (
+                  <XCircle className="w-6 h-6" />
+                )}
+                <h3 className="text-xl font-bold">Quiz Result</h3>
+              </div>
+              <button
+                onClick={() => setShowResponse(false)}
+                className="text-white hover:bg-white/20 rounded-full p-1 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 text-center">
+              {/* Result Icon */}
+              <div className="mb-6">
+                <div
+                  className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 ${
+                    responseData.isCorrect ? "bg-green-100" : "bg-red-100"
+                  }`}
+                >
+                  {responseData.isCorrect ? (
+                    <CheckCircle className="w-12 h-12 text-green-500" />
+                  ) : (
+                    <XCircle className="w-12 h-12 text-red-500" />
+                  )}
+                </div>
+
+                {/* Status Text */}
+                <div
+                  className={`text-2xl font-bold mb-2 ${
+                    responseData.isCorrect ? "text-green-600" : "text-red-600"
+                  }`}
+                >
+                  {responseData.isCorrect ? "Well Done!" : "Try Again!"}
+                </div>
+              </div>
+
+              {/* Message */}
+              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <p className="text-gray-700 text-lg font-medium">
+                  {responseData.message}
+                </p>
+              </div>
+
+              {/* Selected Answer Display */}
+              <div className="bg-blue-50 rounded-lg p-4 mb-6">
+                <div className="text-sm text-blue-600 font-medium mb-2">
+                  Your Answer
+                </div>
+                <div className="text-lg font-bold text-blue-800">
+                  {String.fromCharCode(65 + selected)} -{" "}
+                  {currentQ.options[selected]}
+                </div>
+              </div>
+
+              {/* Result Status */}
+              <div
+                className={`rounded-lg p-4 mb-6 ${
+                  responseData.isCorrect ? "bg-green-50" : "bg-red-50"
+                }`}
+              >
+                <div
+                  className={`text-sm font-medium mb-1 ${
+                    responseData.isCorrect ? "text-green-600" : "text-red-600"
+                  }`}
+                >
+                  Result
+                </div>
+                <div
+                  className={`text-xl font-bold ${
+                    responseData.isCorrect ? "text-green-800" : "text-red-800"
+                  }`}
+                >
+                  {responseData.isCorrect ? "Correct Answer" : "Wrong Answer"}
+                </div>
+              </div>
+
+              {/* Continue Button */}
+              <button
+                onClick={() => setShowResponse(false)}
+                className="w-full bg-[#810000] text-white py-3 rounded-lg font-semibold hover:bg-[#950000] transition-colors"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {renderPagination()}
     </div>
   );
