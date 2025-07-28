@@ -22,6 +22,71 @@ function shuffle(array) {
   return arr;
 }
 
+function ResultModal({ isOpen, onClose, result }) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto border-2 border-[#810000]">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-2xl font-bold text-[#810000]">Result</h3>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700 text-2xl"
+            >
+              &times;
+            </button>
+          </div>
+
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-lg font-semibold">Score:</span>
+              <span className="text-2xl font-bold text-green-600">
+                {result.score}%
+              </span>
+            </div>
+            <p className="text-gray-700 mb-6">{result.message}</p>
+          </div>
+
+          <div className="mb-6">
+            <h4 className="font-semibold text-lg mb-2 text-[#810000]">
+              Your Answer:
+            </h4>
+            <ol className="list-decimal pl-5 space-y-2">
+              {result.userAnswer.map((item, i) => (
+                <li key={i} className="text-gray-700">
+                  {item}
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <div className="mb-6">
+            <h4 className="font-semibold text-lg mb-2 text-[#810000]">
+              Correct Answer:
+            </h4>
+            <ol className="list-decimal pl-5 space-y-2">
+              {result.correctAnswer.map((item, i) => (
+                <li key={i} className="text-gray-700">
+                  {item}
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="w-full py-2 px-4 bg-[#810000] text-white rounded-md hover:bg-[#6a0000] transition"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function DynamicPage({ params }) {
   const { id } = params;
   const router = useRouter();
@@ -38,13 +103,22 @@ export default function DynamicPage({ params }) {
   const [timerStarted, setTimerStarted] = useState(false);
 
   // Source (left) and Target (right) state for drag-and-drop
-  const [source, setSource] = useState([]); // shuffled [{label, text, idx}]
-  const [target, setTarget] = useState([]); // ordered [{label, text, idx}]
+  const [source, setSource] = useState([]);
+  const [target, setTarget] = useState([]);
   const [dragged, setDragged] = useState(null);
 
   // Pagination dropdown
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
+
+  // Result modal
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [result, setResult] = useState({
+    score: 0,
+    message: "",
+    userAnswer: [],
+    correctAnswer: [],
+  });
 
   // On mount/fetch question
   useEffect(() => {
@@ -58,8 +132,11 @@ export default function DynamicPage({ params }) {
         let idx = 0;
         let questionObj = null;
 
-        // Support both {questions:[]} and {question:{}}
-        if (data.questions && Array.isArray(data.questions) && data.questions.length) {
+        if (
+          data.questions &&
+          Array.isArray(data.questions) &&
+          data.questions.length
+        ) {
           arr = data.questions;
           idx = arr.findIndex((q) => q._id === id);
           questionObj = arr[idx !== -1 ? idx : 0];
@@ -73,11 +150,10 @@ export default function DynamicPage({ params }) {
         setCurrentIdx(idx);
         setCurrentQ(questionObj);
 
-        // shuffle options for source, preserve original order in options
         const optionsArr = questionObj?.options || [];
         const shuffled = shuffle(
           optionsArr.map((text, i) => ({
-            label: String.fromCharCode(97 + i).toUpperCase(), // A, B, C, D, ...
+            label: String.fromCharCode(97 + i).toUpperCase(),
             text,
             idx: i,
           }))
@@ -99,11 +175,12 @@ export default function DynamicPage({ params }) {
     // eslint-disable-next-line
   }, [id]);
 
-  // Timer logic (start on page load)
+  // Timer logic
   useEffect(() => {
     if (loading) return;
     if (!timerStarted) setTimerStarted(true);
   }, [loading]);
+
   useEffect(() => {
     if (!timerStarted) return;
     if (timeLeft === 0) return;
@@ -115,34 +192,35 @@ export default function DynamicPage({ params }) {
   const handleDragStart = (item, fromSource, idx) => {
     setDragged({ ...item, fromSource, idx });
   };
+
   const handleDropTarget = () => {
     if (dragged && dragged.fromSource) {
-      // from source to target (append at end)
       setTarget((prev) => [
         ...prev,
-        { ...dragged, label: String.fromCharCode(97 + prev.length).toUpperCase() }
+        {
+          ...dragged,
+          label: String.fromCharCode(97 + prev.length).toUpperCase(),
+        },
       ]);
       setSource((prev) => prev.filter((_, i) => i !== dragged.idx));
     }
     setDragged(null);
   };
+
   const handleDropSource = () => {
     if (dragged && !dragged.fromSource) {
-      // from target back to source (append at end)
       setSource((prev) => [...prev, dragged]);
       setTarget((prev) => prev.filter((_, i) => i !== dragged.idx));
     }
     setDragged(null);
   };
 
-  // Allow reordering inside target
   const handleDragOverTarget = (overIdx) => {
     if (!dragged || !!dragged.fromSource) return;
     setTarget((prev) => {
       const arr = prev.slice();
       arr.splice(dragged.idx, 1);
       arr.splice(overIdx, 0, dragged);
-      // update labels (A, B, C, ...)
       return arr.map((item, i) => ({
         ...item,
         label: String.fromCharCode(97 + i).toUpperCase(),
@@ -154,23 +232,17 @@ export default function DynamicPage({ params }) {
   // Submit handler
   const handleSubmit = async () => {
     if (!currentQ || target.length !== (currentQ.options?.length || 0)) return;
-    // send the indices of selected (ordered) paragraphs (not labels)
-    const payload = {
-      questionId: currentQ._id,
-      ordered: target.map((item) => item.idx), // original index order
+
+    // Demo response data
+    const demoResponse = {
+      score: 100,
+      message: "You scored 4 out of 4 points.",
+      userAnswer: target.map((item) => item.text),
+      correctAnswer: currentQ.options,
     };
-    try {
-      await fetchWithAuth("/test/reorder_paragraphs/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      alert(
-        "Your answer has been submitted! (Demo: backend response not shown)"
-      );
-    } catch (e) {
-      alert("Something went wrong! Try again.");
-    }
+
+    setResult(demoResponse);
+    setShowResultModal(true);
   };
 
   // Restart handler
@@ -188,9 +260,10 @@ export default function DynamicPage({ params }) {
     setTarget([]);
     setTimeLeft(RECORD_SECONDS);
     setTimerStarted(false);
+    setShowResultModal(false);
   };
 
-  // Pagination controls (dropdown + prev/next, styled right-bottom)
+  // Pagination controls
   const renderPagination = () => (
     <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end w-max">
       <div className="relative">
@@ -295,6 +368,7 @@ export default function DynamicPage({ params }) {
         Re-order Paragraphs
       </div>
       <p className="text-gray-700 mb-6">{currentQ.prompt}</p>
+
       {/* Question Heading */}
       <div className="flex items-center gap-2 mb-4">
         <span className="rounded px-4 py-2 font-bold text-white bg-[#810000] text-base tracking-wide">
@@ -304,6 +378,7 @@ export default function DynamicPage({ params }) {
           {currentQ.heading || ""}
         </span>
       </div>
+
       {/* Timer */}
       <div className="mb-6 flex items-center gap-3">
         <span className="text-[#810000] font-medium text-base">
@@ -311,6 +386,7 @@ export default function DynamicPage({ params }) {
           <span className="font-bold">00: {formatTime(timeLeft)} sec</span>
         </span>
       </div>
+
       {/* Drag-drop panels */}
       <div className="flex flex-col md:flex-row gap-4 w-full justify-center mb-5">
         {/* Source */}
@@ -320,9 +396,7 @@ export default function DynamicPage({ params }) {
           </div>
           <div
             className="border border-[#810000] border-t-0 rounded-b min-h-[320px] pb-2 pt-2 bg-white flex flex-col gap-3"
-            onDragOver={(e) => {
-              e.preventDefault();
-            }}
+            onDragOver={(e) => e.preventDefault()}
             onDrop={handleDropSource}
           >
             {source.length === 0 && (
@@ -353,10 +427,12 @@ export default function DynamicPage({ params }) {
             ))}
           </div>
         </div>
+
         {/* Arrow */}
         <div className="flex items-center justify-center px-1 py-1">
           <span className="text-[#810000] text-3xl font-bold">{">>"}</span>
         </div>
+
         {/* Target */}
         <div className="flex-1 min-w-[260px] max-w-[50%]">
           <div className="bg-[#810000] text-white text-center rounded-t px-2 py-2 font-semibold">
@@ -364,9 +440,7 @@ export default function DynamicPage({ params }) {
           </div>
           <div
             className="border border-[#810000] border-t-0 rounded-b min-h-[320px] pb-2 pt-2 bg-white flex flex-col gap-3"
-            onDragOver={(e) => {
-              e.preventDefault();
-            }}
+            onDragOver={(e) => e.preventDefault()}
             onDrop={handleDropTarget}
           >
             {target.length === 0 && (
@@ -402,6 +476,7 @@ export default function DynamicPage({ params }) {
           </div>
         </div>
       </div>
+
       {/* Controls */}
       <div className="flex gap-3 justify-center mb-2 mt-3">
         <button
@@ -421,6 +496,14 @@ export default function DynamicPage({ params }) {
           Submit
         </button>
       </div>
+
+      {/* Result Modal (without black background) */}
+      <ResultModal
+        isOpen={showResultModal}
+        onClose={() => setShowResultModal(false)}
+        result={result}
+      />
+
       {renderPagination()}
     </div>
   );
