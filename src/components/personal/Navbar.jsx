@@ -137,7 +137,7 @@ export default function Navbar() {
           </Link>
           <SkillsButton isOpen={isOpen} setIsOpen={setIsOpen} />
           <Link
-            href="/questions/test"
+            href="/mock-test"
             className="text-[20px] font-[400] text-gray-900 hover:text-black"
           >
             Mock Test
