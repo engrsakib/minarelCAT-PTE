@@ -35,79 +35,60 @@ export default function RepeatSentencePage({ params }) {
 
   // AI Score Modal state
   const [showAiScoreModal, setShowAiScoreModal] = useState(false);
+  const [apiResponse, setApiResponse] = useState(null);
 
   // Pagination dropdown (not used but kept for future)
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
 
-  // Mock score data with progress values
-  const mockScoreData = {
-    overallScore: 14,
-    maxScore: 15,
-    enablingSkills: [
-      {
-        name: "Content",
-        score: 3,
-        max: 3,
-        progress: 100,
+  // Function to map API response to modal format
+  const mapApiResponseToModalData = (apiData) => {
+    const skillsMapping = {
+      content: "Content",
+      grammar: "Grammar",
+      form: "Form",
+      vocabularyRange: "Vocabulary Range",
+    };
+
+    const maxScores = {
+      content: 3,
+      grammar: 2,
+      form: 2,
+      vocabularyRange: 2,
+    };
+
+    const enablingSkills = Object.keys(skillsMapping).map((key) => {
+      const score = apiData[key] || 0;
+      const max = maxScores[key] || 2;
+      const progress = (score / max) * 100;
+
+      return {
+        name: skillsMapping[key],
+        score: score,
+        max: max,
+        progress: progress,
         color: "hsl(var(--primary))",
+      };
+    });
+
+    return {
+      overallScore: apiData.score || 0,
+      maxScore: 15,
+      enablingSkills: enablingSkills,
+      userResponse: {
+        text: apiData.feedback || "No feedback provided.",
+        totalWords: wordCount || 0,
+        time: formatTime(WRITING_SECONDS - writingTime),
+        language: "English: American",
       },
-      {
-        name: "Grammar",
-        score: 2,
-        max: 2,
-        progress: 100,
-        color: "hsl(var(--primary))",
-      },
-      {
-        name: "Spelling",
-        score: 2,
-        max: 2,
-        progress: 100,
-        color: "hsl(var(--primary))",
-      },
-      {
-        name: "Form",
-        score: 2,
-        max: 2,
-        progress: 100,
-        color: "hsl(var(--primary))",
-      },
-      {
-        name: "Organization",
-        score: 2,
-        max: 2,
-        progress: 100,
-        color: "hsl(var(--primary))",
-      },
-      {
-        name: "Email Convention",
-        score: 1,
-        max: 2,
-        progress: 50,
-        color: "hsl(var(--primary))",
-      },
-      {
-        name: "Vocabulary Range",
-        score: 2,
-        max: 2,
-        progress: 100,
-        color: "hsl(var(--primary))",
-      },
-    ],
-    userResponse: {
-      text: 'The email is well written, with clear content, excellent grammar, spelling, and vocabulary. The form and organization are also well done. However, it lacks the conventional salutation at the beginning of the email. It would be better to address the manager by name, e.g., "Dear Mr./Ms. [Last Name]".',
-      totalWords: wordCount || 1,
-      time: "00:04",
-      language: "English: American",
-    },
-    suggestions: [
-      {
-        title: "Email Convention",
-        text: 'The email is well written, with clear content, excellent grammar, spelling, and vocabulary. The form and organization are also well done. However, it lacks the conventional salutation at the beginning of the email. It would be better to address the manager by name, e.g., "Dear Mr./Ms. [Last Name]".',
-      },
-    ],
-    scoreDisappearDate: "28/09/2025",
+      suggestions: [
+        {
+          title: "Detailed Feedback",
+          text: apiData.feedback || "No specific suggestions provided.",
+        },
+      ],
+      scoreDisappearDate: "28/09/2025",
+    };
   };
 
   // Fetch question
@@ -174,7 +155,7 @@ export default function RepeatSentencePage({ params }) {
     const questionId = id;
     console.log(questionId, userSummary);
     try {
-      await fetchWithAuth(
+      const response = await fetchWithAuth(
         `${baseUrl}/test/writing/summerize-written-text/result`,
         {
           method: "POST",
@@ -187,9 +168,17 @@ export default function RepeatSentencePage({ params }) {
           }),
         }
       );
-      // Show AI Score Modal instead of alert
+
+      const responseData = await response.json();
+      console.log("API Response:", responseData);
+
+      // Store the API response
+      setApiResponse(responseData);
+
+      // Show AI Score Modal
       setShowAiScoreModal(true);
     } catch (e) {
+      console.error("Submit error:", e);
       alert("Something went wrong! Try again.");
     }
   };
@@ -201,6 +190,62 @@ export default function RepeatSentencePage({ params }) {
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
+  // Get modal data (either from API response or fallback to mock)
+  const getModalData = () => {
+    if (apiResponse) {
+      return mapApiResponseToModalData(apiResponse);
+    }
+
+    // Fallback mock data if no API response
+    return {
+      overallScore: 0,
+      maxScore: 15,
+      enablingSkills: [
+        {
+          name: "Content",
+          score: 0,
+          max: 3,
+          progress: 0,
+          color: "hsl(var(--primary))",
+        },
+        {
+          name: "Grammar",
+          score: 0,
+          max: 2,
+          progress: 0,
+          color: "hsl(var(--primary))",
+        },
+        {
+          name: "Form",
+          score: 0,
+          max: 2,
+          progress: 0,
+          color: "hsl(var(--primary))",
+        },
+        {
+          name: "Vocabulary Range",
+          score: 0,
+          max: 2,
+          progress: 0,
+          color: "hsl(var(--primary))",
+        },
+      ],
+      userResponse: {
+        text: "No feedback available.",
+        totalWords: wordCount || 0,
+        time: formatTime(WRITING_SECONDS - writingTime),
+        language: "English: American",
+      },
+      suggestions: [
+        {
+          title: "Feedback",
+          text: "No feedback available at this time.",
+        },
+      ],
+      scoreDisappearDate: "28/09/2025",
+    };
+  };
+
   if (loading || !question) {
     return (
       <div className="flex justify-center items-center min-h-[40vh]">
@@ -208,6 +253,8 @@ export default function RepeatSentencePage({ params }) {
       </div>
     );
   }
+
+  const modalData = getModalData();
 
   return (
     <div className="w-full lg:w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
@@ -280,6 +327,7 @@ export default function RepeatSentencePage({ params }) {
             setWordCount(0);
             setWritingTime(WRITING_SECONDS);
             setWritingStarted(false);
+            setApiResponse(null);
           }}
           disabled={writingTime === 0 && !answer}
         >
@@ -315,7 +363,7 @@ export default function RepeatSentencePage({ params }) {
               {/* Left Section */}
               <div className="flex items-center gap-2 text-white text-base sm:text-lg font-semibold">
                 <Monitor className="w-5 h-5 sm:w-6 sm:h-6" />
-                <span>#7000475</span>
+                <span>#{question._id}</span>
               </div>
 
               {/* Center Title */}
@@ -365,8 +413,7 @@ export default function RepeatSentencePage({ params }) {
                               stroke="#810000"
                               strokeWidth="2"
                               strokeDasharray={`${
-                                (mockScoreData.overallScore /
-                                  mockScoreData.maxScore) *
+                                (modalData.overallScore / modalData.maxScore) *
                                 100
                               }, 100`}
                               strokeLinecap="round"
@@ -374,21 +421,28 @@ export default function RepeatSentencePage({ params }) {
                           </svg>
                           <div className="absolute inset-0 flex flex-col items-center justify-center">
                             <span className="text-4xl font-bold text-[#810000]">
-                              {mockScoreData.overallScore}
+                              {modalData.overallScore}
                             </span>
                             <span className="text-base text-gray-500">
-                              out of {mockScoreData.maxScore}
+                              out of {modalData.maxScore}
                             </span>
                           </div>
                         </div>
                         <div className="text-center">
                           <p className="text-xl font-semibold text-gray-700 mb-2">
-                            Excellent Work!
+                            {modalData.overallScore >= modalData.maxScore * 0.8
+                              ? "Excellent Work!"
+                              : modalData.overallScore >=
+                                modalData.maxScore * 0.6
+                              ? "Good Job!"
+                              : modalData.overallScore >=
+                                modalData.maxScore * 0.4
+                              ? "Keep Practicing!"
+                              : "Needs Improvement"}
                           </p>
                           <p className="text-base text-gray-500">
                             {Math.round(
-                              (mockScoreData.overallScore /
-                                mockScoreData.maxScore) *
+                              (modalData.overallScore / modalData.maxScore) *
                                 100
                             )}
                             % Achievement
@@ -408,7 +462,7 @@ export default function RepeatSentencePage({ params }) {
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
-                        {mockScoreData.enablingSkills.map((skill, index) => (
+                        {modalData.enablingSkills.map((skill, index) => (
                           <div
                             key={index}
                             className="bg-slate-50 rounded-2xl p-8 border border-slate-200 hover:shadow-lg transition-shadow"
@@ -428,7 +482,7 @@ export default function RepeatSentencePage({ params }) {
                               />
                               <div className="absolute inset-0 flex items-center justify-center">
                                 <span className="text-sm font-bold text-white drop-shadow-sm">
-                                  {skill.progress}%
+                                  {Math.round(skill.progress)}%
                                 </span>
                               </div>
                             </div>
@@ -436,57 +490,6 @@ export default function RepeatSentencePage({ params }) {
                         ))}
                       </div>
                     </div>
-                  </div>
-                </div>
-
-                {/* User Response Section */}
-                <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200">
-                  <div className="bg-gradient-to-r from-[#810000] to-[#a50000] text-white py-6 px-10">
-                    <h3 className="text-3xl font-bold">
-                      Your Response Analysis
-                    </h3>
-                  </div>
-
-                  <div className="p-10 space-y-8">
-                    <div className="bg-slate-50 rounded-2xl p-8 border-l-8 border-[#810000]">
-                      <p className="text-gray-800 leading-relaxed whitespace-pre-line text-xl">
-                        {answer || mockScoreData.userResponse.text}
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-10">
-                      <div className="bg-blue-50 rounded-2xl p-8 text-center border border-blue-200 hover:shadow-xl transition-shadow">
-                        <p className="text-base text-blue-600 font-bold uppercase tracking-wider mb-3">
-                          Total Words
-                        </p>
-                        <p className="text-3xl font-bold text-blue-800">
-                          {wordCount}
-                        </p>
-                      </div>
-                      <div className="bg-green-50 rounded-2xl p-8 text-center border border-green-200 hover:shadow-xl transition-shadow">
-                        <p className="text-base text-green-600 font-bold uppercase tracking-wider mb-3">
-                          Time Taken
-                        </p>
-                        <p className="text-3xl font-bold text-green-800">
-                          {formatTime(WRITING_SECONDS - writingTime)}
-                        </p>
-                      </div>
-                      <div className="bg-purple-50 rounded-2xl p-8 text-center border border-purple-200 hover:shadow-xl transition-shadow">
-                        <p className="text-base text-purple-600 font-bold uppercase tracking-wider mb-3">
-                          Language
-                        </p>
-                        <p className="text-xl font-bold text-purple-800">
-                          {mockScoreData.userResponse.language}
-                        </p>
-                      </div>
-                    </div>
-
-                    <p className="text-center text-base text-gray-600 mt-8 bg-yellow-50 py-4 px-8 rounded-2xl border border-yellow-200">
-                      ⏰ This score will expire on{" "}
-                      <span className="font-bold">
-                        {mockScoreData.scoreDisappearDate}
-                      </span>
-                    </p>
                   </div>
                 </div>
 
@@ -498,7 +501,7 @@ export default function RepeatSentencePage({ params }) {
                     </h3>
                   </div>
                   <div className="p-10 bg-gradient-to-br from-slate-50 to-white">
-                    {mockScoreData.suggestions.map((suggestion, index) => (
+                    {modalData.suggestions.map((suggestion, index) => (
                       <div key={index} className="mb-8 last:mb-0">
                         <div className="bg-white rounded-2xl p-8 border-l-8 border-[#810000] shadow-lg hover:shadow-xl transition-shadow">
                           <h4 className="font-bold text-[#810000] mb-4 flex items-center gap-4 text-2xl">
