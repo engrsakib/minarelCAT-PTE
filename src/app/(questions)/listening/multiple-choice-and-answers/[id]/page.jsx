@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useRef } from "react";
+import  { useEffect, useState, useRef } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
 import {
@@ -13,43 +13,17 @@ import AudioPlayer from "../../../../../components/audio/AudioPlayer";
 // 9:59 minutes in seconds
 const RECORD_SECONDS = 599;
 
-// Fake questions fallback (1-100 for pagination)
-const FAKE_QUESTIONS = Array.from({ length: 100 }, (_, i) => ({
-  _id: String(1234560 + i),
-  type: "mcq_multiple",
-  heading: i === 0 ? "Skin Cancer" : `Fake Heading ${i + 1}`,
-  audio: "https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3",
-  prompt:
-    i === 0
-      ? `Write an email to the manager of a restaurant inquiring about the process for making online reservations.
-
-In your email, include:
-
--Ask for information on how the online reservation system works.
--Clarify if special requests (e.g., dietary preferences or seating arrangements) can be made online.
--Inquire about confirmation details and how far reservations should be made in advance.`
-      : `Fake prompt for question #${i + 1}`,
-  questionText:
-    i === 0
-      ? "Which of the following statements about the vaccine are incorrect?"
-      : `Fake MCQ question #${i + 1}`,
-  options: [
-    "Most cases of skin cancer are linked to exposure to ultraviolet radiation.",
-    "A vaccine stimulating the production of a protein critical to the skin’s antioxidant network is helping people bolster their defenses against skin cancer.",
-    "Skin cancer is the most common cancer in the United States, and Melanoma is the most lethal form of skin cancer",
-    "There are multiple vaccines to prevent cancer.",
-  ],
-}));
-
 export default function DynamicPage({ params }) {
   const { id } = params;
   const router = useRouter();
+  const baseURL = process.env.NEXT_PUBLIC_URL;
 
   // State
-  const [questions, setQuestions] = useState([]);
-  const [currentIdx, setCurrentIdx] = useState(0);
   const [currentQ, setCurrentQ] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  //==================Modal States======================
+  const [isModalOpen, setIsModalOpen] = useState(true);
 
   // Timer
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);
@@ -59,36 +33,32 @@ export default function DynamicPage({ params }) {
   // Multi-answer selection
   const [selected, setSelected] = useState([]);
 
-  // Pagination dropdown
+  // Pagination dropdown (not needed for single question mode)
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Fetch all questions and find current index
+  // Fetch question (single)
   useEffect(() => {
-    async function getQuestions() {
+    async function getQuestion() {
       setLoading(true);
       try {
-        const res = await fetchWithAuth(`/test/mcq_multiple`);
+        const res = await fetchWithAuth(`${baseURL}/user/get-question/${id}`);
         const data = await res.json();
-        const arr =
-          data?.questions && data.questions.length
-            ? data.questions
-            : FAKE_QUESTIONS;
-        setQuestions(arr);
-        const idx = arr.findIndex((q) => q._id === id);
-        setCurrentIdx(idx !== -1 ? idx : 0);
-        setCurrentQ(arr[idx !== -1 ? idx : 0]);
-        setSelected([]);
+        if (data?.question) {
+          setCurrentQ(data.question);
+          setSelected([]);
+        } else {
+          setCurrentQ(null);
+          setSelected([]);
+        }
       } catch {
-        setQuestions(FAKE_QUESTIONS);
-        setCurrentIdx(0);
-        setCurrentQ(FAKE_QUESTIONS[0]);
+        setCurrentQ(null);
         setSelected([]);
       }
       setLoading(false);
       setTimeLeft(RECORD_SECONDS);
       setTimerStarted(false);
     }
-    getQuestions();
+    getQuestion();
     // eslint-disable-next-line
   }, [id]);
 
@@ -121,107 +91,26 @@ export default function DynamicPage({ params }) {
   // Submit handler
   const handleSubmit = async () => {
     if (!currentQ || selected.length === 0) return;
+    const selectedAnswers = selected.map((eachId) => currentQ.options[eachId]);
     const payload = {
       questionId: currentQ._id,
-      answers: selected, // array of selected option indexes
+      selectedAnswers, // array of selected option texts
     };
+
     try {
-      await fetchWithAuth("/test/mcq_multiple/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      alert(
-        "Your answer has been submitted! (Demo: backend response not shown)"
+      await fetchWithAuth(
+        `${baseURL}/test/listening/multiple-choice-multiple-answers/result`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
       );
+      alert("Your answer has been submitted! (Demo: backend response not shown)");
     } catch (e) {
       alert("Something went wrong! Try again.");
     }
   };
-
-  // Pagination controls (dropdown + prev/next, styled right-bottom)
-  const renderPagination = () => (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end w-max">
-      <div className="relative">
-        <button
-          className="rounded border bg-white px-4 py-2 shadow text-[#810000] font-bold flex items-center gap-2"
-          onClick={() => setDropdownOpen((o) => !o)}
-        >
-          {String(currentIdx + 1).padStart(3, "0")}
-          {dropdownOpen ? (
-            <ChevronUp className="w-5 h-5" />
-          ) : (
-            <ChevronDown className="w-5 h-5" />
-          )}
-        </button>
-        {dropdownOpen && (
-          <div className="absolute right-0 bottom-11 w-36 max-h-72 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg z-50 dropdown-scroll">
-            {questions.slice(0, 100).map((q, i) => (
-              <button
-                key={q._id}
-                onClick={() => {
-                  router.push(`/question/mcq-multiple/${q._id}`);
-                  setDropdownOpen(false);
-                }}
-                className={`flex w-full px-4 py-2 text-left text-sm font-semibold transition
-                  ${
-                    i === currentIdx
-                      ? "bg-[#810000] text-white"
-                      : "hover:bg-[#f5eaea] text-[#810000]"
-                  }
-                `}
-              >
-                {String(i + 1).padStart(3, "0")}{" "}
-                {q.heading && (
-                  <span className="ml-1 truncate w-24">{q.heading}</span>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-      <div className="flex mt-2 gap-2">
-        <button
-          aria-label="Prev"
-          onClick={() => {
-            if (currentIdx > 0) {
-              router.push(
-                `/question/mcq-multiple/${questions[currentIdx - 1]._id}`
-              );
-            }
-          }}
-          disabled={currentIdx === 0}
-          className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-        <button
-          aria-label="Next"
-          onClick={() => {
-            if (currentIdx < questions.length - 1) {
-              router.push(
-                `/question/mcq-multiple/${questions[currentIdx + 1]._id}`
-              );
-            }
-          }}
-          disabled={currentIdx === questions.length - 1}
-          className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
-      </div>
-      <style jsx>{`
-        .dropdown-scroll::-webkit-scrollbar {
-          width: 4px;
-          background: #eee;
-        }
-        .dropdown-scroll::-webkit-scrollbar-thumb {
-          background: #dedede;
-          border-radius: 2px;
-        }
-      `}</style>
-    </div>
-  );
 
   // Format MM:SS
   const formatTime = (sec) => {
@@ -265,11 +154,16 @@ export default function DynamicPage({ params }) {
       </div>
       {/* Prompt */}
       <div className="border border-[#810000] rounded bg-[#faf9f9] p-5 mb-4 text-gray-900 text-base whitespace-pre-line">
-        <AudioPlayer src={currentQ.audio} />
+        {currentQ.audioUrl && <AudioPlayer src={currentQ.audioUrl} />}
+        {currentQ.prompt && (
+          <div className="mt-2 text-[#333] text-base">{currentQ.prompt}</div>
+        )}
       </div>
-      {/* MCQ Question */}
+      {/* MCQ Options */}
       <div className="border border-[#810000] rounded bg-white p-3 mb-2 text-[#810000] text-base font-semibold">
-        {currentQ.questionText}
+        {/* If you want a questionText, e.g. "Select all correct", can use here */}
+        {/* {currentQ.questionText} */}
+        নিচের অপশনগুলো থেকে একাধিক সঠিক উত্তরের অপশন সিলেক্ট করুন।
       </div>
       {/* Options */}
       <div className="border border-[#810000] rounded bg-[#faf9f9] p-4 mb-2">
@@ -335,7 +229,82 @@ export default function DynamicPage({ params }) {
           Submit
         </button>
       </div>
-      {renderPagination()}
+      {/* If you want to show modal or pagination, add here if needed */}
     </div>
   );
 }
+
+//Modal Component
+const Modal = ({ isModalOpen, children, setIsModalOpen }) => {
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = "hidden"; // Disable scrolling
+    } else {
+      document.body.style.overflow = "auto"; // Enable scrolling again
+    }
+
+    return () => {
+      document.body.style.overflow = "auto"; // Cleanup function in case modal unmounts
+    };
+  }, [isModalOpen]);
+  return (
+    <div
+      onClick={setIsModalOpen}
+      className={`${
+        isModalOpen
+          ? "h-dvh w-full fixed inset-0 z-50 bg-black/50 flex flex-col justify-center items-center"
+          : "hidden"
+      }`}
+    >
+      <div
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+};
+
+// (Optional) Circular Progressbar (not used, but provided)
+const CircularProgress = ({ value = 75, size = 200 }) => {
+  const strokeWidth = 10;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (value / 100) * circumference;
+
+  return (
+    <svg width={size} height={size}>
+      <circle
+        stroke="#e5e7eb"
+        fill="transparent"
+        strokeWidth={strokeWidth}
+        r={radius}
+        cx={size / 2}
+        cy={size / 2}
+      />
+      <circle
+        stroke="red"
+        fill="transparent"
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        r={radius}
+        cx={size / 2}
+        cy={size / 2}
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        className="transition-all duration-300"
+      />
+      <text
+        x="50%"
+        y="50%"
+        dominantBaseline="middle"
+        textAnchor="middle"
+        className="fill-black text-xl font-bold"
+      >
+        {value}%
+      </text>
+    </svg>
+  );
+};
