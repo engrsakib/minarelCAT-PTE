@@ -43,66 +43,11 @@ export default function DynamicPage({ params }) {
 
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
 
-  // Mock score data with time tracking
-  const [mockScoreData, setMockScoreData] = useState({
-    overallScore: 13,
-    maxScore: 15,
-    enablingSkills: [
-      {
-        name: "Reading",
-        score: 3,
-        max: 3,
-        progress: 100,
-        color: "hsl(var(--primary))",
-      },
-      {
-        name: "Critical Thinking",
-        score: 2,
-        max: 3,
-        progress: 67,
-        color: "hsl(var(--primary))",
-      },
-      {
-        name: "Comprehension",
-        score: 3,
-        max: 3,
-        progress: 100,
-        color: "hsl(var(--primary))",
-      },
-      {
-        name: "Analysis",
-        score: 2,
-        max: 3,
-        progress: 67,
-        color: "hsl(var(--primary))",
-      },
-      {
-        name: "Multiple Selection",
-        score: 3,
-        max: 3,
-        progress: 100,
-        color: "hsl(var(--primary))",
-      },
-    ],
-    userResponse: {
-      selectedOptions: [],
-      totalOptions: 0,
-      time: "00:00",
-      timeInSeconds: 0,
-      language: "English: American",
-      correctSelections: 0,
-    },
-    suggestions: [
-      {
-        title: "Multiple Answer Strategy",
-        text: "When answering multiple choice questions with multiple correct answers, read each option independently. Don't assume that selecting one option eliminates others - each option should be evaluated on its own merit.",
-      },
-      {
-        title: "Reading Comprehension",
-        text: "Take time to fully understand the passage before looking at the options. Identify key themes, main ideas, and supporting details that will help you make informed selections.",
-      },
-    ],
-    scoreDisappearDate: "28/09/2025",
+  // Simplified score data
+  const [resultData, setResultData] = useState({
+    score: 0,
+    feedback: "",
+    timeTaken: "00:00",
   });
 
   // Fetch all questions and find current index
@@ -195,31 +140,42 @@ export default function DynamicPage({ params }) {
       ? Math.floor((Date.now() - startTime) / 1000)
       : 0;
 
-    const payload = {
-      questionId: currentQ._id,
-      answers: selected,
-      timeTaken: timeTaken,
-    };
+    // Get the selected answer texts
+    const selectedAnswers = selected.map((idx) => currentQ.options[idx]);
 
     try {
+      // First submit the answers
       await fetchWithAuth("/test/mcq_multiple/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          questionId: currentQ._id,
+          answers: selected,
+          timeTaken: timeTaken,
+        }),
       });
 
-      // Update mock score data with actual time taken
-      setMockScoreData((prev) => ({
-        ...prev,
-        userResponse: {
-          ...prev.userResponse,
-          selectedOptions: selected,
-          totalOptions: currentQ.options?.length || 0,
-          time: formatTime(timeTaken),
-          timeInSeconds: timeTaken,
-          correctSelections: Math.floor(Math.random() * selected.length) + 1,
-        },
-      }));
+      // Then get the result
+      const resultResponse = await fetchWithAuth(
+        `${baseUrl}/test/reading/mcq_multiple/result`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            questionId: currentQ._id,
+            selectedAnswers: selectedAnswers,
+          }),
+        }
+      );
+
+      const result = await resultResponse.json();
+
+      // Update state with the simple result
+      setResultData({
+        score: result.score,
+        feedback: result.feedback,
+        timeTaken: formatTime(timeTaken),
+      });
 
       setShowAiScoreModal(true);
     } catch (e) {
@@ -426,14 +382,12 @@ export default function DynamicPage({ params }) {
 
       {renderPagination()}
 
-      {/* Enhanced AI Score Modal with Time Tracking */}
+      {/* Simplified Result Modal */}
       {showAiScoreModal && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-[#810000]">
-                AI Score Report
-              </h2>
+              <h2 className="text-xl font-bold text-[#810000]">Your Result</h2>
               <button
                 onClick={() => setShowAiScoreModal(false)}
                 className="text-gray-500 hover:text-[#810000]"
@@ -442,87 +396,27 @@ export default function DynamicPage({ params }) {
               </button>
             </div>
 
-            {/* Time Taken Section */}
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-gray-600 font-medium">Time Taken:</span>
-                <span className="font-bold text-[#810000] text-xl">
-                  {mockScoreData.userResponse.time}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm text-gray-500 mb-2">
-                <span>
-                  Started at: {new Date(startTime).toLocaleTimeString()}
-                </span>
-                <span>{mockScoreData.userResponse.timeInSeconds} seconds</span>
-              </div>
-              <Progress
-                value={
-                  (mockScoreData.userResponse.timeInSeconds / RECORD_SECONDS) *
-                  100
-                }
-                className="h-2 bg-gray-200"
-                indicatorClassName="bg-[#810000]"
-              />
-              <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>0:00</span>
-                <span>{formatTime(RECORD_SECONDS)}</span>
-              </div>
+            {/* Time Taken */}
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 text-center">
+              <p className="text-gray-600 mb-1">Time Taken:</p>
+              <p className="text-xl font-bold text-[#810000]">
+                {resultData.timeTaken}
+              </p>
             </div>
 
             {/* Score Summary */}
             <div className="text-center mb-6">
               <p className="text-4xl font-bold text-[#810000] mb-2">
-                {mockScoreData.overallScore}/{mockScoreData.maxScore}
+                {resultData.score}
               </p>
-              <p className="text-gray-600 mb-4">
-                You answered {mockScoreData.userResponse.correctSelections} out
-                of {mockScoreData.userResponse.selectedOptions.length}{" "}
-                selections correctly
-              </p>
-              <div className="bg-[#f5eaea] p-3 rounded-lg">
-                <p className="text-[#810000] font-medium">
-                  Answered in {mockScoreData.userResponse.time}
-                </p>
-                {mockScoreData.userResponse.timeInSeconds < 60 ? (
-                  <p className="text-sm text-gray-600">Very quick response!</p>
-                ) : (
-                  <p className="text-sm text-gray-600">Good timing!</p>
-                )}
-              </div>
-            </div>
-
-            {/* Skills Breakdown */}
-            <div className="mb-6">
-              <h3 className="font-semibold text-[#810000] mb-2">
-                Skills Breakdown:
-              </h3>
-              <div className="space-y-3">
-                {mockScoreData.enablingSkills.map((skill, index) => (
-                  <div key={index} className="flex items-center">
-                    <span className="w-32 text-sm font-medium text-gray-600">
-                      {skill.name}
-                    </span>
-                    <Progress
-                      value={skill.progress}
-                      className="h-2 flex-1 bg-gray-200 mx-2"
-                      indicatorClassName={
-                        skill.progress === 100 ? "bg-green-500" : "bg-[#810000]"
-                      }
-                    />
-                    <span className="w-10 text-sm font-medium">
-                      {skill.score}/{skill.max}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <p className="text-gray-600 text-lg">{resultData.feedback}</p>
             </div>
 
             <button
               className="w-full mt-4 px-4 py-3 bg-[#810000] text-white rounded-lg hover:bg-[#a50000] transition font-semibold"
               onClick={() => setShowAiScoreModal(false)}
             >
-              Close Report
+              Close
             </button>
           </div>
         </div>
