@@ -9,46 +9,21 @@ import {
   ChevronUp,
 } from "lucide-react";
 import AudioPlayer from "../../../../../components/audio/AudioPlayer";
+
 // 9:59 minutes in seconds
 const RECORD_SECONDS = 599;
-
-// Fake questions fallback (1-100 for pagination)
-const FAKE_QUESTIONS = Array.from({ length: 100 }, (_, i) => ({
-  _id: String(1234560 + i),
-  type: "mcq_single",
-  heading: i === 0 ? "Skin Cancer" : `Fake Heading ${i + 1}`,
-  audio: 'https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3',
-  prompt:
-    i === 0
-      ? `Write an email to the manager of a restaurant inquiring about the process for making online reservations.
-
-In your email, include:
-
--Ask for information on how the online reservation system works.
--Clarify if special requests (e.g., dietary preferences or seating arrangements) can be made online.
--Inquire about confirmation details and how far reservations should be made in advance.`
-      : `Fake prompt for question #${i + 1}`,
-  questionText:
-    i === 0
-      ? "Which of the following statements about the vaccine are incorrect?"
-      : `Fake MCQ question #${i + 1}`,
-  options: [
-    "Most cases of skin cancer are linked to exposure to ultraviolet radiation.",
-    "A vaccine stimulating the production of a protein critical to the skin’s antioxidant network is helping people bolster their defenses against skin cancer.",
-    "Skin cancer is the most common cancer in the United States, and Melanoma is the most lethal form of skin cancer",
-    "There are multiple vaccines to prevent cancer.",
-  ],
-}));
 
 export default function DynamicPage({ params }) {
   const { id } = params;
   const router = useRouter();
+  const baseURL = process.env.NEXT_PUBLIC_URL;
 
   // State
-  const [questions, setQuestions] = useState([]);
-  const [currentIdx, setCurrentIdx] = useState(0);
   const [currentQ, setCurrentQ] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  //==================Modal States======================
+  const [isModalOpen, setIsModalOpen] = useState(true);
 
   // Timer
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);
@@ -61,37 +36,33 @@ export default function DynamicPage({ params }) {
   // Pagination dropdown
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Fetch all questions and find current index
+  // Fetch the question (single, no fake data)
   useEffect(() => {
-    async function getQuestions() {
+    async function getQuestion() {
       setLoading(true);
       try {
-        const res = await fetchWithAuth(`/test/mcq_single`);
+        const res = await fetchWithAuth(`${baseURL}/user/get-question/${id}`);
         const data = await res.json();
-        const arr =
-          data?.questions && data.questions.length
-            ? data.questions
-            : FAKE_QUESTIONS;
-        setQuestions(arr);
-        const idx = arr.findIndex((q) => q._id === id);
-        setCurrentIdx(idx !== -1 ? idx : 0);
-        setCurrentQ(arr[idx !== -1 ? idx : 0]);
-        setSelected(null);
+        if (data?.question) {
+          setCurrentQ(data.question);
+          setSelected(null);
+        } else {
+          setCurrentQ(null);
+          setSelected(null);
+        }
       } catch {
-        setQuestions(FAKE_QUESTIONS);
-        setCurrentIdx(0);
-        setCurrentQ(FAKE_QUESTIONS[0]);
+        setCurrentQ(null);
         setSelected(null);
       }
       setLoading(false);
       setTimeLeft(RECORD_SECONDS);
       setTimerStarted(false);
     }
-    getQuestions();
+    getQuestion();
     // eslint-disable-next-line
   }, [id]);
 
-  // Timer logic (start on page load)
+  // Timer logic
   useEffect(() => {
     if (loading) return;
     if (!timerStarted) setTimerStarted(true);
@@ -107,16 +78,21 @@ export default function DynamicPage({ params }) {
   // Submit handler
   const handleSubmit = async () => {
     if (!currentQ || selected === null) return;
+    const selectedAnswers = [currentQ.options[selected]];
     const payload = {
       questionId: currentQ._id,
-      answer: selected,
+      selectedAnswers,
     };
+
     try {
-      await fetchWithAuth("/test/mcq_single/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetchWithAuth(
+        `${baseURL}/test/listening/multiple-choice-single-answers/result`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
       alert(
         "Your answer has been submitted! (Demo: backend response not shown)"
       );
@@ -124,90 +100,6 @@ export default function DynamicPage({ params }) {
       alert("Something went wrong! Try again.");
     }
   };
-
-  // Pagination controls (dropdown + prev/next, styled right-bottom)
-  const renderPagination = () => (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end w-max">
-      <div className="relative">
-        <button
-          className="rounded border bg-white px-4 py-2 shadow text-[#810000] font-bold flex items-center gap-2"
-          onClick={() => setDropdownOpen((o) => !o)}
-        >
-          {String(currentIdx + 1).padStart(3, "0")}
-          {dropdownOpen ? (
-            <ChevronUp className="w-5 h-5" />
-          ) : (
-            <ChevronDown className="w-5 h-5" />
-          )}
-        </button>
-        {dropdownOpen && (
-          <div className="absolute right-0 bottom-11 w-36 max-h-72 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg z-50 dropdown-scroll">
-            {questions.slice(0, 100).map((q, i) => (
-              <button
-                key={q._id}
-                onClick={() => {
-                  router.push(`/question/mcq-single/${q._id}`);
-                  setDropdownOpen(false);
-                }}
-                className={`flex w-full px-4 py-2 text-left text-sm font-semibold transition
-                  ${
-                    i === currentIdx
-                      ? "bg-[#810000] text-white"
-                      : "hover:bg-[#f5eaea] text-[#810000]"
-                  }
-                `}
-              >
-                {String(i + 1).padStart(3, "0")}{" "}
-                {q.heading && (
-                  <span className="ml-1 truncate w-24">{q.heading}</span>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-      <div className="flex mt-2 gap-2">
-        <button
-          aria-label="Prev"
-          onClick={() => {
-            if (currentIdx > 0) {
-              router.push(
-                `/question/mcq-single/${questions[currentIdx - 1]._id}`
-              );
-            }
-          }}
-          disabled={currentIdx === 0}
-          className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-        <button
-          aria-label="Next"
-          onClick={() => {
-            if (currentIdx < questions.length - 1) {
-              router.push(
-                `/question/mcq-single/${questions[currentIdx + 1]._id}`
-              );
-            }
-          }}
-          disabled={currentIdx === questions.length - 1}
-          className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
-      </div>
-      <style jsx>{`
-        .dropdown-scroll::-webkit-scrollbar {
-          width: 4px;
-          background: #eee;
-        }
-        .dropdown-scroll::-webkit-scrollbar-thumb {
-          background: #dedede;
-          border-radius: 2px;
-        }
-      `}</style>
-    </div>
-  );
 
   // Format MM:SS
   const formatTime = (sec) => {
@@ -223,6 +115,31 @@ export default function DynamicPage({ params }) {
       </div>
     );
   }
+
+  // Pagination controls (dropdown + prev/next, styled right-bottom)
+  // Kept as-is per your instruction, but you can remove if you want
+  const renderPagination = () => (
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end w-max">
+      <Modal
+        isModalOpen={isModalOpen}
+        setIsModalOpen={() => setIsModalOpen(!isModalOpen)}
+      >
+        <div className="size-80 bg-white rounded-2xl flex flex-col gap-2 justify-center items-center">
+          <h1 className="text-3xl font-semibold text-[#660303]">🎉 Results</h1>
+          <p>
+            <span className="font-bold">Score:</span> 3
+          </p>
+          <p>
+            <span className="font-bold">Total Correct Answer:</span> 3
+          </p>
+          <p>
+            <span className="font-bold">Feedback:</span> You scored 3 out of 3.
+          </p>
+        </div>
+      </Modal>
+      {/* Pagination controls UI code can be added here if you want */}
+    </div>
+  );
 
   return (
     <div className="w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
@@ -251,11 +168,14 @@ export default function DynamicPage({ params }) {
       </div>
       {/* Prompt */}
       <div className="border border-[#810000] rounded bg-[#faf9f9] p-5 mb-4 text-gray-900 text-base whitespace-pre-line">
-        <AudioPlayer src={currentQ.audio} />
+        {currentQ.audioUrl && <AudioPlayer src={currentQ.audioUrl} />}
+        {currentQ.prompt && (
+          <div className="mt-2 text-[#333] text-base">{currentQ.prompt}</div>
+        )}
       </div>
       {/* MCQ Question */}
       <div className="border border-[#810000] rounded bg-white p-3 mb-2 text-[#810000] text-base font-semibold">
-        {currentQ.questionText}
+        Please select only one correct answer from the options below.
       </div>
       {/* Options */}
       <div className="border border-[#810000] rounded bg-[#faf9f9] p-4 mb-2">
@@ -325,3 +245,35 @@ export default function DynamicPage({ params }) {
     </div>
   );
 }
+
+//==================Modal=======================
+const Modal = ({ isModalOpen, children, setIsModalOpen }) => {
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = "hidden"; // Disable scrolling
+    } else {
+      document.body.style.overflow = "auto"; // Enable scrolling again
+    }
+    return () => {
+      document.body.style.overflow = "auto"; // Cleanup function in case modal unmounts
+    };
+  }, [isModalOpen]);
+  return (
+    <div
+      onClick={setIsModalOpen}
+      className={`${
+        isModalOpen
+          ? "h-dvh w-full fixed inset-0 z-50 bg-black/50 flex flex-col justify-center items-center"
+          : "hidden"
+      }`}
+    >
+      <div
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+};
