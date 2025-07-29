@@ -21,9 +21,11 @@ export default function DynamicPage({ params }) {
   // State
   const [currentQ, setCurrentQ] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [serverResponse, setServerResponse] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   //==================Modal States======================
-  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Timer
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);
@@ -77,6 +79,7 @@ export default function DynamicPage({ params }) {
 
   // Submit handler
   const handleSubmit = async () => {
+    setIsSubmitting(true);
     if (!currentQ || selected === null) return;
     const selectedAnswers = [currentQ.options[selected]];
     const payload = {
@@ -93,12 +96,11 @@ export default function DynamicPage({ params }) {
           body: JSON.stringify(payload),
         }
       );
-      alert(
-        "Your answer has been submitted! (Demo: backend response not shown)"
-      );
-    } catch (e) {
-      alert("Something went wrong! Try again.");
-    }
+      setServerResponse(await response.json());
+      setIsSubmitting(false);
+
+      setIsModalOpen(!isModalOpen);
+    } catch (e) {}
   };
 
   // Format MM:SS
@@ -127,13 +129,20 @@ export default function DynamicPage({ params }) {
         <div className="size-80 bg-white rounded-2xl flex flex-col gap-2 justify-center items-center">
           <h1 className="text-3xl font-semibold text-[#660303]">🎉 Results</h1>
           <p>
-            <span className="font-bold">Score:</span> 3
+            <span className="font-bold">Score:</span>{" "}
+            {serverResponse?.result?.score}
           </p>
           <p>
-            <span className="font-bold">Total Correct Answer:</span> 3
+            <span className="font-bold">Total Correct Answer:</span>{" "}
+            {serverResponse?.result?.totalCorrectAnswers}
           </p>
           <p>
-            <span className="font-bold">Feedback:</span> You scored 3 out of 3.
+            <span className="font-bold">Correct Answers Give:</span>{" "}
+            {serverResponse?.result?.correctAnswersGiven.toString()}
+          </p>
+          <p>
+            <span className="font-bold">Feedback:</span>{" "}
+            {serverResponse?.feedback}
           </p>
         </div>
       </Modal>
@@ -238,7 +247,7 @@ export default function DynamicPage({ params }) {
           onClick={handleSubmit}
           disabled={selected === null || timeLeft === 0}
         >
-          Submit
+          {isSubmitting ? "Submitting...." : "Submit"}
         </button>
       </div>
       {renderPagination()}
