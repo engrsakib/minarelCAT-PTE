@@ -3,30 +3,8 @@ import React, { useEffect, useState, useRef } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
-
-// Next.js-compatible dynamic import for react-mic
-const AudioRecorder = dynamic(
-  () =>
-    import("react-mic").then((mod) => {
-      return ({ onStop, record, ...props }) => (
-        <mod.ReactMic
-          record={record}
-          onStop={onStop}
-          strokeColor="#810000"
-          backgroundColor="#f9f9f9"
-          mimeType="audio/wav"
-          {...props}
-        />
-      );
-    }),
-  { ssr: false }
-);
+import MicRecorder from "mic-recorder-to-mp3";
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
 
 const RECORD_SECONDS = 40; // Answer time
 const AUDIO_DURATION = 35; // For the audio player bar (UI, not actual duration)
@@ -53,6 +31,9 @@ export default function RepeatSentencePage({ params }) {
   const [audioProgress, setAudioProgress] = useState(0);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const audioRef = useRef();
+
+  const recorder = useRef(new MicRecorder({ bitRate: 128 }));
+
   // Pagination dropdown
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -136,17 +117,33 @@ export default function RepeatSentencePage({ params }) {
     }
   };
 
-  // react-mic will send blob to this
-  const handleMicStop = (recorded) => {
-    setAudioBlob(recorded.blob);
-    setIsRecording(false);
+  // Start recording
+  const startRecording = async () => {
+    try {
+      await recorder.current.start();
+      setIsRecording(true);
+      setTimeLeft(RECORD_SECONDS);
+    } catch (error) {
+      console.error("Recording failed", error);
+    }
+  };
+
+  // Stop recording and process the audio
+  const stopRecording = async () => {
+    try {
+      const { blob, buffer } = await recorder.current.stop();
+      setAudioBlob(blob);
+      setIsRecording(false);
+    } catch (error) {
+      console.error("Stop recording failed", error);
+    }
   };
 
   // Submit handler
   const handleSubmit = async () => {
     if (!audioBlob || !question) return;
     const formData = new FormData();
-    formData.append("voice", audioBlob, "voice.wav");
+    formData.append("voice", audioBlob, "voice.mp3");
     formData.append("questionId", question._id);
     try {
       await fetchWithAuth("/test/speaking/repeat_sentence/submit", {
@@ -168,11 +165,11 @@ export default function RepeatSentencePage({ params }) {
       </div>
     );
   }
-  // console.log(question)
+
   return (
     <div className="w-full lg:w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
       <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
-        Respond to a Situation
+        Answer a Short Question
       </div>
       <p className="text-gray-700 mb-6">
         Listen to and read a description of a situation. You will have 35
@@ -258,7 +255,6 @@ export default function RepeatSentencePage({ params }) {
       </div>
       {/* Audio Recorder */}
       <div className="border border-[#810000] rounded p-4 mb-6 bg-[#faf9f9] flex flex-col items-center">
-        <AudioRecorder record={isRecording} onStop={handleMicStop} />
         <div className="flex items-center w-full gap-2 mt-2">
           <span className="text-xs text-gray-600">
             {new Date((RECORD_SECONDS - timeLeft) * 1000)
@@ -308,13 +304,7 @@ export default function RepeatSentencePage({ params }) {
           </button>
           <button
             className="flex items-center gap-1 px-4 py-1 rounded bg-[#810000] text-white font-medium text-sm hover:bg-[#5d0000] disabled:bg-gray-300 disabled:text-gray-400"
-            onClick={() => {
-              if (!isRecording && timeLeft > 0 && !isThinking) {
-                setTimeLeft(RECORD_SECONDS);
-                setAudioBlob(null);
-                setIsRecording(true);
-              }
-            }}
+            onClick={startRecording}
             disabled={
               isRecording || timeLeft === 0 || isThinking || audioPlaying
             }
@@ -323,23 +313,13 @@ export default function RepeatSentencePage({ params }) {
           </button>
           <button
             className="flex items-center gap-1 px-4 py-1 rounded bg-gray-500 text-white font-medium text-sm hover:bg-gray-700 disabled:bg-gray-300 disabled:text-gray-400"
-            onClick={() => setIsRecording(false)}
+            onClick={stopRecording}
             disabled={!isRecording}
           >
             <span>Stop</span>
           </button>
         </div>
       </div>
-      <style jsx>{`
-        .dropdown-scroll::-webkit-scrollbar {
-          width: 4px;
-          background: #eee;
-        }
-        .dropdown-scroll::-webkit-scrollbar-thumb {
-          background: #dedede;
-          border-radius: 2px;
-        }
-      `}</style>
     </div>
   );
 }
