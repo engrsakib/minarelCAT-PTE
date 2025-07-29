@@ -10,6 +10,7 @@ import {
   Monitor,
   Share2,
   X,
+  Loader2,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
@@ -40,6 +41,9 @@ export default function DynamicPage({ params }) {
 
   // AI Score Modal state
   const [showAiScoreModal, setShowAiScoreModal] = useState(false);
+
+  // Submitting state
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
 
@@ -136,6 +140,8 @@ export default function DynamicPage({ params }) {
   const handleSubmit = async () => {
     if (!currentQ || selected.length === 0) return;
 
+    setIsSubmitting(true); // Start submitting
+
     const timeTaken = startTime
       ? Math.floor((Date.now() - startTime) / 1000)
       : 0;
@@ -180,6 +186,8 @@ export default function DynamicPage({ params }) {
       setShowAiScoreModal(true);
     } catch (e) {
       alert("Something went wrong! Try again.");
+    } finally {
+      setIsSubmitting(false); // End submitting
     }
   };
 
@@ -337,6 +345,7 @@ export default function DynamicPage({ params }) {
                 onChange={() => handleOptionChange(i)}
                 className="accent-[#810000] w-4 h-4"
                 style={{ accentColor: "#810000" }}
+                disabled={isSubmitting}
               />
               <span
                 className={`text-base font-bold flex items-center justify-center w-7 h-7 rounded-full border border-[#810000] ${
@@ -360,23 +369,30 @@ export default function DynamicPage({ params }) {
       {/* Controls */}
       <div className="flex gap-3 mb-2 mt-3">
         <button
-          className="flex items-center gap-1 px-6 py-2 rounded border border-gray-400 text-gray-700 hover:bg-gray-100 font-medium text-base"
+          className="flex items-center gap-1 px-6 py-2 rounded border border-gray-400 text-gray-700 hover:bg-gray-100 font-medium text-base disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={() => {
             setSelected([]);
             setTimeLeft(RECORD_SECONDS);
             setTimerStarted(false);
             setStartTime(null);
           }}
-          disabled={timeLeft === 0}
+          disabled={timeLeft === 0 || isSubmitting}
         >
           Restart
         </button>
         <button
-          className="flex items-center gap-1 px-6 py-2 rounded border-2 border-[#810000] bg-white text-[#810000] font-semibold text-base hover:bg-[#810000] hover:text-white transition"
+          className="flex items-center gap-2 px-6 py-2 rounded border-2 border-[#810000] bg-white text-[#810000] font-semibold text-base hover:bg-[#810000] hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-[#810000]"
           onClick={handleSubmit}
-          disabled={selected.length === 0 || timeLeft === 0}
+          disabled={selected.length === 0 || timeLeft === 0 || isSubmitting}
         >
-          Submit
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Submitting...
+            </>
+          ) : (
+            "Submit"
+          )}
         </button>
       </div>
 
