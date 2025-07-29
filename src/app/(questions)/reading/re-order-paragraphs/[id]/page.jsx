@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
 import {
@@ -7,14 +7,14 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 
-// 9:59 minutes in seconds
 const RECORD_SECONDS = 599;
 
 function shuffle(array) {
-  // Fisher-Yates Shuffle
-  let arr = array.slice();
+  const arr = array.slice();
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
@@ -26,60 +26,84 @@ function ResultModal({ isOpen, onClose, result }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto border-2 border-[#810000]">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-2xl font-bold text-[#810000]">Result</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-auto border border-gray-200 overflow-hidden transform transition-all animate-in fade-in-0 zoom-in-95 duration-200">
+        <div className="bg-[#810000] p-4 text-white">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {result.score >= 70 ? (
+                <CheckCircle className="h-6 w-6 text-green-300" />
+              ) : (
+                <XCircle className="h-6 w-6 text-red-300" />
+              )}
+              <h3 className="text-lg font-bold">Result</h3>
+            </div>
             <button
               onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 text-2xl"
+              className="text-white/80 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
             >
-              &times;
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
             </button>
           </div>
+        </div>
 
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-lg font-semibold">Score:</span>
-              <span className="text-2xl font-bold text-green-600">
-                {result.score}%
-              </span>
+        <div className="p-4">
+          <div className="text-center mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#810000] text-white text-xl font-bold mb-3">
+              {result.score}%
             </div>
-            <p className="text-gray-700 mb-6">{result.message}</p>
+            <div className="bg-gray-50 rounded-lg p-3 text-sm">
+              <p className="text-gray-700">{result.message}</p>
+            </div>
           </div>
 
-          <div className="mb-6">
-            <h4 className="font-semibold text-lg mb-2 text-[#810000]">
-              Your Answer:
-            </h4>
-            <ol className="list-decimal pl-5 space-y-2">
-              {result.userAnswer.map((item, i) => (
-                <li key={i} className="text-gray-700">
-                  {item}
-                </li>
-              ))}
-            </ol>
-          </div>
+          <div className="space-y-3 mb-4">
+            <div className="bg-blue-50 rounded-lg p-3 border-l-3 border-blue-400">
+              <h4 className="font-medium text-blue-900 mb-2 text-sm">
+                Your Answer
+              </h4>
+              <div className="text-xs text-blue-800 space-y-1">
+                {result.userAnswer.map((item, i) => (
+                  <div key={i} className="flex">
+                    <span className="font-medium mr-2">{i + 1}.</span>
+                    <span className="flex-1">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-          <div className="mb-6">
-            <h4 className="font-semibold text-lg mb-2 text-[#810000]">
-              Correct Answer:
-            </h4>
-            <ol className="list-decimal pl-5 space-y-2">
-              {result.correctAnswer.map((item, i) => (
-                <li key={i} className="text-gray-700">
-                  {item}
-                </li>
-              ))}
-            </ol>
+            <div className="bg-green-50 rounded-lg p-3 border-l-3 border-green-400">
+              <h4 className="font-medium text-green-900 mb-2 text-sm">
+                Correct Answer
+              </h4>
+              <div className="text-xs text-green-800 space-y-1">
+                {result.correctAnswer.map((item, i) => (
+                  <div key={i} className="flex">
+                    <span className="font-medium mr-2">{i + 1}.</span>
+                    <span className="flex-1">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           <button
             onClick={onClose}
-            className="w-full py-2 px-4 bg-[#810000] text-white rounded-md hover:bg-[#6a0000] transition"
+            className="w-full py-2.5 bg-[#810000] text-white rounded-lg hover:bg-[#6a0000] transition font-medium text-sm"
           >
-            Close
+            Continue
           </button>
         </div>
       </div>
@@ -90,28 +114,18 @@ function ResultModal({ isOpen, onClose, result }) {
 export default function DynamicPage({ params }) {
   const { id } = params;
   const router = useRouter();
-
-  // State
   const [questions, setQuestions] = useState([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [currentQ, setCurrentQ] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // Timer
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);
   const timerRef = useRef();
   const [timerStarted, setTimerStarted] = useState(false);
-
-  // Source (left) and Target (right) state for drag-and-drop
   const [source, setSource] = useState([]);
   const [target, setTarget] = useState([]);
   const [dragged, setDragged] = useState(null);
-
-  // Pagination dropdown
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const baseUrl = process.env.NEXT_PUBLIC_URL || "";
-
-  // Result modal
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
   const [result, setResult] = useState({
     score: 0,
@@ -120,27 +134,23 @@ export default function DynamicPage({ params }) {
     correctAnswer: [],
   });
 
-  // On mount/fetch question
+  const baseUrl = process.env.NEXT_PUBLIC_URL || "";
+
   useEffect(() => {
     async function getQuestions() {
       setLoading(true);
       try {
         const res = await fetchWithAuth(`${baseUrl}/user/get-question/${id}`);
         const data = await res.json();
-
         let arr = [];
         let idx = 0;
         let questionObj = null;
 
-        if (
-          data.questions &&
-          Array.isArray(data.questions) &&
-          data.questions.length
-        ) {
+        if (Array.isArray(data?.questions) && data.questions.length > 0) {
           arr = data.questions;
           idx = arr.findIndex((q) => q._id === id);
           questionObj = arr[idx !== -1 ? idx : 0];
-        } else if (data.question) {
+        } else if (data?.question) {
           arr = [data.question];
           idx = 0;
           questionObj = data.question;
@@ -160,7 +170,8 @@ export default function DynamicPage({ params }) {
         );
         setSource(shuffled);
         setTarget([]);
-      } catch {
+      } catch (error) {
+        console.error("Error fetching questions:", error);
         setQuestions([]);
         setCurrentIdx(0);
         setCurrentQ(null);
@@ -171,11 +182,10 @@ export default function DynamicPage({ params }) {
       setTimeLeft(RECORD_SECONDS);
       setTimerStarted(false);
     }
-    getQuestions();
-    // eslint-disable-next-line
-  }, [id]);
 
-  // Timer logic
+    getQuestions();
+  }, [id, baseUrl]);
+
   useEffect(() => {
     if (loading) return;
     if (!timerStarted) setTimerStarted(true);
@@ -188,7 +198,6 @@ export default function DynamicPage({ params }) {
     return () => clearTimeout(timerRef.current);
   }, [timerStarted, timeLeft]);
 
-  // Drag/Drop handlers
   const handleDragStart = (item, fromSource, idx) => {
     setDragged({ ...item, fromSource, idx });
   };
@@ -229,23 +238,61 @@ export default function DynamicPage({ params }) {
     setDragged((d) => ({ ...d, idx: overIdx }));
   };
 
-  // Submit handler
   const handleSubmit = async () => {
-    if (!currentQ || target.length !== (currentQ.options?.length || 0)) return;
+    if (!currentQ || target.length !== (currentQ.options?.length || 0)) {
+      return;
+    }
 
-    // Demo response data
-    const demoResponse = {
-      score: 100,
-      message: "You scored 4 out of 4 points.",
-      userAnswer: target.map((item) => item.text),
-      correctAnswer: currentQ.options,
+    setIsSubmitting(true);
+    // Remove this line: setShowResultModal(true)
+
+    const payload = {
+      questionId: currentQ._id,
+      userReorderedOptions: target.map((item) => item.text),
     };
 
-    setResult(demoResponse);
-    setShowResultModal(true);
+    try {
+      const res = await fetchWithAuth(
+        `${baseUrl}/test/reading/reorder-paragraphs/result`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error(`Request failed with status ${res.status}`);
+      }
+
+      const resultData = await res.json();
+      setResult({
+        score: resultData.score || 0,
+        message: resultData.message || "",
+        userAnswer: target.map((item) => item.text),
+        correctAnswer: resultData.correctAnswer || currentQ.options || [],
+      });
+
+      // Add this line to show modal only after getting result
+      setShowResultModal(true);
+    } catch (error) {
+      console.error("Submission error:", error);
+      setResult({
+        score: 0,
+        message: "Failed to submit answer. Please try again.",
+        userAnswer: target.map((item) => item.text),
+        correctAnswer: currentQ.options || [],
+      });
+
+      // Add this line to show modal even on error
+      setShowResultModal(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  // Restart handler
   const handleRestart = () => {
     if (!currentQ) return;
     const optionsArr = currentQ.options || [];
@@ -263,7 +310,6 @@ export default function DynamicPage({ params }) {
     setShowResultModal(false);
   };
 
-  // Pagination controls
   const renderPagination = () => (
     <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end w-max">
       <div className="relative">
@@ -287,15 +333,13 @@ export default function DynamicPage({ params }) {
                   router.push(`/question/reorder-paragraphs/${q._id}`);
                   setDropdownOpen(false);
                 }}
-                className={`flex w-full px-4 py-2 text-left text-sm font-semibold transition
-                  ${
-                    i === currentIdx
-                      ? "bg-[#810000] text-white"
-                      : "hover:bg-[#f5eaea] text-[#810000]"
-                  }
-                `}
+                className={`flex w-full px-4 py-2 text-left text-sm font-semibold transition ${
+                  i === currentIdx
+                    ? "bg-[#810000] text-white"
+                    : "hover:bg-[#f5eaea] text-[#810000]"
+                }`}
               >
-                {String(i + 1).padStart(3, "0")}{" "}
+                {String(i + 1).padStart(3, "0")}
                 {q.heading && (
                   <span className="ml-1 truncate w-24">{q.heading}</span>
                 )}
@@ -315,7 +359,7 @@ export default function DynamicPage({ params }) {
             }
           }}
           disabled={currentIdx === 0}
-          className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
+          className="rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
@@ -329,7 +373,7 @@ export default function DynamicPage({ params }) {
             }
           }}
           disabled={currentIdx === questions.length - 1}
-          className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
+          className="rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40"
         >
           <ChevronRight className="w-6 h-6" />
         </button>
@@ -347,17 +391,30 @@ export default function DynamicPage({ params }) {
     </div>
   );
 
-  // Format MM:SS
   const formatTime = (sec) => {
     const m = Math.floor(sec / 60);
     const s = sec % 60;
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
-  if (loading || !currentQ) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[40vh]">
-        Loading...
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#810000]"></div>
+      </div>
+    );
+  }
+
+  if (!currentQ) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-[40vh] text-center">
+        <div className="text-2xl font-semibold text-[#810000] mb-2">
+          No Question Found
+        </div>
+        <div className="text-gray-600">
+          Please try refreshing or contact support.
+        </div>
+        {renderPagination()}
       </div>
     );
   }
@@ -367,9 +424,9 @@ export default function DynamicPage({ params }) {
       <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
         Re-order Paragraphs
       </div>
+
       <p className="text-gray-700 mb-6">{currentQ.prompt}</p>
 
-      {/* Question Heading */}
       <div className="flex items-center gap-2 mb-4">
         <span className="rounded px-4 py-2 font-bold text-white bg-[#810000] text-base tracking-wide">
           #{currentQ._id}
@@ -379,17 +436,14 @@ export default function DynamicPage({ params }) {
         </span>
       </div>
 
-      {/* Timer */}
       <div className="mb-6 flex items-center gap-3">
         <span className="text-[#810000] font-medium text-base">
           Remaining Time:{" "}
-          <span className="font-bold">00: {formatTime(timeLeft)} sec</span>
+          <span className="font-bold">{formatTime(timeLeft)}</span>
         </span>
       </div>
 
-      {/* Drag-drop panels */}
       <div className="flex flex-col md:flex-row gap-4 w-full justify-center mb-5">
-        {/* Source */}
         <div className="flex-1 min-w-[260px] max-w-[50%]">
           <div className="bg-[#810000] text-white text-center rounded-t px-2 py-2 font-semibold">
             Source
@@ -428,12 +482,10 @@ export default function DynamicPage({ params }) {
           </div>
         </div>
 
-        {/* Arrow */}
         <div className="flex items-center justify-center px-1 py-1">
           <span className="text-[#810000] text-3xl font-bold">{">>"}</span>
         </div>
 
-        {/* Target */}
         <div className="flex-1 min-w-[260px] max-w-[50%]">
           <div className="bg-[#810000] text-white text-center rounded-t px-2 py-2 font-semibold">
             Target
@@ -477,27 +529,38 @@ export default function DynamicPage({ params }) {
         </div>
       </div>
 
-      {/* Controls */}
       <div className="flex gap-3 justify-center mb-2 mt-3">
         <button
-          className="flex items-center gap-1 px-6 py-2 rounded border border-gray-400 text-gray-700 hover:bg-gray-100 font-medium text-base"
+          className="flex items-center gap-1 px-6 py-2 rounded border border-gray-400 text-gray-700 hover:bg-gray-100 font-medium text-base disabled:opacity-50"
           onClick={handleRestart}
-          disabled={timeLeft === 0}
+          disabled={timeLeft === 0 || isSubmitting}
         >
           Restart
         </button>
         <button
-          className="flex items-center gap-1 px-6 py-2 rounded border-2 border-[#810000] bg-white text-[#810000] font-semibold text-base hover:bg-[#810000] hover:text-white transition"
+          className={`flex items-center justify-center gap-2 px-6 py-2 rounded border-2 border-[#810000] font-semibold text-base transition min-w-[140px] ${
+            isSubmitting
+              ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+              : "bg-white text-[#810000] hover:bg-[#810000] hover:text-white"
+          }`}
           onClick={handleSubmit}
           disabled={
-            target.length !== (currentQ.options?.length || 0) || timeLeft === 0
+            target.length !== (currentQ.options?.length || 0) ||
+            timeLeft === 0 ||
+            isSubmitting
           }
         >
-          Submit
+          {isSubmitting ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent"></div>
+              Submitting...
+            </>
+          ) : (
+            "Submit"
+          )}
         </button>
       </div>
 
-      {/* Result Modal (without black background) */}
       <ResultModal
         isOpen={showResultModal}
         onClose={() => setShowResultModal(false)}
