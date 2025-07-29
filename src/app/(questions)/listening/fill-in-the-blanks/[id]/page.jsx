@@ -1,117 +1,65 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
+import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Volume2 } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 import AudioPlayer from "../../../../../components/audio/AudioPlayer";
-
-// Mock fetchWithAuth for demo
-const fetchWithAuth = async (url, options = {}) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        json: () => Promise.resolve({ questions: [] })
-      });
-    }, 100);
-  });
-};
 
 // 9:59 minutes in seconds
 const RECORD_SECONDS = 599;
 
-// Fake questions fallback (1-100 for pagination)
-const FAKE_QUESTIONS = Array.from({ length: 100 }, (_, i) => ({
-  _id: String(1001635 + i),
-  type: "reading_writing_blanks",
-  heading: i === 0 ? "Driving Licenses in BC" : `Fake Heading ${i + 1}`,
-  audio: `https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3`,
-  prompt:
-    i === 0
-      ? `But as I was saying, Professor Wilmot ...
-Look, can please call me Lisa.
-
-Yeah, Lisa, well I'm still trying to get my head around the choice of (a) ____________ for the optional part of the third-year program. I was thinking of taking personal taxation law and company law, together with the extra five-credit-point course on goods and services and VAT type taxes, but it is the (b) ____________ that I'm going to discipline myself to study in the course.
-
-Lisa: Well, hmmm.
-
-Did you know there are going to be (c) ____________ for summer clerkship training, so I really don't want to come across as too focused on certain areas, but a lot of firms don't even do this. You know, a position in a (d) ____________.
-
-Lisa: Well, don't forget, you're only about 25% of the courses at this stage is elective-based and you'll still have that core of subjects - you, legal institutions, (e) ____________ property law, general commercial and factors law, all of which would be of interest to a lot of firms. So if I were you, which I'm not, I'd stay put with what you're thinking on and enjoy the chance to complete some work in areas that will be, to pursue. Don't you think? There's an awful lot of law in this profession where you'll be undertaking long, stressful hours on projects that don't really interest you as much.`
-      : `Fake prompt for question #${i + 1}`,
-  options: [
-    [
-      "Taxation Law",
-      "Company Law",
-      "Intellectual Property",
-      "Constitutional Law",
-    ],
-    ["Discipline", "Subject", "Area", "Course"],
-    ["Vacancies", "Positions", "Options", "Offers"],
-    ["Firm", "Chamber", "Practice", "Institution"],
-    ["Intellectual", "Corporate", "Family", "International"],
-  ],
-}));
-
-export default function DynamicPage({ params = { id: "1001635" } }) {
+export default function DynamicPage({ params }) {
   const { id } = params;
-  const router = {
-    push: (url) => console.log('Navigate to:', url)
-  };
+  const router = useRouter();
+  const baseUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
 
   // State
-  const [questions, setQuestions] = useState([]);
-  const [currentIdx, setCurrentIdx] = useState(0);
   const [currentQ, setCurrentQ] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  //==================Modal States======================
+  const [isModalOpen, setIsModalOpen] = useState(true);
 
   // Timer
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);
   const timerRef = useRef();
   const [timerStarted, setTimerStarted] = useState(false);
 
-  // Dropdown answers
+  // Dropdown answers for blanks
   const [answers, setAnswers] = useState([]);
 
-  // Pagination dropdown
+  // Pagination dropdown (if you want to add it later)
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Pronunciation play state for each blank
-  const [pronouncingIdx, setPronouncingIdx] = useState(null);
-
-  // Word hover pronunciation state
-  const [pronouncingWord, setPronouncingWord] = useState(null);
-
-  // Text selection pronunciation
-  const [selectedText, setSelectedText] = useState('');
-
-  // Fetch all questions and find current index
+  // Fetch question and set state
   useEffect(() => {
-    async function getQuestions() {
+    async function getQuestion() {
       setLoading(true);
       try {
-        const res = await fetchWithAuth(`/test/reading-writing-blanks/${id}`);
+        const res = await fetchWithAuth(`${baseUrl}/user/get-question/${id}`);
         const data = await res.json();
-        const arr =
-          data?.questions && data.questions.length
-            ? data.questions
-            : FAKE_QUESTIONS;
-        setQuestions(arr);
-        const idx = arr.findIndex((q) => q._id === id);
-        setCurrentIdx(idx !== -1 ? idx : 0);
-        setCurrentQ(arr[idx !== -1 ? idx : 0]);
-        setAnswers(
-          Array(arr[idx !== -1 ? idx : 0]?.options?.length || 0).fill("")
-        );
+        if (data && data.question) {
+          setCurrentQ(data.question);
+          // Initial answers: one for each blank, empty string
+          setAnswers(Array(data.question.blanks?.length || 0).fill(""));
+        } else {
+          setCurrentQ(null);
+          setAnswers([]);
+        }
       } catch {
-        setQuestions(FAKE_QUESTIONS);
-        setCurrentIdx(0);
-        setCurrentQ(FAKE_QUESTIONS[0]);
-        setAnswers(Array(FAKE_QUESTIONS[0]?.options?.length || 0).fill(""));
+        setCurrentQ(null);
+        setAnswers([]);
       }
       setLoading(false);
       setTimeLeft(RECORD_SECONDS);
       setTimerStarted(false);
     }
-    getQuestions();
+    getQuestion();
     // eslint-disable-next-line
   }, [id]);
 
@@ -133,56 +81,6 @@ export default function DynamicPage({ params = { id: "1001635" } }) {
     const arr = [...answers];
     arr[idx] = e.target.value;
     setAnswers(arr);
-    // Play speech when a new value is selected
-    if (e.target.value) {
-      pronounceWord(e.target.value, idx);
-    }
-  };
-
-  // SpeechSynthesis API function
-  const pronounceWord = (word, idx) => {
-    if (!window.speechSynthesis) return;
-    setPronouncingIdx(idx);
-    const utter = new window.SpeechSynthesisUtterance(word);
-    utter.onend = () => setPronouncingIdx(null);
-    utter.onerror = () => setPronouncingIdx(null);
-    window.speechSynthesis.cancel(); // cancel ongoing
-    window.speechSynthesis.speak(utter);
-  };
-
-  // Word hover pronunciation function
-  const pronounceHoveredWord = (word, wordKey) => {
-    if (!window.speechSynthesis) return;
-    setPronouncingWord(wordKey);
-    const utter = new window.SpeechSynthesisUtterance(word);
-    utter.onend = () => setPronouncingWord(null);
-    utter.onerror = () => setPronouncingWord(null);
-    window.speechSynthesis.cancel(); // cancel ongoing
-    window.speechSynthesis.speak(utter);
-  };
-
-  // Handle text selection and pronunciation
-  const handleTextSelection = () => {
-    const selection = window.getSelection();
-    const text = selection.toString().trim();
-    
-    if (text && text.length > 0) {
-      setSelectedText(text);
-      // Pronounce the selected text
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel(); // cancel any ongoing speech
-        const utter = new window.SpeechSynthesisUtterance(text);
-        utter.rate = 0.8; // Slightly slower for better comprehension
-        utter.onend = () => setSelectedText('');
-        utter.onerror = () => setSelectedText('');
-        window.speechSynthesis.speak(utter);
-      }
-    }
-  };
-
-  // For speaker icon click
-  const handlePronounceClick = (word, idx) => {
-    pronounceWord(word, idx);
   };
 
   // Submit handler
@@ -190,173 +88,20 @@ export default function DynamicPage({ params = { id: "1001635" } }) {
     if (!currentQ) return;
     const payload = {
       questionId: currentQ._id,
-      answers,
+      selectedAnswers: answers,
     };
+
     try {
-      await fetchWithAuth("/test/reading-writing-blanks/submit", {
+      await fetchWithAuth("/test/listening-fill-in-the-blanks/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      alert(
-        "Your answer has been submitted! (Demo: backend response not shown)"
-      );
+      alert("Your answer has been submitted! (Demo: backend response not shown)");
     } catch (e) {
       alert("Something went wrong! Try again.");
     }
   };
-
-  // Pagination controls (sticky bottom right)
-  const goToIndex = (idx) => {
-    if (idx < 0 || idx >= questions.length) return;
-    router.push(`/question/reading-writing-blanks/${questions[idx]._id}`);
-    setDropdownOpen(false);
-  };
-
-  // Function to render text with hoverable words
-  const renderHoverableText = (text, partIndex) => {
-    // Split text into words while preserving spaces and punctuation
-    const words = text.split(/(\s+)/);
-    
-    return words.map((word, wordIndex) => {
-      // Skip empty strings and pure whitespace
-      if (!word.trim()) {
-        return <span key={`${partIndex}-${wordIndex}`}>{word}</span>;
-      }
-
-      const wordKey = `${partIndex}-${wordIndex}`;
-      const cleanWord = word.replace(/[^\w\s]/g, ''); // Remove punctuation for pronunciation
-      
-      if (cleanWord.length < 2) {
-        return <span key={wordKey}>{word}</span>;
-      }
-
-      return (
-        <span
-          key={wordKey}
-          className={`hoverable-word ${pronouncingWord === wordKey ? 'pronouncing' : ''}`}
-          onMouseEnter={() => pronounceHoveredWord(cleanWord, wordKey)}
-          onMouseLeave={() => {
-            if (pronouncingWord === wordKey) {
-              window.speechSynthesis.cancel();
-              setPronouncingWord(null);
-            }
-          }}
-        >
-          {word}
-        </span>
-      );
-    });
-  };
-
-  // Render pagination (bottom right, sticky dropdown)
-  const renderPagination = () => (
-    <div className="pagination-sticky">
-      <div className="flex items-center gap-2">
-        <button
-          aria-label="Prev"
-          onClick={() => goToIndex(currentIdx - 1)}
-          disabled={currentIdx === 0}
-          className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-        <div className="relative">
-          <button
-            className="rounded border border-[#810000] bg-white px-4 py-2 shadow text-[#810000] font-bold flex items-center gap-2"
-            onClick={() => setDropdownOpen((o) => !o)}
-          >
-            {String(currentIdx + 1).padStart(3, "0")}
-            {dropdownOpen ? (
-              <ChevronUp className="w-5 h-5" />
-            ) : (
-              <ChevronDown className="w-5 h-5" />
-            )}
-          </button>
-          {dropdownOpen && (
-            <div className="absolute left-0 bottom-12 w-44 max-h-64 overflow-y-auto bg-white border border-gray-200 rounded shadow-lg z-50 dropdown-scroll">
-              {questions.slice(0, 100).map((q, i) => (
-                <button
-                  key={q._id}
-                  onClick={() => goToIndex(i)}
-                  className={`flex w-full px-4 py-2 text-left text-sm font-semibold transition
-                    ${
-                      i === currentIdx
-                        ? "bg-[#810000] text-white"
-                        : "hover:bg-[#f5eaea] text-[#810000]"
-                    }
-                  `}
-                >
-                  {String(i + 1).padStart(3, "0")}{" "}
-                  {q.heading && (
-                    <span className="ml-1 truncate w-24">{q.heading}</span>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-        <button
-          aria-label="Next"
-          onClick={() => goToIndex(currentIdx + 1)}
-          disabled={currentIdx === questions.length - 1}
-          className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
-      </div>
-      <style jsx>{`
-        .pagination-sticky {
-          position: fixed;
-          right: 2.5rem;
-          bottom: 2.5rem;
-          z-index: 50;
-          background: transparent;
-        }
-        .dropdown-scroll::-webkit-scrollbar {
-          width: 4px;
-          background: #eee;
-        }
-        .dropdown-scroll::-webkit-scrollbar-thumb {
-          background: #dedede;
-          border-radius: 2px;
-        }
-        .hoverable-word {
-          cursor: pointer;
-          transition: color 0.2s ease, background-color 0.2s ease;
-          padding: 1px 2px;
-          border-radius: 2px;
-        }
-        .hoverable-word:hover {
-          color: #dc2626 !important;
-          background-color: #fef2f2;
-        }
-        .hoverable-word.pronouncing {
-          color: #dc2626 !important;
-          background-color: #fef2f2;
-          animation: pulse 1s infinite;
-        }
-        .select-text {
-          user-select: text;
-          -webkit-user-select: text;
-          -moz-user-select: text;
-          -ms-user-select: text;
-        }
-        .select-text::selection {
-          background-color: #dc2626;
-          color: white;
-        }
-        .select-text::-moz-selection {
-          background-color: #dc2626;
-          color: white;
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.7; }
-        }
-      `}</style>
-    </div>
-  );
 
   // Format MM:SS
   const formatTime = (sec) => {
@@ -373,29 +118,59 @@ export default function DynamicPage({ params = { id: "1001635" } }) {
     );
   }
 
-  // Prompt split for blanks (find indices for (a)...(e))
-  const prompt = currentQ.prompt;
-  const options = currentQ.options || [];
-  let blanks = [];
+  // Prompt split for blanks, use blanks array
+  const prompt = currentQ.prompt || "";
+  const blanks = currentQ.blanks || [];
+
+  // Find blank markers (e.g., (a), (b), ...) in prompt for split
+  // If you want to use a more dynamic approach, use a marker for blanks, but here we just split by blanks count
   let splitParts = [];
-  let cursor = 0;
-  let regex = /\([a-e]\)/g;
+  let lastIndex = 0;
+  let blankMarker = "__________";
+  let regex = /__________/g;
   let match;
-  while ((match = regex.exec(prompt))) {
-    splitParts.push(prompt.slice(cursor, match.index));
-    blanks.push(match[0]);
-    cursor = match.index + match[0].length;
+  let i = 0;
+  let promptParts = [];
+  // If you use a marker in prompt (e.g., __________), split that way
+  if (prompt.includes(blankMarker)) {
+    while ((match = regex.exec(prompt))) {
+      splitParts.push(prompt.slice(lastIndex, match.index));
+      lastIndex = match.index + blankMarker.length;
+      i++;
+    }
+    splitParts.push(prompt.slice(lastIndex));
+  } else {
+    // fallback: just show prompt, blanks below
+    splitParts = [prompt];
   }
-  splitParts.push(prompt.slice(cursor));
 
   return (
     <div className="w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
-      <div className="text-2xl font-semibold text-[#810000) border-b border-[#810000] pb-2 mb-6">
-        Reading & Writing Blanks
+      {/* =========================Modal Contents starts here=============== */}
+      <Modal
+        isModalOpen={isModalOpen}
+        setIsModalOpen={() => setIsModalOpen(!isModalOpen)}
+      >
+        <div className="size-80 bg-white rounded-2xl flex flex-col gap-2 justify-center items-center">
+          <h1 className="text-3xl font-semibold text-[#660303]">🎉 Results</h1>
+          <p>
+            <span className="font-bold">Score:</span> 3
+          </p>
+          <p>
+            <span className="font-bold">Total Correct Answer:</span> 3
+          </p>
+          <p>
+            <span className="font-bold">Feedback:</span> You scored 3 out of 3.
+          </p>
+        </div>
+      </Modal>
+      {/* =========================Modal Contents ends here=============== */}
+
+      <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
+        Listening Fill in the Blanks
       </div>
       <p className="text-gray-700 mb-6">
-        Below is a text with blanks. Click on each blank, a list of choices will
-        appear. Select the appropriate answer choice for each blank. Hover over any word to hear its pronunciation.
+        Listen to the audio and fill in the blanks in the passage by selecting the correct answer for each blank.
       </p>
       {/* Question Heading */}
       <div className="flex items-center gap-2 mb-4">
@@ -414,81 +189,82 @@ export default function DynamicPage({ params = { id: "1001635" } }) {
         </span>
       </div>
       {/* Audio Player */}
+      {currentQ.audioUrl && (
+        <div className="border border-[#810000] rounded bg-[#faf9f9] p-5 mb-4 text-gray-900 text-base whitespace-pre-line">
+          <AudioPlayer src={currentQ.audioUrl} />
+        </div>
+      )}
+      {/* Prompt with answer dropdowns (if marker present) */}
       <div className="border border-[#810000] rounded bg-[#faf9f9] p-5 mb-4 text-gray-900 text-base whitespace-pre-line">
-        <AudioPlayer src={currentQ.audio} />
-      </div>
-      {/* Prompt with answer dropdowns and hoverable words */}
-      <div 
-        className="border border-[#810000] rounded bg-[#faf9f9] p-5 mb-4 text-gray-900 text-base whitespace-pre-line select-text cursor-text"
-        onClick={handleTextSelection}
-        onMouseUp={handleTextSelection}
-      >
-        {splitParts.map((part, i) => (
-          <React.Fragment key={i}>
-            {renderHoverableText(part, i)}
-            {i < blanks.length && (
-              <span className="inline-block align-middle mx-1">
-                <span className="font-bold text-[#810000] mr-1">
-                  {blanks[i]}
-                </span>
-                {/* Answer (if selected) shown in theme color, with speaker icon */}
-                {answers[i] && (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-white bg-[#810000] font-semibold mx-1 transition-colors duration-200">
-                    {answers[i]}
-                    <button
-                      type="button"
-                      aria-label="Pronounce"
-                      className={`ml-1 p-0.5 rounded-full hover:bg-[#a91e22] focus:outline-none`}
-                      style={{ lineHeight: 0 }}
-                      onClick={() => handlePronounceClick(answers[i], i)}
+        {splitParts.length > 1 && blanks.length > 0
+          ? splitParts.map((part, i) => (
+              <React.Fragment key={i}>
+                {part}
+                {i < blanks.length && (
+                  <span className="inline-block align-middle mx-1">
+                    <select
+                      value={answers[i] || ""}
+                      onChange={handleAnswerChange(i)}
+                      className="border border-[#810000] bg-white rounded px-2 py-1 text-[#810000] font-semibold focus:outline-none focus:ring-2 focus:ring-[#810000] appearance-none mb-1"
+                      style={{
+                        backgroundImage:
+                          "url(\"data:image/svg+xml;charset=UTF-8,%3Csvg width='24' height='24' fill='none' stroke='%23810000' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
+                        backgroundPosition: "right 0.75rem center",
+                        backgroundRepeat: "no-repeat",
+                        backgroundSize: "1em",
+                      }}
                     >
-                      <Volume2
-                        className={`w-4 h-4 ${
-                          pronouncingIdx === i ? "animate-pulse text-yellow-300" : "text-white"
-                        }`}
-                      />
-                    </button>
+                      <option value="">Select answer</option>
+                      {blanks[i]?.options.map((opt, j) => (
+                        <option key={j} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
                   </span>
                 )}
-              </span>
-            )}
-          </React.Fragment>
-        ))}
-      </div>
-      {/* Answer options below */}
-      <div className="w-full flex flex-col md:flex-row gap-2 mb-4">
-        {options.map((opts, i) => (
-          <div key={i} className="flex-1">
-            <select
-              value={answers[i] || ""}
-              onChange={handleAnswerChange(i)}
-              className="w-full border border-[#810000] bg-white rounded px-2 py-2 text-[#810000] font-semibold focus:outline-none focus:ring-2 focus:ring-[#810000] appearance-none mb-1"
-              style={{
-                backgroundImage:
-                  "url(\"data:image/svg+xml;charset=UTF-8,%3Csvg width='24' height='24' fill='none' stroke='%23810000' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
-                backgroundPosition: "right 0.75rem center",
-                backgroundRepeat: "no-repeat",
-                backgroundSize: "1em",
-              }}
-            >
-              <option value="">{`(${String.fromCharCode(
-                97 + i
-              )})Select answer`}</option>
-              {opts.map((opt, j) => (
-                <option key={j} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
-          </div>
-        ))}
+              </React.Fragment>
+            ))
+          : // fallback: just show prompt, blanks options below
+            <div>
+              <span>{prompt}</span>
+              <div className="mt-4 flex flex-col gap-2">
+                {blanks.map((blank, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="font-bold text-[#810000] mr-1">
+                      {String.fromCharCode(97 + i)}){/* (a), (b), ... */}
+                    </span>
+                    <select
+                      value={answers[i] || ""}
+                      onChange={handleAnswerChange(i)}
+                      className="border border-[#810000] bg-white rounded px-2 py-1 text-[#810000] font-semibold focus:outline-none focus:ring-2 focus:ring-[#810000] appearance-none mb-1"
+                      style={{
+                        backgroundImage:
+                          "url(\"data:image/svg+xml;charset=UTF-8,%3Csvg width='24' height='24' fill='none' stroke='%23810000' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
+                        backgroundPosition: "right 0.75rem center",
+                        backgroundRepeat: "no-repeat",
+                        backgroundSize: "1em",
+                      }}
+                    >
+                      <option value="">Select answer</option>
+                      {blank.options.map((opt, j) => (
+                        <option key={j} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+              </div>
+            </div>
+        }
       </div>
       {/* Controls */}
       <div className="flex gap-3 mb-2 mt-3">
         <button
           className="flex items-center gap-1 px-6 py-2 rounded border border-gray-400 text-gray-700 hover:bg-gray-100 font-medium text-base"
           onClick={() => {
-            setAnswers(Array(currentQ.options?.length || 0).fill(""));
+            setAnswers(Array(currentQ.blanks?.length || 0).fill(""));
             setTimeLeft(RECORD_SECONDS);
             setTimerStarted(false);
           }}
@@ -504,7 +280,41 @@ export default function DynamicPage({ params = { id: "1001635" } }) {
           Submit
         </button>
       </div>
-      {renderPagination()}
+      {/* Pagination: not used but kept for consistency */}
+      {/* {renderPagination()} */}
     </div>
   );
 }
+
+// Modal Component
+const Modal = ({ isModalOpen, children, setIsModalOpen }) => {
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = "hidden"; // Disable scrolling
+    } else {
+      document.body.style.overflow = "auto"; // Enable scrolling again
+    }
+
+    return () => {
+      document.body.style.overflow = "auto"; // Cleanup function in case modal unmounts
+    };
+  }, [isModalOpen]);
+  return (
+    <div
+      onClick={setIsModalOpen}
+      className={`${
+        isModalOpen
+          ? "h-dvh w-full fixed inset-0 z-50 bg-black/50 flex flex-col justify-center items-center"
+          : "hidden"
+      }`}
+    >
+      <div
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+};

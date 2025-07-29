@@ -41,7 +41,7 @@ export default function fill_in_the_blanks() {
       if (tab === "not_practiced") query += "&type=not_practiced";
       if (tab === "bookmark") query += "&type=bookmark";
       const response = await fetchWithAuth(
-        `${baseUrl}/test/listening/summarize-spoken-text?query=all`
+        `${baseUrl}/test/listening/listening-fill-in-the-blanks?query=all`
       );
       const result = await response.json();
       if (result?.questions) {
