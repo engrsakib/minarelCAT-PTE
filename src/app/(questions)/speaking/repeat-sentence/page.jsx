@@ -20,7 +20,7 @@ function trimText(text, max = 34) {
   return text.slice(0, max - 1) + "…";
 }
 
-export default function repeatSentence() {
+export default function ReadAloud() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
@@ -33,14 +33,14 @@ export default function repeatSentence() {
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
 
   // Fetch data with filters
-    const fetchData = async () => {
+  const fetchData = async () => {
   setIsLoading(true);
   setError("");
   try {
     // tab-এর মানই হবে query-এর মান
     const query = tab;
     const response = await fetchWithAuth(
-      `${baseUrl}/user/bookmark`
+      `${baseUrl}/test/speaking/repeat_sentence?query=${query}`
     );
     const result = await response.json();
     if (result?.questions) {
@@ -74,7 +74,7 @@ export default function repeatSentence() {
     try {
       // Toggle bookmark: if true, remove; if false, add
       const res = await fetchWithAuth(
-        `${baseUrl}/test/speaking/read_aloud/bookmark`,
+        `${baseUrl}/user/bookmark`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
