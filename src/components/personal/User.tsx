@@ -64,14 +64,14 @@ export function User({
           checked={showStatusBar}
           onCheckedChange={setShowStatusBar}
         >
-          <Link href="/personal/dashboard">Dashboard</Link>
+          <Link href="/dashboard/profile/my-profile">Dashboard</Link>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           checked={showActivityBar}
           onCheckedChange={setShowActivityBar}
-          disabled
+          
         >
-          <Link href="/personal/profile">Profile</Link>
+          <Link href="/dashboard/profile/my-profile">Profile</Link>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           checked={showPanel}

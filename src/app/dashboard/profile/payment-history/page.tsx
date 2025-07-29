@@ -6,13 +6,15 @@ const PaymentHistory = () => {
     <div>
       <div className="overflow-x-auto">
         <table className="table-auto w-full border-collapse">
-          <tr className="bg-gradient-to-r from-[#7D0000] to-[#973333] text-white flex gap-2 md:gap-18 md:px-10 p-2 mt-1 text-left">
-            <th>SI. No.</th>
-            <th>Transaction ID</th>
-            <th>Transaction Date</th>
-            <th>Payment Status</th>
-            <th>Amount</th>
+          <tr className="bg-gradient-to-r from-[#7D0000] to-[#973333] text-white flex p-2  md:gap-18 md:px-10  mt-2 text-left ">
+            <th className=" border-r-1 border-white md:border-none">SI. No.</th>
+            <th className=" border-r-1 border-white md:border-none">Transaction ID</th>
+            <th className=" border-r-1 border-white md:border-none">Transaction Date</th>
+            <th className=" border-r-1 border-white md:border-none">Payment Status</th>
+            <th className="  md:border-none">Amount</th>
           </tr>
+          
+        
           
         </table>
       </div>
@@ -25,3 +27,4 @@ const PaymentHistory = () => {
 };
 
 export default PaymentHistory;
+ 

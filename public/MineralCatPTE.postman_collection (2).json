@@ -1,0 +1,4256 @@
+{
+	"info": {
+		"_postman_id": "e3ddb645-34b2-405e-a867-43a535b56b19",
+		"name": "MineralCatPTE",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "45255731"
+	},
+	"item": [
+		{
+			"name": "payments",
+			"item": [
+				{
+					"name": "createConnectedAccountAndOnboardingLink",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stripe/create-account",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stripe",
+								"create-account"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "updateOnboardingLink",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/stripe/update-account-link",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"stripe",
+								"update-account-link"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "createPaymentIntent",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"price\": 2500,\r\n  \"description\": \"Payment for delivery services\",\r\n  \"planValidity\": 30\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/stripe/create-payment-intent",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"stripe",
+								"create-payment-intent"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "retrievePaymentStatus",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/stripe/payment-status/pi_3ROM032KDeWV62ow1JJJSsjJ",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"stripe",
+								"payment-status",
+								"pi_3ROM032KDeWV62ow1JJJSsjJ"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "createCheckoutSession",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODg1NjViNjhhNjQzMDU2MjVlNzYwZmMiLCJuYW1lIjoiSmloYWQiLCJlbWFpbCI6ImV4YW1wbGVAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc1MzU3Mjc5MSwiZXhwIjoxNzUzNTc5OTkxfQ.05zHz1bHYyfgVnuQLWBNF-RFb4XZPD5z6JtFBVewviY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"price\": 69.99,\r\n    \"description\": \"Gold Plan Subscription (1 Month)updated\",\r\n    \"planValidity\": \"30\",\r\n    \"planType\": \"Gold\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/stripe/create-checkout-session",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stripe",
+								"create-checkout-session"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "user routes",
+			"item": [
+				{
+					"name": "auth",
+					"item": [
+						{
+							"name": "Signup",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"Jihad\",\r\n    \"email\": \"example@example.com\",\r\n    \"password\": \"123456\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/auth/signup",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Login",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"user2@example.com\",\r\n    \"password\": \"userPassword456\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/auth/login",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "forget-password",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"saymislam365@gmail.com\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://c7bf-103-174-189-193.ngrok-free.app/user/forgot-password",
+									"protocol": "https",
+									"host": [
+										"c7bf-103-174-189-193",
+										"ngrok-free",
+										"app"
+									],
+									"path": [
+										"user",
+										"forgot-password"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "VerifyOTP",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"email\": \"saymislam365@gmail.com\",\r\n  \"otp\": \"675993\"\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://c7bf-103-174-189-193.ngrok-free.app/user/verify-otp",
+									"protocol": "https",
+									"host": [
+										"c7bf-103-174-189-193",
+										"ngrok-free",
+										"app"
+									],
+									"path": [
+										"user",
+										"verify-otp"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "forget-password with googleUser",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "",
+											"type": "file",
+											"src": []
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:8080/user/forgot-password",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"user",
+										"forgot-password"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "RefreshToken",
+							"request": {
+								"auth": {
+									"type": "bearer"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "x-refresh-token",
+										"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJpYXQiOjE3NDgzMDEzODYsImV4cCI6MTc0ODkwNjE4Nn0.Q1A-7FOO4MR7EF471H09B5bMBt9cJCaV6qvZziGv86w",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://c538-103-174-189-193.ngrok-free.app/auth/refresh-token",
+									"protocol": "https",
+									"host": [
+										"c538-103-174-189-193",
+										"ngrok-free",
+										"app"
+									],
+									"path": [
+										"auth",
+										"refresh-token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Reset Password",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "x-reset-token",
+										"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNheW1pc2xhbTM2NUBnbWFpbC5jb20iLCJpYXQiOjE3NDgxMzE5MDQsImV4cCI6MTc0ODEzMjIwNH0.GOJVAtHg4N5Efw_RyRt3UceStXB5_y0E8V9GxbZuABQ",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"newPassword\":\"jihad123456\",\r\n    \"confirmPassword\":\"jihad123456\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://c7bf-103-174-189-193.ngrok-free.app/user/reset-password",
+									"protocol": "https",
+									"host": [
+										"c7bf-103-174-189-193",
+										"ngrok-free",
+										"app"
+									],
+									"path": [
+										"user",
+										"reset-password"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "user",
+					"item": [
+						{
+							"name": "get user-info",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODg1NjViNjhhNjQzMDU2MjVlNzYwZmMiLCJuYW1lIjoiSmloYWQiLCJlbWFpbCI6ImV4YW1wbGVAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc1MzU3Mjc5MSwiZXhwIjoxNzUzNTc5OTkxfQ.05zHz1bHYyfgVnuQLWBNF-RFb4XZPD5z6JtFBVewviY",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzQ4Mjg3NTkzLCJleHAiOjE3NDgyODg0OTN9.A4BhQl3KbkAoxiW0WlQGruzzrltJHt8ieb84-JXR0Wg",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/user/user-info",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"user",
+										"user-info"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update user",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MDA5ODc4MSwiZXhwIjoxNzUwMDk5NjgxfQ.BpFLhWomEtPdOybYRTU5ZBVhin4J0Pox4nrBVFyUPNs",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "profile",
+											"type": "file",
+											"src": "/C:/Users/Saym Islam Jihad/Downloads/naruto.png"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/user/update-user",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"user",
+										"update-user"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get a single question",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc2YjU2Y2FkZTY0YmYwZmRhMDY5ZTUiLCJuYW1lIjoiUmVndWxhciBVc2VyIFR3byIsImVtYWlsIjoidXNlcjJAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc1MzMwMTcwOCwiZXhwIjoxNzUzMzA4OTA4fQ.cUdOrfzSUPQrFslt6co-HkcsoNlcDg24TzQSw7A3K14",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/user/get-question/686aaef3d7ffe0feef381166",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"user",
+										"get-question",
+										"686aaef3d7ffe0feef381166"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "add-to-bookmark",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc2YjU2Y2FkZTY0YmYwZmRhMDY5ZTUiLCJuYW1lIjoiUmVndWxhciBVc2VyIFR3byIsImVtYWlsIjoidXNlcjJAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc1MzMwMTcwOCwiZXhwIjoxNzUzMzA4OTA4fQ.cUdOrfzSUPQrFslt6co-HkcsoNlcDg24TzQSw7A3K14",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"id\": \"6869bcbab10fe96047a67caa\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/user/bookmark",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"user",
+										"bookmark"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "payment",
+			"item": [
+				{
+					"name": "Payment Intent Create Api",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": " application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"amount\": 1000\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/payment/stripe-payment-intent",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"payment",
+								"stripe-payment-intent"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "all questions",
+			"item": [
+				{
+					"name": "reading_questions",
+					"item": [
+						{
+							"name": "rw_fill_in_the_blanks",
+							"item": [
+								{
+									"name": "create fill-in-the-blanks-question",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MDg4NjU5OSwiZXhwIjoxNzUwODg3NDk5fQ.mEbs7geFt4qT4LKva4AxMkt1j1urpITgh4pBYje78r8",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"type\": \"reading\", // optional\r\n  \"subtype\": \"rw_fill_in_the_blanks\", // optional\r\n  \"heading\": \"Listening Practice – Fill in the Blanks\",\r\n  \"prompt\": \"Listen to the audio and fill in the blanks with the most appropriate words.\",\r\n  \"blanks\": [\r\n    {\r\n      \"index\": 0,\r\n      \"options\": [\"increase\", \"decrease\", \"expand\", \"contract\"],\r\n      \"correctAnswer\": \"increase\"\r\n    },\r\n    {\r\n      \"index\": 1,\r\n      \"options\": [\"supply\", \"demand\", \"price\", \"value\"],\r\n      \"correctAnswer\": \"demand\"\r\n    }\r\n  ]\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/reading/fill-in-the-blanks",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"reading",
+												"fill-in-the-blanks"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Edit fill-in-the-blanks-question",
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"questionId\": \"681a7fc202c3078174fd4402\",\r\n  \"newData\": {\r\n    \"type\": \"listening\", // optional\r\n    \"subtype\": \"rw_fill_in_the_blanks\", // optional\r\n    \"heading\": \"Updated Listening Practice\",\r\n    \"prompt\": \"Listen carefully and choose the best words to complete the passage.\",\r\n    \"blanks\": [\r\n      {\r\n        \"index\": 0,\r\n        \"options\": [\"growth\", \"decline\", \"shift\", \"surge\"],\r\n        \"correctAnswer\": \"growth\"\r\n      },\r\n      {\r\n        \"index\": 1,\r\n        \"options\": [\"efficiency\", \"strategy\", \"performance\", \"plan\"],\r\n        \"correctAnswer\": \"performance\"\r\n      }\r\n    ]\r\n  }\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://localhost:8080/test/reading/fill-in-the-blanks",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "8080",
+											"path": [
+												"test",
+												"reading",
+												"fill-in-the-blanks"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete fill-in-the-blanks-question",
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "DELETE",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"questionId\": \"68096890438cb57f591862cd\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://localhost:8080/test/reading/delete/question",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "8080",
+											"path": [
+												"test",
+												"reading",
+												"delete",
+												"question"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "get all fill-in-the-blanks-question",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MDg4NjU5OSwiZXhwIjoxNzUwODg3NDk5fQ.mEbs7geFt4qT4LKva4AxMkt1j1urpITgh4pBYje78r8",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/reading/fill-in-the-blanks",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"reading",
+												"fill-in-the-blanks"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "mcq_multiple",
+							"item": [
+								{
+									"name": "add mcq_multiple",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"type\": \"reading\", // optional\r\n  \"subtype\": \"mcq_multiple\", // optional\r\n  \"heading\": \"Renewable Energy Sources\",\r\n  \"prompt\": \"Renewable energy sources such as wind, solar, and hydroelectric power are becoming more common as the world seeks cleaner alternatives to fossil fuels. These energy sources help reduce carbon emissions and are considered more sustainable in the long term. However, they also come with challenges such as variability in energy output and high initial setup costs.\",\r\n  \"text\": \"Which of the following statements are true according to the passage?\",\r\n  \"options\": [\r\n    \"Renewable energy sources contribute to lower carbon emissions.\",\r\n    \"Fossil fuels are more sustainable than renewable energy.\",\r\n    \"The cost of setting up renewable energy systems can be high.\",\r\n    \"Renewable energy output is always consistent and predictable.\"\r\n  ],\r\n  \"correctAnswers\": [\r\n    \"Renewable energy sources contribute to lower carbon emissions.\",\r\n    \"The cost of setting up renewable energy systems can be high.\"\r\n  ]\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/reading/mcq_multiple",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"reading",
+												"mcq_multiple"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "edit mcq_multiples",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"questionId\": \"6869bc07b10fe96047a67c99\",\r\n  \"newData\": {\r\n    \"type\": \"reading\", // optional\r\n    \"subtype\": \"mcq_multiple\", // optional\r\n    \"heading\": \"Renewable Energy Sources\",\r\n    \"prompt\": \"Renewable energy sources such as wind, solar, and hydroelectric power are becoming more common as the world seeks cleaner alternatives to fossil fuels. These energy sources help reduce carbon emissions and are considered more sustainable in the long term. However, they also come with challenges such as variability in energy output and high initial setup costs.\",\r\n    \"text\": \"Which of the following statements are true according to the passage?\",\r\n    \"options\": [\r\n      \"Renewable energy sources contribute to lower carbon emissions.\",\r\n      \"Fossil fuels are more sustainable than renewable energy.\",\r\n      \"The cost of setting up renewable energy systems can be high.\",\r\n      \"Renewable energy output is always consistent and predictable.\"\r\n    ],\r\n    \"correctAnswers\": [\r\n      \"Renewable energy sources contribute to lower carbon emissions.\",\r\n      \"The cost of setting up renewable energy systems can be high.\"\r\n    ]\r\n  }\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/reading/mcq_multiple",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"reading",
+												"mcq_multiple"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get All mcq_multiple",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc2YjU2Y2FkZTY0YmYwZmRhMDY5ZTUiLCJuYW1lIjoiUmVndWxhciBVc2VyIFR3byIsImVtYWlsIjoidXNlcjJAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc1MzMwMTcwOCwiZXhwIjoxNzUzMzA4OTA4fQ.cUdOrfzSUPQrFslt6co-HkcsoNlcDg24TzQSw7A3K14",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/test/reading/mcq_multiple?query=bookmark",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"reading",
+												"mcq_multiple"
+											],
+											"query": [
+												{
+													"key": "query",
+													"value": "bookmark"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "mcq_multiple result",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MDg4ODA0MywiZXhwIjoxNzUwODk1MjQzfQ.i2lGaek-aZL3MjHMHRofKJrHuvkVtU6b7j5iCuPWy50",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"questionId\": \"683a216ec148e8968fc19f4f\",\r\n  \"selectedAnswers\": [\r\n    \"Renewable energy sources contribute to lower carbon emissions.\",\r\n    \"The cost of setting up renewable energy systems can be high.\"\r\n  ]\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/reading/mcq_multiple/result",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"reading",
+												"mcq_multiple",
+												"result"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "mcq_single",
+							"item": [
+								{
+									"name": "Add mcq_single",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"type\": \"reading\", // optional\r\n  \"subtype\": \"mcq_single\", // optional\r\n  \"heading\": \"Global Warming Effects\",\r\n  \"prompt\": \"Global warming has led to a rise in average global temperatures, affecting ecosystems, weather patterns, and sea levels. Scientists warn that unless immediate steps are taken to reduce carbon emissions, these effects will intensify.\",\r\n  \"text\": \"What is one major consequence of global warming mentioned in the passage?\",\r\n  \"options\": [\r\n    \"Decrease in global temperatures\",\r\n    \"Stabilized weather conditions\",\r\n    \"Rise in sea levels\",\r\n    \"Improved ecosystem balance\"\r\n  ],\r\n  \"correctAnswers\": [\"Rise in sea levels\"]\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/reading/mcq_single",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"reading",
+												"mcq_single"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Edit mcq_single",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"questionId\": \"6869bc8eb10fe96047a67ca5\",\r\n  \"newData\": {\r\n    \"type\": \"reading\", // optional\r\n    \"subtype\": \"mcq_single\", // optional\r\n    \"heading\": \"Global Warming Effects\",\r\n    \"prompt\": \"Global warming has led to a rise in average global temperatures, affecting ecosystems, weather patterns, and sea levels. Scientists warn that unless immediate steps are taken to reduce carbon emissions, these effects will intensify.\",\r\n    \"text\": \"What is one major consequence of global warming mentioned in the passage?\",\r\n    \"options\": [\r\n      \"Decrease in global temperatures\",\r\n      \"Stabilized weather conditions\",\r\n      \"Rise in sea levels\",\r\n      \"Improved ecosystem balance\"\r\n    ],\r\n    \"correctAnswers\": [\"Rise in sea levels\"]\r\n  }\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/reading/mcq_single",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"reading",
+												"mcq_single"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get All mcq_single",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1MTY3MSwiZXhwIjoxNzUxNzU4ODcxfQ.ep2Jw6O0mx2wcaAqsRBts5Db3oZdGJDbfe0ZIISJSVU",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/test/reading/mcq_single",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"reading",
+												"mcq_single"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "mcq single result",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MDg4ODA0MywiZXhwIjoxNzUwODk1MjQzfQ.i2lGaek-aZL3MjHMHRofKJrHuvkVtU6b7j5iCuPWy50",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"questionId\": \"683a21c29bf48e27bf63ef0e\",\r\n  \"userAnswer\": \"Rise in sea levels\"\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/reading/mcq_single/result",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"reading",
+												"mcq_single",
+												"result"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "reading_fill_in_the_blanks",
+							"item": [
+								{
+									"name": "add reading-fill-in-the-blanks",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc2YjU2OWFkZTY0YmYwZmRhMDY5ZTAiLCJuYW1lIjoiQWRtaW4gVXNlciIsImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTMyMTgyOTMsImV4cCI6MTc1MzIyNTQ5M30.e24x9_Yg2xyDaWX_GuVElpFnAY8V84JKGhsc1KeEAoQ",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"type\": \"reading\",\r\n  \"subtype\": \"reading_fill_in_the_blanks\",\r\n  \"heading\": \"Hello world\",\r\n  \"prompt\": \"The quick ___ fox jumps over the ___ dog..\",\r\n  \"blanks\": [\r\n    {\r\n      \"index\": 0,\r\n      \"correctAnswer\": \"brown\",\r\n      \"options\": [\"brown\", \"red\", \"green\", \"yellow\"]\r\n    },\r\n    {\r\n      \"index\": 1,\r\n      \"correctAnswer\": \"lazy\",\r\n      \"options\": [\"lazy\", \"active\", \"fast\", \"smart\"]\r\n    }\r\n  ]\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/reading/reading-fill-in-the-blanks",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"reading",
+												"reading-fill-in-the-blanks"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "edit reading-fill-in-the-blanks",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"questionId\": \"6869bcbab10fe96047a67caa\", \r\n  \"newData\": {\r\n    \"type\": \"reading\",\r\n    \"subtype\": \"reading_fill_in_the_blanks\",\r\n    \"prompt\": \"The smart ___ student solved the ___ problem easilssyy.!\",\r\n    \"blanks\": [\r\n      {\r\n        \"index\": 0,\r\n        \"correctAnswer\": \"brown\",\r\n        \"options\": [\"brown\", \"red\", \"green\", \"yellow\"]\r\n      },\r\n      {\r\n        \"index\": 1,\r\n        \"options\": [\"brown\", \"red\", \"green\", \"yellow\"],\r\n        \"correctAnswer\": \"red\"\r\n      }\r\n    ]\r\n  }\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/reading/reading-fill-in-the-blanks",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"reading",
+												"reading-fill-in-the-blanks"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "get all reading-fill-in-the-blanks",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc2YjU2Y2FkZTY0YmYwZmRhMDY5ZTUiLCJuYW1lIjoiUmVndWxhciBVc2VyIFR3byIsImVtYWlsIjoidXNlcjJAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc1MzMwMTcwOCwiZXhwIjoxNzUzMzA4OTA4fQ.cUdOrfzSUPQrFslt6co-HkcsoNlcDg24TzQSw7A3K14",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/test/reading/reading-fill-in-the-blanks?query=bookmark",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"reading",
+												"reading-fill-in-the-blanks"
+											],
+											"query": [
+												{
+													"key": "query",
+													"value": "bookmark"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "reading fill in the blanks result",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc2YjU2Y2FkZTY0YmYwZmRhMDY5ZTUiLCJuYW1lIjoiUmVndWxhciBVc2VyIFR3byIsImVtYWlsIjoidXNlcjJAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc1Mjk2NDE4MywiZXhwIjoxNzUyOTcxMzgzfQ.q0KskDwUcsMMLaqqNNeCMCg9ua9QX7lZzScfLKrq0ks",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"questionId\": \"685c6eab7462b3e0503bc5b1\",\r\n  \"blanks\": [\r\n    {\r\n      \"index\": 0,\r\n      \"selectedAnswer\": \"brown\"\r\n    },\r\n    {\r\n      \"index\": 1,\r\n      \"selectedAnswer\": \"lazy\"\r\n    }\r\n  ]\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/reading/reading-fill-in-the-blanks/result",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"reading",
+												"reading-fill-in-the-blanks",
+												"result"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "reorder_paragraphs",
+							"item": [
+								{
+									"name": "add reorder_paragraphs",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"type\": \"reading\", // optional\r\n  \"subtype\": \"reorder_paragraphs\", // optional\r\n  \"prompt\": \"Rearrange the following sentences to form a coherent paragraph.\",\r\n  \"options\": [\r\n    \"Technology has rapidly evolved over the past decade.\",\r\n    \"This has led to major changes in how we communicate.\",\r\n    \"Social media platforms are now a primary source of news and interaction.\",\r\n    \"However, these changes also raise concerns about privacy and screen time.\"\r\n  ]\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/reading/reorder-paragraphs",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"reading",
+												"reorder-paragraphs"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "edit reorder_paragraphs",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"questionId\": \"6869bcffb10fe96047a67caf\",\r\n  \"newData\": {\r\n    \"type\": \"reading\", // optional\r\n    \"subtype\": \"reorder_paragraphs\", // optional\r\n    \"prompt\": \"Arrange the sentences in the correct logical order.\",\r\n    \"options\": [\r\n      \"Climate change is becoming a major global concern.\",\r\n      \"Governments are working together to implement policies.\",\r\n      \"Rising sea levels and extreme weather are key indicators.\",\r\n      \"Sustainable practices are essential to mitigate its effects.\"\r\n    ]\r\n  }\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/reading/reorder-paragraphs",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"reading",
+												"reorder-paragraphs"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "get reorder_paragraphs",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc2YjU2Y2FkZTY0YmYwZmRhMDY5ZTUiLCJuYW1lIjoiUmVndWxhciBVc2VyIFR3byIsImVtYWlsIjoidXNlcjJAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc1Mjk2NTEzNSwiZXhwIjoxNzUyOTcyMzM1fQ.4xxtXaO2GfeN_VSSAlFBvjZyBnp7JS_lYSY7hMXUIHw",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/test/reading/reorder-paragraphs?query=bookmark",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"reading",
+												"reorder-paragraphs"
+											],
+											"query": [
+												{
+													"key": "query",
+													"value": "bookmark"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "reorder-paragraph result",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc2YjU2Y2FkZTY0YmYwZmRhMDY5ZTUiLCJuYW1lIjoiUmVndWxhciBVc2VyIFR3byIsImVtYWlsIjoidXNlcjJAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc1MzExNjAzNCwiZXhwIjoxNzUzMTIzMjM0fQ.HCXrTiwjM4p7bWyt4YdJkshcUaRUocukxWT1tEUov6U",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"questionId\": \"685c80c931c6982686b38bbe\",\r\n    \"userReorderedOptions\": [\r\n        \"Technology has rapidly evolved over the past decade.\",\r\n        \"This has led to major changes in how we communicate.\",\r\n        \"Social media platforms are now a primary source of news and interaction.\",\r\n        \"However, these changes also raise concerns about privacy and screen time.\"\r\n    ]\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/reading/reorder-paragraphs/result",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"reading",
+												"reorder-paragraphs",
+												"result"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "get single reorder paragraph question",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MDg4ODA0MywiZXhwIjoxNzUwODk1MjQzfQ.i2lGaek-aZL3MjHMHRofKJrHuvkVtU6b7j5iCuPWy50",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/test/reading/reorder-a-paragraph/685c80c931c6982686b38bbe",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"reading",
+												"reorder-a-paragraph",
+												"685c80c931c6982686b38bbe"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "writing_questions",
+					"item": [
+						{
+							"name": "summarize_written_text",
+							"item": [
+								{
+									"name": "add summerize_written_text",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc2YjU2OWFkZTY0YmYwZmRhMDY5ZTAiLCJuYW1lIjoiQWRtaW4gVXNlciIsImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTMxMzY5NDMsImV4cCI6MTc1MzE0NDE0M30.OQsjynwQ5i-T-wCWnZF4j0FR749oe1uvsaumOarfzmk",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"type\": \"writing\", // optional\r\n  \"subtype\": \"summarize_written_text\", // optional\r\n  \"heading\": \"The Role of Technology in Education\",\r\n  \"prompt\": \"Technology has significantly transformed education by enhancing accessibility, improving student engagement, and enabling personalized learning experiences. From online courses to digital textbooks and interactive tools, the integration of technology helps cater to diverse learning styles. As educational institutions increasingly adopt tech-driven approaches, students are better equipped with 21st-century skills. However, challenges like digital divides and screen-time management still remain concerns that educators must address.\"\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/writing/summarize-written-text",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"writing",
+												"summarize-written-text"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "edit summerize_written_text",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"questionId\": \"6869bd5fb10fe96047a67cb4\",\r\n  \"newData\": {\r\n    \"type\": \"writing\", // optional\r\n    \"subtype\": \"summarize_written_text\", // optional\r\n    \"heading\": \"The Role of Technology in Education\",\r\n    \"prompt\": \"Technology has significantly transformed education by enhancing accessibility, improving student engagement, and enabling personalized learning experiences. From online courses to digital textbooks and interactive tools, the integration of technology helps cater to diverse learning styles. As educational institutions increasingly adopt tech-driven approaches, students are better equipped with 21st-century skills. However, challenges like digital divides and screen-time management still remain concerns that educators must address.\"\r\n  }\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/writing/summarize-written-text",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"writing",
+												"summarize-written-text"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "get summarize_written_text",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc2YjU2Y2FkZTY0YmYwZmRhMDY5ZTUiLCJuYW1lIjoiUmVndWxhciBVc2VyIFR3byIsImVtYWlsIjoidXNlcjJAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc1MzEzNjg1OSwiZXhwIjoxNzUzMTQ0MDU5fQ.Ofx5ZDAZycRo3sNAdcka_QYk5XG0BSTKhaDaYWZfMX0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/test/writing/summarize-written-text?query=all",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"writing",
+												"summarize-written-text"
+											],
+											"query": [
+												{
+													"key": "query",
+													"value": "all"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "summarize written text result",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc2YjU2Y2FkZTY0YmYwZmRhMDY5ZTUiLCJuYW1lIjoiUmVndWxhciBVc2VyIFR3byIsImVtYWlsIjoidXNlcjJAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc1MzIxNDcwMiwiZXhwIjoxNzUzMjIxOTAyfQ.Uatt9P6n3VIhI4VZnlfKg7S5qF69l1hddImvIKjJgtk",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"questionId\": \"687eda6757a347b634f0c7f6\",\r\n    \"userSummary\" : \"Technology has revolutionized education by making learning more accessible, engaging, and personalized. While it equips students with modern skills, challenges like the digital divide and screen-time management still need attention.\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/writing/summerize-written-text/result",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"writing",
+												"summerize-written-text",
+												"result"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "write_email",
+							"item": [
+								{
+									"name": "add write_email",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"type\": \"writing\", // optional\r\n  \"subtype\": \"write_email\", // optional\r\n  \"heading\": \"Writing Task – Formal Email\",\r\n  \"prompt\": \"You recently attended a training workshop. Write an email to your manager describing what you learned and how it will help in your job.\"\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/writing/write_email",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"writing",
+												"write_email"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "edit write_email",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"questionId\": \"6869be05bd3192e8e1071de2\",\r\n  \"newData\": {\r\n    \"type\": \"writing\", // optional\r\n    \"subtype\": \"write_email\", // optional\r\n    \"heading\": \"Updated Writing Task – Complaint Email\",\r\n    \"prompt\": \"You ordered a product online but received the wrong item. Write an email to the seller explaining the issue and requesting a replacement.1\"\r\n  }\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/writing/write_email",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"writing",
+												"write_email"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "get write_email questions",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc2YjU2Y2FkZTY0YmYwZmRhMDY5ZTUiLCJuYW1lIjoiUmVndWxhciBVc2VyIFR3byIsImVtYWlsIjoidXNlcjJAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc1Mjk1OTkxNSwiZXhwIjoxNzUyOTY3MTE1fQ.RNm4wO5B94e1XhBe3YA8JoWRf6Kd9-pyD1VdVCpdOJI",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/test/writing/write_email?filter=all",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"writing",
+												"write_email"
+											],
+											"query": [
+												{
+													"key": "filter",
+													"value": "all"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "write email result",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MDg4NTM3OSwiZXhwIjoxNzUwODg2Mjc5fQ.KZrFxL1Dj83ZLleZpiJN3R7CXSlxcy_o8PtlwCV2zWU",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"questionId\": \"685c607a2239f464533947cb\",\r\n    \"email\": \"Dear [Manager's Name],\\n\\nI hope this email finds you well. I am writing to share a summary of the recent training workshop I attended. The workshop focused on enhancing our technical skills, specifically in the areas of web development, user interface (UI) design, and integrating new software tools into our existing processes. During the session, we explored the latest industry trends, such as modern frameworks, cloud services, and best practices for ensuring optimal user experience. I learned several advanced JavaScript techniques including async/await, closures, and promises, which will help me write more efficient and cleaner code. We also explored UI/UX best practices, emphasizing user-centered design principles such as accessibility, responsive design, and user feedback loops, which will help me improve the usability of our interfaces. Additionally, I learned about various APIs and tools that will streamline our development processes, helping to automate tasks and improve application performance. The workshop also highlighted the importance of collaboration between teams, especially between backend and frontend developers, which will allow me to work more closely with the backend team to ensure our products meet the highest standards. I believe that applying these skills will significantly improve the quality of my work and contribute more effectively to our projects. I’m excited to integrate these new techniques and tools into our development workflow, leading to more efficient project delivery and enhanced user experiences. Please let me know if you'd like any further details about the training or have any questions. Thank you for your time, and I look forward to applying these new skills in my role.\\n\\nBest regards,\\n[Your Name]\\n[Your Position]\"\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/writing/write_email/result",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"writing",
+												"write_email",
+												"result"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "listening_qeustions",
+					"item": [
+						{
+							"name": "Summarize Spoken Text",
+							"item": [
+								{
+									"name": "add summarize_spoken_text",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "voice",
+													"type": "file",
+													"src": "/C:/Users/Saym Islam Jihad/Downloads/1750965331358836398k3ci80a-voicemaker.in-speech.mp3"
+												},
+												{
+													"key": "subtype",
+													"value": "summarize_spoken_text",
+													"type": "text"
+												},
+												{
+													"key": "type",
+													"value": "listening",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/listening/summarize-spoken-text",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"listening",
+												"summarize-spoken-text"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "get all summarize-spoken-text",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc2YjU2Y2FkZTY0YmYwZmRhMDY5ZTUiLCJuYW1lIjoiUmVndWxhciBVc2VyIFR3byIsImVtYWlsIjoidXNlcjJAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc1MzEzNjg1OSwiZXhwIjoxNzUzMTQ0MDU5fQ.Ofx5ZDAZycRo3sNAdcka_QYk5XG0BSTKhaDaYWZfMX0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/test/listening/summarize-spoken-text?query=all",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"listening",
+												"summarize-spoken-text"
+											],
+											"query": [
+												{
+													"key": "query",
+													"value": "all"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "edit spoken test controller",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "questionId",
+													"value": "6869bea5bd3192e8e1071de5",
+													"type": "text"
+												},
+												{
+													"key": "heading",
+													"value": "Updated Summarize the speech",
+													"type": "text"
+												},
+												{
+													"key": "voice",
+													"type": "file",
+													"src": "/C:/Users/Saym Islam Jihad/Downloads/human-voice.m4a"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/listening/summarize-spoken-text",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"listening",
+												"summarize-spoken-text"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "summarize spoken text result",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc2YjU2Y2FkZTY0YmYwZmRhMDY5ZTUiLCJuYW1lIjoiUmVndWxhciBVc2VyIFR3byIsImVtYWlsIjoidXNlcjJAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc1Mjk1OTkxNSwiZXhwIjoxNzUyOTY3MTE1fQ.RNm4wO5B94e1XhBe3YA8JoWRf6Kd9-pyD1VdVCpdOJI",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"questionId\": \"68643643ce5a26d723e13ccf\",\r\n    \"userSummary\": \"Technology has revolutionized education by improving accessibility, student engagement, and offering personalized learning. The use of online courses, digital textbooks, and interactive tools supports diverse learning styles. While tech-driven education prepares students for the future, challenges like digital divides and managing screen time need to be addressed by educators.\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/listening/summarize-spoken-text/result",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"listening",
+												"summarize-spoken-text",
+												"result"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "multiple choice and multiple answers",
+							"item": [
+								{
+									"name": "add multiple choice and multiple answers",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MjE3Nzg4OCwiZXhwIjoxNzUyMTg1MDg4fQ.F9L1JE7Kt5j34GyaYc1LKB38kKC4lDzVXS6Me8IBrSo",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "heading",
+													"value": "Listen to the audio and answer the question below.",
+													"type": "text"
+												},
+												{
+													"key": "prompt",
+													"value": "Which of the following statements are true based on the audio?",
+													"type": "text"
+												},
+												{
+													"key": "options",
+													"value": "[\n    \"Urbanization can lead to a rise in unemployment.\",\n    \"The speaker believes urbanization reduces biodiversity.\",\n    \"More people in cities increase the need for infrastructure.\",\n    \"Urban areas always have better healthcare services.\"\n  ]",
+													"type": "text"
+												},
+												{
+													"key": "correctAnswers",
+													"value": "[\n    \"The speaker believes urbanization reduces biodiversity.\",\n    \"More people in cities increase the need for infrastructure.\"\n  ]",
+													"type": "text"
+												},
+												{
+													"key": "voice",
+													"type": "file",
+													"src": "/C:/Users/Saym Islam Jihad/Downloads/human-voice.m4a"
+												},
+												{
+													"key": "type",
+													"value": "listening",
+													"type": "text"
+												},
+												{
+													"key": "subtype",
+													"value": "listening_multiple_choice_multiple_answers",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/listening/multiple-choice-multiple-answers",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"listening",
+												"multiple-choice-multiple-answers"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "multiple choice and multiple answers result",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc4MzM4ZWEzMjE4OWQ4ZmJmNmUzNTIiLCJuYW1lIjoic2FraWIiLCJlbWFpbCI6InNheW1pc2xhbTM2NTQ0MUBnbWFpbC5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc1MjcwNzk4MywiZXhwIjoxNzUyNzE1MTgzfQ.l8PvPHwIR7P9CJpyNgpQdSmSN2b0k5Dzelfp2s9SA_A",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"questionId\": \"685db5196c67961a8dec8d59\",\r\n    \"selectedAnswers\": [\r\n        \"The speaker believes urbanization reduces biodiversity.\",\r\n        \"More people in cities increase the need for infrastructure.\"\r\n    ]\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/listening/multiple-choice-multiple-answers/result",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"listening",
+												"multiple-choice-multiple-answers",
+												"result"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "get multiple choice and multiple answers",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MDk2NzAwNSwiZXhwIjoxNzUwOTc0MjA1fQ.An1ygoURw-wEXarD3BHyC2pvxgjn1us9yuy_DlN5nxM",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/test/listening/multiple-choice-multiple-answers",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"listening",
+												"multiple-choice-multiple-answers"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "edit multiple choice multiple answers",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "questionId",
+													"value": "6869bf41bd3192e8e1071de8",
+													"type": "text"
+												},
+												{
+													"key": "heading",
+													"value": "Choose the correct answers based on the audio",
+													"type": "text"
+												},
+												{
+													"key": "prompt",
+													"value": "Listen to the audio and select all the correct options.",
+													"type": "text"
+												},
+												{
+													"key": "options",
+													"value": "[\n        \"JavaScript\",\n        \"Python\",\n        \"HTML\",\n        \"CSS\"\n    ]",
+													"type": "text"
+												},
+												{
+													"key": "correctAnswers",
+													"value": "[\n        \"JavaScript\",\n        \"HTML\",\n        \"CSS\"\n    ]",
+													"type": "text"
+												},
+												{
+													"key": "voice",
+													"type": "file",
+													"src": "/C:/Users/Saym Islam Jihad/Downloads/about_the_sun.mp3"
+												},
+												{
+													"key": "type",
+													"value": "listening",
+													"type": "text"
+												},
+												{
+													"key": "subtype",
+													"value": "listening_multiple_choice_multiple_answers",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/listening/multiple-choice-multiple-answers",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"listening",
+												"multiple-choice-multiple-answers"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "listening fill in the blanks",
+							"item": [
+								{
+									"name": "add listening fill in the blanks",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "heading",
+													"value": "Listen to the audio and fill in the missing words.",
+													"type": "text"
+												},
+												{
+													"key": "prompt",
+													"value": "You will hear a recording. Type the missing words in each blank.",
+													"type": "text"
+												},
+												{
+													"key": "blanks",
+													"value": "[\n  {\n        \"index\": 1,\n        \"options\": [\"technology\", \"science\", \"engineering\", \"computing\"],\n        \"correctAnswer\": \"technology\"\n    },\n    {\n        \"index\": 2,\n        \"options\": [\"development\", \"growth\", \"advancement\", \"expansion\"],\n        \"correctAnswer\": \"development\"\n    },\n    {\n        \"index\": 3,\n        \"options\": [\"innovation\", \"creativity\", \"invention\", \"originality\"],\n        \"correctAnswer\": \"innovation\"\n    }\n]\n",
+													"type": "text"
+												},
+												{
+													"key": "voice",
+													"type": "file",
+													"src": "/C:/Users/Saym Islam Jihad/Downloads/tell_me_about_the_sun.mp3"
+												},
+												{
+													"key": "type",
+													"value": "listening",
+													"type": "text"
+												},
+												{
+													"key": "subtype",
+													"value": "listening_fill_in_the_blanks",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/listening/listening-fill-in-the-blanks",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"listening",
+												"listening-fill-in-the-blanks"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "edit listening fill in the blanks",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "heading",
+													"value": "Listen to the audio and fill in the missing words.",
+													"type": "text"
+												},
+												{
+													"key": "prompt",
+													"value": "You will hear a recording. Type the missing words in each blank.",
+													"type": "text"
+												},
+												{
+													"key": "blanks",
+													"value": "[\n  { \"index\": 1, \"correctAnswer\": \"technology\" },\n  { \"index\": 2, \"correctAnswer\": \"development\" },\n  { \"index\": 3, \"correctAnswer\": \"innovation\" }\n]\n",
+													"type": "text"
+												},
+												{
+													"key": "voice",
+													"type": "file",
+													"src": "/C:/Users/Saym Islam Jihad/Downloads/1750965331358836398k3ci80a-voicemaker.in-speech.mp3"
+												},
+												{
+													"key": "questionId",
+													"value": "6869bff1bd3192e8e1071dec",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/listening/listening-fill-in-the-blanks",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"listening",
+												"listening-fill-in-the-blanks"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "get listening fill in the blanks",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MDk3NTM3NSwiZXhwIjoxNzUwOTgyNTc1fQ.M5xEQrbT9qjjD-dxJq4kzCnGd4yISIF6Fo5-0cXGoD0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/test/listening/listening-fill-in-the-blanks",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"listening",
+												"listening-fill-in-the-blanks"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "listening fill in the blanks result",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc4MzM4ZWEzMjE4OWQ4ZmJmNmUzNTIiLCJuYW1lIjoic2FraWIiLCJlbWFpbCI6InNheW1pc2xhbTM2NTQ0MUBnbWFpbC5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc1MjcwNzk4MywiZXhwIjoxNzUyNzE1MTgzfQ.l8PvPHwIR7P9CJpyNgpQdSmSN2b0k5Dzelfp2s9SA_A",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"questionId\": \"685dd391360a48156864e45b\",\r\n  \"selectedAnswers\": [\r\n    \"technology\",\r\n    \"development\",\r\n    \"innovation\"\r\n  ]\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/listening/listening-fill-in-the-blanks/result",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"listening",
+												"listening-fill-in-the-blanks",
+												"result"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "listening multiple choice single answer",
+							"item": [
+								{
+									"name": "add listening multiple choice and single answer",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MjI2NjA5OSwiZXhwIjoxNzUyMjczMjk5fQ.VwWiZwClu_9CPFkRkZL7y6T8IiEiRBxRpcvDA47JDpU",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "heading",
+													"value": "Choose the correct answer based on the audio",
+													"type": "text"
+												},
+												{
+													"key": "prompt",
+													"value": "Listen to the audio and choose the correct answer.",
+													"type": "text"
+												},
+												{
+													"key": "options",
+													"value": "[\n    \"The speaker argues that climate change is exaggerated.\",\n    \"The speaker explains how climate change affects marine life.\",\n    \"The speaker discusses the political debate over climate funding.\",\n    \"The speaker talks about renewable energy sources in urban planning.\"\n  ]",
+													"type": "text"
+												},
+												{
+													"key": "correctAnswers",
+													"value": "[\"The speaker argues that climate change is exaggerated.\"]",
+													"type": "text"
+												},
+												{
+													"key": "voice",
+													"type": "file",
+													"src": "/C:/Users/Saym Islam Jihad/Downloads/tell_me_about_the_sun.mp3"
+												},
+												{
+													"key": "type",
+													"value": "listening",
+													"type": "text"
+												},
+												{
+													"key": "subtype",
+													"value": "listening_multiple_choice_single_answers",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/listening/multiple-choice-single-answers",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"listening",
+												"multiple-choice-single-answers"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "add listening multiple choice and single answer Copy",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MDk3NTM3NSwiZXhwIjoxNzUwOTgyNTc1fQ.M5xEQrbT9qjjD-dxJq4kzCnGd4yISIF6Fo5-0cXGoD0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"questionId\": \"685ddba6951ad3f0495ab32f\",\r\n    \"selectedAnswers\": [\r\n        \"The speaker argues that climate change is exaggerated.\"\r\n    ]\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/listening/multiple-choice-single-answers/result",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"listening",
+												"multiple-choice-single-answers",
+												"result"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "edit listening multiple choice and single answer",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "type",
+													"value": "listening",
+													"type": "text"
+												},
+												{
+													"key": "subtype",
+													"value": "listening_multiple_choice_single_answers",
+													"type": "text"
+												},
+												{
+													"key": "heading",
+													"value": "Choose the correct answer based on the audio.updated",
+													"type": "text"
+												},
+												{
+													"key": "prompt",
+													"value": "Listen to the audio and choose the correct answer.",
+													"type": "text"
+												},
+												{
+													"key": "options",
+													"value": "[\n    \"The speaker argues that climate change is exaggerated.\",\n    \"The speaker explains how climate change affects marine life.\",\n    \"The speaker discusses the political debate over climate funding.\",\n    \"The speaker talks about renewable energy sources in urban planning.\"\n  ]",
+													"type": "text"
+												},
+												{
+													"key": "correctAnswers",
+													"value": "[\"A\"]",
+													"type": "text"
+												},
+												{
+													"key": "voice",
+													"type": "file",
+													"src": "/C:/Users/Saym Islam Jihad/Downloads/tell_me_about_the_sun.mp3"
+												},
+												{
+													"key": "questionId",
+													"value": "6869c07fbd3192e8e1071df0",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/listening/multiple-choice-single-answers",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"listening",
+												"multiple-choice-single-answers"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "get all multiple choice single answer",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MjI2NjA5OSwiZXhwIjoxNzUyMjczMjk5fQ.VwWiZwClu_9CPFkRkZL7y6T8IiEiRBxRpcvDA47JDpU",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/test/listening/multiple-choice-single-answers",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"listening",
+												"multiple-choice-single-answers"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "speaking_questions",
+					"item": [
+						{
+							"name": "read aloud",
+							"item": [
+								{
+									"name": "add readAloud",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"type\": \"speaking\", // optional\r\n  \"subtype\": \"read_aloud\", // optional\r\n  \"heading\": \"The Impact of Climate Change\",\r\n  \"prompt\": \"Climate change refers to long-term shifts in temperatures and weather patterns. These shifts may be natural, but since the 1800s, human activities have been the main driver, primarily due to burning fossil fuels like coal, oil, and gas.\"\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/speaking/read_aloud",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"speaking",
+												"read_aloud"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "get all read aloud",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc2YjU2Y2FkZTY0YmYwZmRhMDY5ZTUiLCJuYW1lIjoiUmVndWxhciBVc2VyIFR3byIsImVtYWlsIjoidXNlcjJAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc1Mjk2NDE4MywiZXhwIjoxNzUyOTcxMzgzfQ.q0KskDwUcsMMLaqqNNeCMCg9ua9QX7lZzScfLKrq0ks",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/test/speaking/read_aloud?filter=all",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"speaking",
+												"read_aloud"
+											],
+											"query": [
+												{
+													"key": "filter",
+													"value": "all"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "edit read aloud",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"questionId\": \"6869c0f6d38cbf9ac6ae0409\",\r\n  \"type\": \"speaking\", // optional\r\n  \"subtype\": \"read_aloud\", // optional\r\n  \"heading\": \"The Impact of Climate Change, updated\"\r\n}\r\n",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/speaking/read_aloud",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"speaking",
+												"read_aloud"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "read_aloud result",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc2YjU2Y2FkZTY0YmYwZmRhMDY5ZTUiLCJuYW1lIjoiUmVndWxhciBVc2VyIFR3byIsImVtYWlsIjoidXNlcjJAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc1MzExNjAzNCwiZXhwIjoxNzUzMTIzMjM0fQ.HCXrTiwjM4p7bWyt4YdJkshcUaRUocukxWT1tEUov6U",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "questionId",
+													"value": "684f15aa992b8d92ca82b428",
+													"type": "text"
+												},
+												{
+													"key": "format",
+													"value": "wav",
+													"type": "text",
+													"disabled": true
+												},
+												{
+													"key": "voice",
+													"type": "file",
+													"src": "/C:/Users/saymi/Downloads/1753116581744567501qrt8yw2w-voicemaker.in-speech.mp3"
+												},
+												{
+													"key": "accent",
+													"value": "us",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/speaking/read_aloud/result",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"speaking",
+												"read_aloud",
+												"result"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "repeat sentence",
+							"item": [
+								{
+									"name": "add repeat sentence",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "heading",
+													"value": "Repeat the sentence you hear as accurately as you can.w",
+													"type": "text"
+												},
+												{
+													"key": "voice",
+													"type": "file",
+													"src": "/C:/Users/Saym Islam Jihad/Downloads/about_the_sun.mp3"
+												},
+												{
+													"key": "type",
+													"value": "speaking",
+													"type": "text"
+												},
+												{
+													"key": "subtype",
+													"value": "repeat_sentence",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/speaking/repeat_sentence",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"speaking",
+												"repeat_sentence"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "repeat sentence result",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTM5MDQxMywiZXhwIjoxNzUxMzk3NjEzfQ.PX-g4I8jry4d9FBsStlm1X282tzp09b2osGrH4cteMs",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "questionId",
+													"value": "68642e8a4681ae3a5b810e9b",
+													"type": "text"
+												},
+												{
+													"key": "voice",
+													"type": "file",
+													"src": "/C:/Users/Saym Islam Jihad/Downloads/tell_me_about_the_sun.mp3"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/speaking/repeat_sentence/result",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"speaking",
+												"repeat_sentence",
+												"result"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "edit repeat sentence",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "questionId",
+													"value": "6869c165d38cbf9ac6ae040d",
+													"type": "text"
+												},
+												{
+													"key": "heading",
+													"value": "Repeat the sentence you hear.",
+													"type": "text"
+												},
+												{
+													"key": "voice",
+													"type": "file",
+													"src": "/C:/Users/Saym Islam Jihad/Downloads/tell_me_about_the_sun.mp3"
+												},
+												{
+													"key": "type",
+													"value": "speaking",
+													"type": "text"
+												},
+												{
+													"key": "subtype",
+													"value": "repeat_sentence",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/speaking/repeat_sentence",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"speaking",
+												"repeat_sentence"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "get all repeat_sentence",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc2YjU2Y2FkZTY0YmYwZmRhMDY5ZTUiLCJuYW1lIjoiUmVndWxhciBVc2VyIFR3byIsImVtYWlsIjoidXNlcjJAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc1Mjk2NDE4MywiZXhwIjoxNzUyOTcxMzgzfQ.q0KskDwUcsMMLaqqNNeCMCg9ua9QX7lZzScfLKrq0ks",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/test/speaking/repeat_sentence?filter=all",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"speaking",
+												"repeat_sentence"
+											],
+											"query": [
+												{
+													"key": "filter",
+													"value": "all"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "respond_to_sitution",
+							"item": [
+								{
+									"name": "add respond_to_a_situation",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "heading",
+													"value": "Heading of a question",
+													"type": "text"
+												},
+												{
+													"key": "prompt",
+													"value": "Climate change refers to long-term shifts in temperatures and weather patterns. These shifts may be natural, but since the 1800s, human activities have been the main driver, primarily due to burning fossil fuels like coal, oil, and gas.",
+													"type": "text"
+												},
+												{
+													"key": "voice",
+													"type": "file",
+													"src": "/C:/Users/Saym Islam Jihad/Downloads/tell_me_about_the_sun.mp3"
+												},
+												{
+													"key": "type",
+													"value": "speaking",
+													"type": "text"
+												},
+												{
+													"key": "subtype",
+													"value": "respond_to_situation",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/speaking/respond-to-a-situation",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"speaking",
+												"respond-to-a-situation"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "edit respond_to_a_situation",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "heading",
+													"value": "Heading of a question",
+													"type": "text"
+												},
+												{
+													"key": "prompt",
+													"value": "the question",
+													"type": "text"
+												},
+												{
+													"key": "questionId",
+													"value": "6869c1bed38cbf9ac6ae0410",
+													"type": "text"
+												},
+												{
+													"key": "voice",
+													"type": "file",
+													"src": "/C:/Users/saymi/Downloads/US_Tax_Mobile_App_Scope.pdf"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/speaking/respond-to-a-situation",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"speaking",
+												"respond-to-a-situation"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "get all respond to a situation",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MDk3NTM3NSwiZXhwIjoxNzUwOTgyNTc1fQ.M5xEQrbT9qjjD-dxJq4kzCnGd4yISIF6Fo5-0cXGoD0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/test/speaking/respond-to-a-situation",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"speaking",
+												"respond-to-a-situation"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "respond to a stiuation result",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MDg3NzI4MywiZXhwIjoxNzUwODc4MTgzfQ.DzTiVmfPA6Pt-mH5mFJSemfn9fD6SOVXlDpcDPFQKmM",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "questionId",
+													"value": "685c3a4de0daebd9da61bb1e",
+													"type": "text"
+												},
+												{
+													"key": "format",
+													"value": "wav",
+													"type": "text"
+												},
+												{
+													"key": "accent",
+													"value": "us",
+													"type": "text"
+												},
+												{
+													"key": "voice",
+													"type": "file",
+													"src": "/C:/Users/Saym Islam Jihad/Downloads/human-voice.wav"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/speaking/respond-to-a-situation/result",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"speaking",
+												"respond-to-a-situation",
+												"result"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "answer short questions",
+							"item": [
+								{
+									"name": "add answer_short_question",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "heading",
+													"value": "sun",
+													"type": "text"
+												},
+												{
+													"key": "voice",
+													"type": "file",
+													"src": "/C:/Users/Saym Islam Jihad/Downloads/about_the_sun.mp3"
+												},
+												{
+													"key": "type",
+													"value": "speaking",
+													"type": "text"
+												},
+												{
+													"key": "subtype",
+													"value": "answer_short_question",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/speaking/answer_short_question",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"speaking",
+												"answer_short_question"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "answer_short_question result",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTM5MDQxMywiZXhwIjoxNzUxMzk3NjEzfQ.PX-g4I8jry4d9FBsStlm1X282tzp09b2osGrH4cteMs",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "questionId",
+													"value": "6864330ed9c8b561c8a67e7b",
+													"type": "text"
+												},
+												{
+													"key": "voice",
+													"type": "file",
+													"src": "/C:/Users/Saym Islam Jihad/Downloads/about_the_sun.mp3"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/speaking/answer_short_question/result",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"speaking",
+												"answer_short_question",
+												"result"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "edit answer_short_question",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTc1OTg1NiwiZXhwIjoxNzUxNzY3MDU2fQ.Rl4bHZ5Ob_XT0l01UTUp05J-C-ZLAWry9zqAQ9JgTo0",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "heading",
+													"value": "Heading of a question updated",
+													"type": "text"
+												},
+												{
+													"key": "questionId",
+													"value": "681d0b0b5b631dd65c8000e8",
+													"type": "text"
+												},
+												{
+													"key": "voice",
+													"type": "file",
+													"src": "/C:/Users/saymi/Downloads/Hi there this is you.mp3"
+												}
+											]
+										},
+										"url": {
+											"raw": "http://localhost:8080/test/speaking/answer_short_question",
+											"protocol": "http",
+											"host": [
+												"localhost"
+											],
+											"port": "8080",
+											"path": [
+												"test",
+												"speaking",
+												"answer_short_question"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "get answer_short_question",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MTQwNjQ4MCwiZXhwIjoxNzUxNDEzNjgwfQ.aygJJh4X_d4SAruWMZ5Ap5WHa5vTY-erw_4ycCpzfPs",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "heading",
+													"value": "Heading of a question updated",
+													"type": "text"
+												},
+												{
+													"key": "questionId",
+													"value": "681d0b0b5b631dd65c8000e8",
+													"type": "text"
+												},
+												{
+													"key": "voice",
+													"type": "file",
+													"src": "/C:/Users/saymi/Downloads/Hi there this is you.mp3"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{baseUrl}}/test/speaking/answer_short_question",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"test",
+												"speaking",
+												"answer_short_question"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "mock test",
+					"item": [
+						{
+							"name": "admin routes",
+							"item": [
+								{
+									"name": "full mock test",
+									"item": [
+										{
+											"name": "add mock_test",
+											"request": {
+												"auth": {
+													"type": "noauth"
+												},
+												"method": "POST",
+												"header": [],
+												"body": {
+													"mode": "raw",
+													"raw": "{\r\n  \"name\": \"Mock Test 1 - May\",\r\n  \"duration\": {\r\n    \"hours\": 2,\r\n    \"minutes\": 30\r\n  },\r\n  \"questions\": [\r\n    {\r\n      \"question\": \"681bc406ced06133d07a7203\"\r\n    },\r\n    {\r\n      \"question\": \"681bc41bced06133d07a720c\"\r\n    },\r\n    {\r\n      \"question\": \"681bc42cced06133d07a7216\"\r\n    },\r\n    {\r\n      \"question\": \"681bc45dced06133d07a721f\"\r\n    },\r\n    {\r\n      \"question\": \"681bc46dced06133d07a7228\"\r\n    },\r\n    {\r\n      \"question\": \"681bc47dced06133d07a7231\"\r\n    },\r\n    {\r\n      \"question\": \"681bc4a3ced06133d07a723a\"\r\n    },\r\n    {\r\n      \"question\": \"681bc4cdced06133d07a7243\"\r\n    },\r\n    {\r\n      \"question\": \"681bc4cdced06133d07a7243\"\r\n    },\r\n    {\r\n      \"question\": \"681bc4e8ced06133d07a724c\"\r\n    },\r\n    {\r\n      \"question\": \"681bc502ced06133d07a7255\"\r\n    },\r\n    {\r\n      \"question\": \"681bd4e348a328f1512989f1\"\r\n    },\r\n    {\r\n      \"question\": \"681bebb5ffb4b5bafdb39812\"\r\n    },\r\n    {\r\n      \"question\": \"681cef349c804c9fb0ef5d63\"\r\n    },\r\n    {\r\n      \"question\": \"681cef349c804c9fb0ef5d63\"\r\n    }\r\n  ],\r\n  \"createdBy\": \"681e543a26b1651bf08601a0\"\r\n}\r\n",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "http://localhost:8080/full-mock-test/add",
+													"protocol": "http",
+													"host": [
+														"localhost"
+													],
+													"port": "8080",
+													"path": [
+														"full-mock-test",
+														"add"
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "get single mock_test",
+											"protocolProfileBehavior": {
+												"disableBodyPruning": true
+											},
+											"request": {
+												"auth": {
+													"type": "noauth"
+												},
+												"method": "GET",
+												"header": [],
+												"body": {
+													"mode": "raw",
+													"raw": "{\r\n  \"name\": \"Mock Test 1 - May\",\r\n  \"duration\": {\r\n    \"hours\": 2,\r\n    \"minutes\": 30\r\n  },\r\n  \"questions\": [\r\n    {\r\n      \"question\": \"681bc406ced06133d07a7203\",\r\n      \"subtype\": \"rw_fill_in_the_blanks\"\r\n    },\r\n    {\r\n      \"question\": \"681bc41bced06133d07a720c\",\r\n      \"subtype\": \"mcq_multiple\"\r\n    },\r\n    {\r\n      \"question\": \"681bc42cced06133d07a7216\",\r\n      \"subtype\": \"mcq_single\"\r\n    },\r\n    {\r\n      \"question\": \"681bc45dced06133d07a721f\",\r\n      \"subtype\": \"reorder_paragraphs\"\r\n    },\r\n    {\r\n      \"question\": \"681bc46dced06133d07a7228\",\r\n      \"subtype\": \"summarize_written_text\"\r\n    },\r\n    {\r\n      \"question\": \"681bc47dced06133d07a7231\",\r\n      \"subtype\": \"write_email\"\r\n    },\r\n    {\r\n      \"question\": \"681bc4a3ced06133d07a723a\",\r\n      \"subtype\": \"summarize_spoken_text\"\r\n    },\r\n    {\r\n      \"question\": \"681bc4cdced06133d07a7243\",\r\n      \"subtype\": \"listening_multiple_choice_multiple_answers\"\r\n    },\r\n    {\r\n      \"question\": \"681bc4cdced06133d07a7243\",\r\n      \"subtype\": \"listening_multiple_choice_multiple_answers\"\r\n    },\r\n    {\r\n      \"question\": \"681bc4e8ced06133d07a724c\",\r\n      \"subtype\": \"listening_fill_in_the_blanks\"\r\n    },\r\n    {\r\n      \"question\": \"681bc502ced06133d07a7255\",\r\n      \"subtype\": \"listening_multiple_choice_single_answers\"\r\n    },\r\n    {\r\n      \"question\": \"681bd4e348a328f1512989f1\",\r\n      \"subtype\": \"read_aloud\"\r\n    },\r\n    {\r\n      \"question\": \"681bebb5ffb4b5bafdb39812\",\r\n      \"subtype\": \"repeat_sentence\"\r\n    },\r\n    {\r\n      \"question\": \"681cef349c804c9fb0ef5d63\",\r\n      \"subtype\": \"respond_to_situation\"\r\n    },\r\n    {\r\n      \"question\": \"681cef349c804c9fb0ef5d63\",\r\n      \"subtype\": \"respond_to_situation\"\r\n    }\r\n  ],\r\n  \"createdBy\": \"681e543a26b1651bf08601a0\"\r\n}\r\n",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "http://localhost:8080/full-mock-test/get/68224c8815e6febe298ea816",
+													"protocol": "http",
+													"host": [
+														"localhost"
+													],
+													"port": "8080",
+													"path": [
+														"full-mock-test",
+														"get",
+														"68224c8815e6febe298ea816"
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "get allmock_test",
+											"protocolProfileBehavior": {
+												"disableBodyPruning": true
+											},
+											"request": {
+												"auth": {
+													"type": "noauth"
+												},
+												"method": "GET",
+												"header": [],
+												"body": {
+													"mode": "raw",
+													"raw": "{\r\n  \"name\": \"Mock Test 1 - May\",\r\n  \"duration\": {\r\n    \"hours\": 2,\r\n    \"minutes\": 30\r\n  },\r\n  \"questions\": [\r\n    {\r\n      \"question\": \"681bc406ced06133d07a7203\",\r\n      \"subtype\": \"rw_fill_in_the_blanks\"\r\n    },\r\n    {\r\n      \"question\": \"681bc41bced06133d07a720c\",\r\n      \"subtype\": \"mcq_multiple\"\r\n    },\r\n    {\r\n      \"question\": \"681bc42cced06133d07a7216\",\r\n      \"subtype\": \"mcq_single\"\r\n    },\r\n    {\r\n      \"question\": \"681bc45dced06133d07a721f\",\r\n      \"subtype\": \"reorder_paragraphs\"\r\n    },\r\n    {\r\n      \"question\": \"681bc46dced06133d07a7228\",\r\n      \"subtype\": \"summarize_written_text\"\r\n    },\r\n    {\r\n      \"question\": \"681bc47dced06133d07a7231\",\r\n      \"subtype\": \"write_email\"\r\n    },\r\n    {\r\n      \"question\": \"681bc4a3ced06133d07a723a\",\r\n      \"subtype\": \"summarize_spoken_text\"\r\n    },\r\n    {\r\n      \"question\": \"681bc4cdced06133d07a7243\",\r\n      \"subtype\": \"listening_multiple_choice_multiple_answers\"\r\n    },\r\n    {\r\n      \"question\": \"681bc4cdced06133d07a7243\",\r\n      \"subtype\": \"listening_multiple_choice_multiple_answers\"\r\n    },\r\n    {\r\n      \"question\": \"681bc4e8ced06133d07a724c\",\r\n      \"subtype\": \"listening_fill_in_the_blanks\"\r\n    },\r\n    {\r\n      \"question\": \"681bc502ced06133d07a7255\",\r\n      \"subtype\": \"listening_multiple_choice_single_answers\"\r\n    },\r\n    {\r\n      \"question\": \"681bd4e348a328f1512989f1\",\r\n      \"subtype\": \"read_aloud\"\r\n    },\r\n    {\r\n      \"question\": \"681bebb5ffb4b5bafdb39812\",\r\n      \"subtype\": \"repeat_sentence\"\r\n    },\r\n    {\r\n      \"question\": \"681cef349c804c9fb0ef5d63\",\r\n      \"subtype\": \"respond_to_situation\"\r\n    },\r\n    {\r\n      \"question\": \"681cef349c804c9fb0ef5d63\",\r\n      \"subtype\": \"respond_to_situation\"\r\n    }\r\n  ],\r\n  \"createdBy\": \"681e543a26b1651bf08601a0\"\r\n}\r\n",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "http://localhost:8080/full-mock-test/getAll",
+													"protocol": "http",
+													"host": [
+														"localhost"
+													],
+													"port": "8080",
+													"path": [
+														"full-mock-test",
+														"getAll"
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "get mock_test Copy",
+											"request": {
+												"auth": {
+													"type": "noauth"
+												},
+												"method": "DELETE",
+												"header": [],
+												"body": {
+													"mode": "raw",
+													"raw": "{\r\n  \"name\": \"Mock Test 1 - May\",\r\n  \"duration\": {\r\n    \"hours\": 2,\r\n    \"minutes\": 30\r\n  },\r\n  \"questions\": [\r\n    {\r\n      \"question\": \"681bc406ced06133d07a7203\",\r\n      \"subtype\": \"rw_fill_in_the_blanks\"\r\n    },\r\n    {\r\n      \"question\": \"681bc41bced06133d07a720c\",\r\n      \"subtype\": \"mcq_multiple\"\r\n    },\r\n    {\r\n      \"question\": \"681bc42cced06133d07a7216\",\r\n      \"subtype\": \"mcq_single\"\r\n    },\r\n    {\r\n      \"question\": \"681bc45dced06133d07a721f\",\r\n      \"subtype\": \"reorder_paragraphs\"\r\n    },\r\n    {\r\n      \"question\": \"681bc46dced06133d07a7228\",\r\n      \"subtype\": \"summarize_written_text\"\r\n    },\r\n    {\r\n      \"question\": \"681bc47dced06133d07a7231\",\r\n      \"subtype\": \"write_email\"\r\n    },\r\n    {\r\n      \"question\": \"681bc4a3ced06133d07a723a\",\r\n      \"subtype\": \"summarize_spoken_text\"\r\n    },\r\n    {\r\n      \"question\": \"681bc4cdced06133d07a7243\",\r\n      \"subtype\": \"listening_multiple_choice_multiple_answers\"\r\n    },\r\n    {\r\n      \"question\": \"681bc4cdced06133d07a7243\",\r\n      \"subtype\": \"listening_multiple_choice_multiple_answers\"\r\n    },\r\n    {\r\n      \"question\": \"681bc4e8ced06133d07a724c\",\r\n      \"subtype\": \"listening_fill_in_the_blanks\"\r\n    },\r\n    {\r\n      \"question\": \"681bc502ced06133d07a7255\",\r\n      \"subtype\": \"listening_multiple_choice_single_answers\"\r\n    },\r\n    {\r\n      \"question\": \"681bd4e348a328f1512989f1\",\r\n      \"subtype\": \"read_aloud\"\r\n    },\r\n    {\r\n      \"question\": \"681bebb5ffb4b5bafdb39812\",\r\n      \"subtype\": \"repeat_sentence\"\r\n    },\r\n    {\r\n      \"question\": \"681cef349c804c9fb0ef5d63\",\r\n      \"subtype\": \"respond_to_situation\"\r\n    },\r\n    {\r\n      \"question\": \"681cef349c804c9fb0ef5d63\",\r\n      \"subtype\": \"respond_to_situation\"\r\n    }\r\n  ],\r\n  \"createdBy\": \"681e543a26b1651bf08601a0\"\r\n}\r\n",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "http://localhost:8080/full-mock-test/delete/68224c8815e6febe298ea816",
+													"protocol": "http",
+													"host": [
+														"localhost"
+													],
+													"port": "8080",
+													"path": [
+														"full-mock-test",
+														"delete",
+														"68224c8815e6febe298ea816"
+													]
+												}
+											},
+											"response": []
+										}
+									]
+								},
+								{
+									"name": "sectional mock test",
+									"item": [
+										{
+											"name": "add sectionalMockTest",
+											"request": {
+												"auth": {
+													"type": "noauth"
+												},
+												"method": "POST",
+												"header": [],
+												"body": {
+													"mode": "raw",
+													"raw": "{\r\n  \"type\": \"speaking\",\r\n  \"name\": \"Speaking Sectional Test - Beginner\",\r\n  \"duration\": {\r\n    \"hours\": 0,\r\n    \"minutes\": 20\r\n  },\r\n  \"questions\": [\r\n    {\r\n      \"question\": \"681d00ed1e0b98e477af8786\"\r\n    },\r\n    {\r\n      \"question\": \"681d010d1e0b98e477af8789\"\r\n    },\r\n    {\r\n      \"question\": \"681d012c1e0b98e477af878c\"\r\n    }\r\n  ]\r\n}\r\n",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "http://localhost:8080/sectional-mock-test/add",
+													"protocol": "http",
+													"host": [
+														"localhost"
+													],
+													"port": "8080",
+													"path": [
+														"sectional-mock-test",
+														"add"
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "get sectionalMockTest",
+											"protocolProfileBehavior": {
+												"disableBodyPruning": true
+											},
+											"request": {
+												"auth": {
+													"type": "noauth"
+												},
+												"method": "GET",
+												"header": [],
+												"body": {
+													"mode": "raw",
+													"raw": "{\r\n  \"type\": \"speaking\",\r\n  \"name\": \"Speaking Sectional Test - Beginner\",\r\n  \"duration\": {\r\n    \"hours\": 0,\r\n    \"minutes\": 20\r\n  },\r\n  \"questions\": [\r\n    {\r\n      \"question\": \"681d00ed1e0b98e477af8786\"\r\n    },\r\n    {\r\n      \"question\": \"681d010d1e0b98e477af8789\"\r\n    },\r\n    {\r\n      \"question\": \"681d012c1e0b98e477af878c\"\r\n    }\r\n  ]\r\n}\r\n",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "http://localhost:8080/sectional-mock-test/getAll/speaking",
+													"protocol": "http",
+													"host": [
+														"localhost"
+													],
+													"port": "8080",
+													"path": [
+														"sectional-mock-test",
+														"getAll",
+														"speaking"
+													]
+												}
+											},
+											"response": []
+										},
+										{
+											"name": "add sectionalMockTest Copy 2",
+											"request": {
+												"auth": {
+													"type": "noauth"
+												},
+												"method": "DELETE",
+												"header": [],
+												"body": {
+													"mode": "raw",
+													"raw": "{\r\n  \"type\": \"speaking\",\r\n  \"name\": \"Speaking Sectional Test - Beginner\",\r\n  \"duration\": {\r\n    \"hours\": 0,\r\n    \"minutes\": 20\r\n  },\r\n  \"questions\": [\r\n    {\r\n      \"question\": \"681d00ed1e0b98e477af8786\"\r\n    },\r\n    {\r\n      \"question\": \"681d010d1e0b98e477af8789\"\r\n    },\r\n    {\r\n      \"question\": \"681d012c1e0b98e477af878c\"\r\n    }\r\n  ]\r\n}\r\n",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "http://localhost:8080/sectional-mock-test/delete/68225d0e76f06f3c5e4748fe",
+													"protocol": "http",
+													"host": [
+														"localhost"
+													],
+													"port": "8080",
+													"path": [
+														"sectional-mock-test",
+														"delete",
+														"68225d0e76f06f3c5e4748fe"
+													]
+												}
+											},
+											"response": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "user routes",
+							"item": [
+								{
+									"name": "full mock test",
+									"item": [
+										{
+											"name": "get allmock_test",
+											"protocolProfileBehavior": {
+												"disableBodyPruning": true
+											},
+											"request": {
+												"auth": {
+													"type": "noauth"
+												},
+												"method": "GET",
+												"header": [],
+												"body": {
+													"mode": "raw",
+													"raw": "{\r\n  \"name\": \"Mock Test 1 - May\",\r\n  \"duration\": {\r\n    \"hours\": 2,\r\n    \"minutes\": 30\r\n  },\r\n  \"questions\": [\r\n    {\r\n      \"question\": \"681bc406ced06133d07a7203\",\r\n      \"subtype\": \"rw_fill_in_the_blanks\"\r\n    },\r\n    {\r\n      \"question\": \"681bc41bced06133d07a720c\",\r\n      \"subtype\": \"mcq_multiple\"\r\n    },\r\n    {\r\n      \"question\": \"681bc42cced06133d07a7216\",\r\n      \"subtype\": \"mcq_single\"\r\n    },\r\n    {\r\n      \"question\": \"681bc45dced06133d07a721f\",\r\n      \"subtype\": \"reorder_paragraphs\"\r\n    },\r\n    {\r\n      \"question\": \"681bc46dced06133d07a7228\",\r\n      \"subtype\": \"summarize_written_text\"\r\n    },\r\n    {\r\n      \"question\": \"681bc47dced06133d07a7231\",\r\n      \"subtype\": \"write_email\"\r\n    },\r\n    {\r\n      \"question\": \"681bc4a3ced06133d07a723a\",\r\n      \"subtype\": \"summarize_spoken_text\"\r\n    },\r\n    {\r\n      \"question\": \"681bc4cdced06133d07a7243\",\r\n      \"subtype\": \"listening_multiple_choice_multiple_answers\"\r\n    },\r\n    {\r\n      \"question\": \"681bc4cdced06133d07a7243\",\r\n      \"subtype\": \"listening_multiple_choice_multiple_answers\"\r\n    },\r\n    {\r\n      \"question\": \"681bc4e8ced06133d07a724c\",\r\n      \"subtype\": \"listening_fill_in_the_blanks\"\r\n    },\r\n    {\r\n      \"question\": \"681bc502ced06133d07a7255\",\r\n      \"subtype\": \"listening_multiple_choice_single_answers\"\r\n    },\r\n    {\r\n      \"question\": \"681bd4e348a328f1512989f1\",\r\n      \"subtype\": \"read_aloud\"\r\n    },\r\n    {\r\n      \"question\": \"681bebb5ffb4b5bafdb39812\",\r\n      \"subtype\": \"repeat_sentence\"\r\n    },\r\n    {\r\n      \"question\": \"681cef349c804c9fb0ef5d63\",\r\n      \"subtype\": \"respond_to_situation\"\r\n    },\r\n    {\r\n      \"question\": \"681cef349c804c9fb0ef5d63\",\r\n      \"subtype\": \"respond_to_situation\"\r\n    }\r\n  ],\r\n  \"createdBy\": \"681e543a26b1651bf08601a0\"\r\n}\r\n",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "http://localhost:8080/full-mock-test/getAll",
+													"protocol": "http",
+													"host": [
+														"localhost"
+													],
+													"port": "8080",
+													"path": [
+														"full-mock-test",
+														"getAll"
+													]
+												}
+											},
+											"response": []
+										}
+									]
+								},
+								{
+									"name": "sectional mock test",
+									"item": [
+										{
+											"name": "get sectionalMockTest",
+											"protocolProfileBehavior": {
+												"disableBodyPruning": true
+											},
+											"request": {
+												"auth": {
+													"type": "noauth"
+												},
+												"method": "GET",
+												"header": [],
+												"body": {
+													"mode": "raw",
+													"raw": "{\r\n  \"type\": \"speaking\",\r\n  \"name\": \"Speaking Sectional Test - Beginner\",\r\n  \"duration\": {\r\n    \"hours\": 0,\r\n    \"minutes\": 20\r\n  },\r\n  \"questions\": [\r\n    {\r\n      \"question\": \"681d00ed1e0b98e477af8786\"\r\n    },\r\n    {\r\n      \"question\": \"681d010d1e0b98e477af8789\"\r\n    },\r\n    {\r\n      \"question\": \"681d012c1e0b98e477af878c\"\r\n    }\r\n  ]\r\n}\r\n",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "http://localhost:8080/sectional-mock-test/getAll/speaking",
+													"protocol": "http",
+													"host": [
+														"localhost"
+													],
+													"port": "8080",
+													"path": [
+														"sectional-mock-test",
+														"getAll",
+														"speaking"
+													]
+												}
+											},
+											"response": []
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "admin basic routes",
+			"item": [
+				{
+					"name": "get all count",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0ODM5MTIxOSwiZXhwIjoxNzQ4MzkyMTE5fQ.sXS_eX8WWOqkjcOQtUfAeVR2tyRtqDoKqopxlDThC2Y",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://c538-103-174-189-193.ngrok-free.app/admin/get-all-counts",
+							"protocol": "https",
+							"host": [
+								"c538-103-174-189-193",
+								"ngrok-free",
+								"app"
+							],
+							"path": [
+								"admin",
+								"get-all-counts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get all count Copy",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc2YjU2OWFkZTY0YmYwZmRhMDY5ZTAiLCJuYW1lIjoiQWRtaW4gVXNlciIsImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTM1NzE3NTEsImV4cCI6MTc1MzU3ODk1MX0.SuGs5K7H6dVMuCwM1xRUaSinzABeMbipl_SYRYonqn0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/earnings?planType=silver",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"earnings"
+							],
+							"query": [
+								{
+									"key": "planType",
+									"value": "silver"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get recent user",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/admin/recent-users",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"admin",
+								"recent-users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get all user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0ODQ3MDI3NywiZXhwIjoxNzQ4NDcxMTc3fQ.65a8Hj-tD3wSKaPuSHr_Q7IblgMEUyONBZZOVf_JGNM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "data-payload",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0ODQ3MDI3NywiZXhwIjoxNzQ4NDcxMTc3fQ.65a8Hj-tD3wSKaPuSHr_Q7IblgMEUyONBZZOVf_JGNM",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://sq-brake-gothic-nvidia.trycloudflare.com/admin/all-users?page=1&limit=10&planType=Free",
+							"protocol": "https",
+							"host": [
+								"sq-brake-gothic-nvidia",
+								"trycloudflare",
+								"com"
+							],
+							"path": [
+								"admin",
+								"all-users"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "planType",
+									"value": "Free"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "admin login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"1qazxsw2\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0ODQ3MDI3NywiZXhwIjoxNzQ4NDcxMTc3fQ.65a8Hj-tD3wSKaPuSHr_Q7IblgMEUyONBZZOVf_JGNM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://88c2-103-174-189-193.ngrok-free.app/admin/delete-user/683252f9cdb58b8f77236b8e",
+							"protocol": "https",
+							"host": [
+								"88c2-103-174-189-193",
+								"ngrok-free",
+								"app"
+							],
+							"path": [
+								"admin",
+								"delete-user",
+								"683252f9cdb58b8f77236b8e"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete question",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://88c2-103-174-189-193.ngrok-free.app/admin/delete-question/:question-id",
+							"protocol": "https",
+							"host": [
+								"88c2-103-174-189-193",
+								"ngrok-free",
+								"app"
+							],
+							"path": [
+								"admin",
+								"delete-question",
+								":question-id"
+							],
+							"variable": [
+								{
+									"key": "question-id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "admin faqs controller",
+			"item": [
+				{
+					"name": "get faqs",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0ODUzNTAyNywiZXhwIjoxNzQ4NTM1OTI3fQ.rHThlDgNy0ZhaMS4RIM3qz1OoJxz1ReoxW4yscdNycA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/faqs/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"faqs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add faqs",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"question\": \"Can i schedule a specific delivery time?\",\r\n    \"answer\": \"Yes you can\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://jihad3750.sakibahmad.com/faqs/",
+							"protocol": "https",
+							"host": [
+								"jihad3750",
+								"sakibahmad",
+								"com"
+							],
+							"path": [
+								"faqs",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "edit faqs",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"FAQId\": \"681d409898bc9cfde21e841a\",\r\n    \"question\": \"Can i schedule a specific delivery time? (Updated)\",\r\n    \"answer\": \"Yes you can\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/faqs/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"faqs",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "terms and condition",
+			"item": [
+				{
+					"name": "add terms",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0ODczMjEyNSwiZXhwIjoxNzQ4NzMzMDI1fQ.e9WcJUC627WYfFiSdtu6EDHzyvukJgA3vui1UVBre3E",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"termText\": \"Hello world\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://drainage-bytes-estimates-danish.trycloudflare.com/terms/terms-action",
+							"protocol": "https",
+							"host": [
+								"drainage-bytes-estimates-danish",
+								"trycloudflare",
+								"com"
+							],
+							"path": [
+								"terms",
+								"terms-action"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "edit terms",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0ODczMjEyNSwiZXhwIjoxNzQ4NzMzMDI1fQ.e9WcJUC627WYfFiSdtu6EDHzyvukJgA3vui1UVBre3E",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"683b898649d7c3bf20172136\",\n    \"termText\": \"hello world terms and conditions. updated\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://drainage-bytes-estimates-danish.trycloudflare.com/terms/terms-action",
+							"protocol": "https",
+							"host": [
+								"drainage-bytes-estimates-danish",
+								"trycloudflare",
+								"com"
+							],
+							"path": [
+								"terms",
+								"terms-action"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get terms",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0ODgwNTUzNiwiZXhwIjoxNzQ4ODA2NDM2fQ.52EZ93qaVVua4nI_YiXITcNssM0hWaymEMXjFFJtex0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"termText\": \"hello world terms and conditions. updated\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://drainage-bytes-estimates-danish.trycloudflare.com/terms/terms-action",
+							"protocol": "https",
+							"host": [
+								"drainage-bytes-estimates-danish",
+								"trycloudflare",
+								"com"
+							],
+							"path": [
+								"terms",
+								"terms-action"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete terms",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://drainage-bytes-estimates-danish.trycloudflare.com/terms/delete-terms",
+							"protocol": "https",
+							"host": [
+								"drainage-bytes-estimates-danish",
+								"trycloudflare",
+								"com"
+							],
+							"path": [
+								"terms",
+								"delete-terms"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "about us",
+			"item": [
+				{
+					"name": "add about us",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODM0YzA2OTM1ZjliZTE3NDQ4MTQ0MzkiLCJuYW1lIjoiSmloYWQgU2hlaWtoIiwiZW1haWwiOiJzYXltaXNsYW0zNjUxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1MDE4NDk1NywiZXhwIjoxNzUwMTg1ODU3fQ.CkVLLkGgD9V5mOWolui42JtoKFY4NKFMDLaVCRZxtTc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"aboutUsText\": \"ABout us text will be here soon. ha ha ha.........updated.\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://jihad3750.sakibahmad.com/about-us/",
+							"protocol": "https",
+							"host": [
+								"jihad3750",
+								"sakibahmad",
+								"com"
+							],
+							"path": [
+								"about-us",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "notifications",
+			"item": [
+				{
+					"name": "admin",
+					"item": [
+						{
+							"name": "add notification",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc2YjU2OWFkZTY0YmYwZmRhMDY5ZTAiLCJuYW1lIjoiQWRtaW4gVXNlciIsImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTMzMDI1ODEsImV4cCI6MTc1MzMwOTc4MX0.4WxwMR4tkH7u3NLtGfrylx6-TpEtcAL6ZY-gs-t_6E8",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"title\": \"Race Reminder\",\r\n  \"message\": \"Your selected race is starting soon! Please\",\r\n  \"targetSubscription\": \"all\" // or \"gold\", \"bronze\", or \"all\" for all user\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/admin/notification",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"admin",
+										"notification"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get notification",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc2YjU2Y2FkZTY0YmYwZmRhMDY5ZTUiLCJuYW1lIjoiUmVndWxhciBVc2VyIFR3byIsImVtYWlsIjoidXNlcjJAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc1MzMwMTcwOCwiZXhwIjoxNzUzMzA4OTA4fQ.cUdOrfzSUPQrFslt6co-HkcsoNlcDg24TzQSw7A3K14",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/user/notification?page=1&limit=10",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"user",
+										"notification"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "10"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get notification count",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODc2YjU2Y2FkZTY0YmYwZmRhMDY5ZTUiLCJuYW1lIjoiUmVndWxhciBVc2VyIFR3byIsImVtYWlsIjoidXNlcjJAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc1MzMwMTcwOCwiZXhwIjoxNzUzMzA4OTA4fQ.cUdOrfzSUPQrFslt6co-HkcsoNlcDg24TzQSw7A3K14",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/user/get-unseen-notification-count",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"user",
+										"get-unseen-notification-count"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	]
+}

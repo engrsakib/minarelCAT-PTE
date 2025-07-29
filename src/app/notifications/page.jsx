@@ -1,9 +1,11 @@
 "use client";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef,useState } from "react";
+import fetchWithAuth from "../../../src/lib/fetchWithAuth";
 import { X } from "lucide-react";
 
 // NotificationBell: শুধুমাত্র ড্রপডাউন/প্যানেল দেখাবে, স্টেট ও ইভেন্ট parent (Navbar) থেকে নেবে
 export default function NotificationBell({
+  
   open,
   setOpen,
   notifications,
@@ -13,6 +15,10 @@ export default function NotificationBell({
   onClose,
   panelRef,
 }) {
+
+  
+    const [notificationData, setNotificationData] = useState(null);
+     const baseUrl = process.env.NEXT_PUBLIC_URL;
   // ইনফিনিটি স্ক্রল
   useEffect(() => {
     if (!open) return;
@@ -31,6 +37,33 @@ export default function NotificationBell({
     return () => listDiv.removeEventListener("scroll", handleScroll);
   }, [open, hasMore, loading, notifications, onLoadMore, panelRef]);
 
+ useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        
+        const response = await fetchWithAuth(
+          `${baseUrl}/user/notification?page=1&limit=10`
+        );
+          console.log("response from nav notification",response);
+          
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setNotificationData(data.data);
+      } catch (error) {
+        console.error("Error fetching user info:", error);
+      } finally {
+        
+      }
+    };
+
+    if (baseUrl) fetchUserData();
+  }, [baseUrl]);
+  if (loading) return <p>Loading...</p>;
+ 
+  
   return (
     open && (
       <div
@@ -64,7 +97,7 @@ export default function NotificationBell({
           <div className="flex items-center justify-between px-9 py-7 border-b text-black">
             <div className="flex flex-col gap-1">
               <span className="text-2xl font-bold tracking-wide">Notifications</span>
-              <span className="text-xs text-black/80">{notifications.length} total</span>
+              <span className="text-xs text-black/80">{notificationData.length} total</span>
             </div>
             <button
               onClick={onClose}
@@ -80,12 +113,12 @@ export default function NotificationBell({
             className="flex-1 overflow-y-auto py-5 px-6"
             style={{ minHeight: "180px" }}
           >
-            {notifications.length === 0 && !loading ? (
+            {notificationData.length === 0 && !loading ? (
               <li className="py-10 text-gray-400 text-center text-lg">
                 No notifications!
               </li>
             ) : (
-              notifications.map((n) => (
+              notificationData.map((n) => (
                 <li
                   key={n.id}
                   className={`
@@ -96,7 +129,7 @@ export default function NotificationBell({
                 >
                   <div className="flex-1">
                     <div className="text-gray-900 text-[16.5px] font-medium mb-1">{n.message}</div>
-                    <div className="text-xs text-gray-400">{n.timeAgo}</div>
+                    <div className="text-xs text-gray-400">{n.title}</div>
                   </div>
                 </li>
               ))

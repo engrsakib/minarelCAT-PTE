@@ -25,7 +25,7 @@ const PAGE_SIZE = 30;
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, loading, error } = useLoggedInUser();
-
+ const baseUrl = process.env.NEXT_PUBLIC_URL;
   // NOTIFICATION LOGIC
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -35,13 +35,13 @@ export default function Navbar() {
   const [hasMore, setHasMore] = useState(true);
   const [notifLoading, setNotifLoading] = useState(false);
   const panelRef = useRef(null);
-
+const [notificationData, setNotificationData] = useState(null);
   // Fetch notifications (server or fake)
   const loadNotifications = useCallback(
     async (initial = false) => {
       try {
         const response = await fetchWithAuth(
-          `/api/notifications?page=${initial ? 1 : page}&limit=${PAGE_SIZE}`
+          `${baseUrl}/user/notification?page=1&limit=10`
         );
         const data = await response.json();
         let fetched = data.notifications || [];
@@ -73,6 +73,31 @@ export default function Navbar() {
     [page, readIds]
   );
 
+    useEffect(() => {
+      const fetchUserData = async () => {
+        try {
+          
+          const response = await fetchWithAuth(
+            `${baseUrl}/user/notification?page=1&limit=10`
+          );
+  
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+  
+          const data = await response.json();
+          setNotificationData(data.data);
+        } catch (error) {
+          console.error("Error fetching user info:", error);
+        } finally {
+          
+        }
+      };
+  
+      if (baseUrl) fetchUserData();
+    }, [baseUrl]);
+  
+  
   // Initial load & periodic poll
   useEffect(() => {
     loadNotifications(true);
@@ -175,7 +200,7 @@ export default function Navbar() {
                   unreadCount === 0 ? "hidden" : ""
                 }`}
               >
-                {unreadCount}
+                {notificationData?.length}
               </span>
               <IoNotificationsOutline />
             </div>
