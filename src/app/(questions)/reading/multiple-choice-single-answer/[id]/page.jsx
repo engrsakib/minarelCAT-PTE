@@ -7,42 +7,33 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
-  X,
-  CheckCircle,
-  XCircle,
 } from "lucide-react";
 
-// 9:59 minutes in seconds
 const RECORD_SECONDS = 599;
 
 export default function DynamicPage({ params }) {
   const { id } = params;
   const router = useRouter();
 
-  // State
   const [questions, setQuestions] = useState([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [currentQ, setCurrentQ] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Timer
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);
   const timerRef = useRef();
   const [timerStarted, setTimerStarted] = useState(false);
 
-  // Single-answer selection
   const [selected, setSelected] = useState(null);
-
-  // Pagination dropdown
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Response state
-  const [showResponse, setShowResponse] = useState(false);
-  const [responseData, setResponseData] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitResult, setSubmitResult] = useState(null);
+  const [submissionTime, setSubmissionTime] = useState(null);
+  const [showSubmissionModal, setShowSubmissionModal] = useState(false);
 
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
 
-  // Fetch questions (array or single) and set current
   useEffect(() => {
     async function getQuestions() {
       setLoading(true);
@@ -51,7 +42,6 @@ export default function DynamicPage({ params }) {
         const data = await res.json();
 
         let arr = [];
-        // Handle array: { questions: [...] }
         if (Array.isArray(data?.questions) && data.questions.length > 0) {
           if (data.questions[0]?.question) {
             arr = data.questions.map((q) => q.question);
@@ -62,9 +52,7 @@ export default function DynamicPage({ params }) {
           const idx = arr.findIndex((q) => q._id === id);
           setCurrentIdx(idx !== -1 ? idx : 0);
           setCurrentQ(arr[idx !== -1 ? idx : 0]);
-        }
-        // Handle single: { question: {...} }
-        else if (data?.question) {
+        } else if (data?.question) {
           setQuestions([data.question]);
           setCurrentQ(data.question);
           setCurrentIdx(0);
@@ -73,7 +61,8 @@ export default function DynamicPage({ params }) {
           setCurrentQ(null);
           setCurrentIdx(0);
         }
-      } catch {
+      } catch (error) {
+        console.error("Error fetching questions:", error);
         setQuestions([]);
         setCurrentQ(null);
         setCurrentIdx(0);
@@ -82,22 +71,21 @@ export default function DynamicPage({ params }) {
       setTimeLeft(RECORD_SECONDS);
       setTimerStarted(false);
       setSelected(null);
+      setSubmitResult(null);
     }
     getQuestions();
-    // eslint-disable-next-line
   }, [id]);
 
-  // When questions or currentIdx changes, update currentQ
   useEffect(() => {
     if (questions.length > 0) {
       setCurrentQ(questions[currentIdx] || null);
       setSelected(null);
       setTimeLeft(RECORD_SECONDS);
       setTimerStarted(false);
+      setSubmitResult(null);
     }
   }, [questions, currentIdx]);
 
-  // Timer logic (start on page load)
   useEffect(() => {
     if (loading) return;
     if (!timerStarted) setTimerStarted(true);
@@ -110,40 +98,73 @@ export default function DynamicPage({ params }) {
     return () => clearTimeout(timerRef.current);
   }, [timerStarted, timeLeft]);
 
-  // Submit handler
   const handleSubmit = async () => {
-    if (!currentQ || selected === null) return;
+    if (!currentQ || selected === null) {
+      setSubmitResult({
+        error: true,
+        message: "Please select an answer",
+        success: false,
+      });
+      return;
+    }
 
-    // Static response data for now
-    const staticResponseData = {
-      isCorrect: true,
-      message: "Correct answer!",
+    setIsSubmitting(true);
+    setSubmitResult(null);
+
+    const submissionTime = new Date();
+    setSubmissionTime(submissionTime);
+
+    const payload = {
+      questionId: currentQ._id,
+      userAnswer: currentQ.options[selected],
     };
 
-    // Set the static response and show modal
-    setResponseData(staticResponseData);
-    setShowResponse(true);
+    try {
+      const res = await fetchWithAuth(
+        `${baseUrl}/test/reading/mcq_single/result`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
-    // You can add API call here later:
-    // const payload = {
-    //   questionId: currentQ._id,
-    //   answer: currentQ.options[selected],
-    // };
-    // try {
-    //   const response = await fetchWithAuth("/test/mcq_single/submit", {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify(payload),
-    //   });
-    //   const data = await response.json();
-    //   setResponseData(data);
-    //   setShowResponse(true);
-    // } catch (e) {
-    //   alert("Something went wrong! Try again.");
-    // }
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `Request failed with status ${res.status}`
+        );
+      }
+
+      const result = await res.json();
+      setSubmitResult(result);
+      setShowSubmissionModal(true);
+      setTimerStarted(false);
+
+      if (result.success) {
+        setTimeout(() => {
+          if (currentIdx < questions.length - 1) {
+            router.push(
+              `/question/mcq-single/${questions[currentIdx + 1]._id}`
+            );
+          }
+        }, 2000);
+      }
+    } catch (err) {
+      console.error("Submission error:", err);
+      setSubmitResult({
+        error: true,
+        message: err.message || "Failed to submit answer",
+        success: false,
+      });
+      setShowSubmissionModal(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  // Pagination controls (dropdown + prev/next, styled right-bottom)
   const renderPagination = () => (
     <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end w-max">
       <div className="relative">
@@ -167,15 +188,13 @@ export default function DynamicPage({ params }) {
                   router.push(`/question/mcq-single/${q._id}`);
                   setDropdownOpen(false);
                 }}
-                className={`flex w-full px-4 py-2 text-left text-sm font-semibold transition
-                  ${
-                    i === currentIdx
-                      ? "bg-[#810000] text-white"
-                      : "hover:bg-[#f5eaea] text-[#810000]"
-                  }
-                `}
+                className={`flex w-full px-4 py-2 text-left text-sm font-semibold transition ${
+                  i === currentIdx
+                    ? "bg-[#810000] text-white"
+                    : "hover:bg-[#f5eaea] text-[#810000]"
+                }`}
               >
-                {String(i + 1).padStart(3, "0")}{" "}
+                {String(i + 1).padStart(3, "0")}
                 {q.heading && (
                   <span className="ml-1 truncate w-24">{q.heading}</span>
                 )}
@@ -195,7 +214,7 @@ export default function DynamicPage({ params }) {
             }
           }}
           disabled={currentIdx === 0}
-          className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
+          className="rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
@@ -209,7 +228,7 @@ export default function DynamicPage({ params }) {
             }
           }}
           disabled={currentIdx === questions.length - 1}
-          className={`rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40`}
+          className="rounded-full border bg-white px-2 py-1 shadow text-[#810000] font-bold text-lg disabled:opacity-40"
         >
           <ChevronRight className="w-6 h-6" />
         </button>
@@ -227,14 +246,12 @@ export default function DynamicPage({ params }) {
     </div>
   );
 
-  // Format MM:SS
   const formatTime = (sec) => {
     const m = Math.floor(sec / 60);
     const s = sec % 60;
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
-  // Show error or empty if API returns empty/invalid
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[40vh]">
@@ -242,6 +259,7 @@ export default function DynamicPage({ params }) {
       </div>
     );
   }
+
   if (!currentQ) {
     return (
       <div className="flex flex-col justify-center items-center min-h-[40vh] text-center">
@@ -258,14 +276,64 @@ export default function DynamicPage({ params }) {
 
   return (
     <div className="w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
+      {/* Centered Modal without overlay */}
+      {showSubmissionModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl border-2 border-[#810000] max-w-md w-full mx-4">
+            <h3 className="text-xl font-bold text-[#810000] mb-4">
+              {submitResult?.error ? "Submission Error" : "Submission Result"}
+            </h3>
+
+            {submissionTime && (
+              <p className="mb-3">
+                <span className="font-semibold">Time:</span>{" "}
+                {submissionTime.toLocaleTimeString()} on{" "}
+                {submissionTime.toLocaleDateString()}
+              </p>
+            )}
+
+            {submitResult && (
+              <div
+                className={`mb-4 p-3 rounded ${
+                  submitResult.error
+                    ? "bg-red-50 text-red-700 border border-red-200"
+                    : "bg-green-50 text-green-700 border border-green-200"
+                }`}
+              >
+                <p>{submitResult.message}</p>
+                {submitResult.correctAnswer && (
+                  <p className="mt-2">
+                    <strong>Correct Answer:</strong>{" "}
+                    {submitResult.correctAnswer}
+                  </p>
+                )}
+                {submitResult.explanation && (
+                  <p className="mt-2">
+                    <strong>Explanation:</strong> {submitResult.explanation}
+                  </p>
+                )}
+              </div>
+            )}
+
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowSubmissionModal(false)}
+                className="px-4 py-2 bg-[#810000] text-white rounded hover:bg-[#6a0000] transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
-        Multiple Choice &amp; Single answer
+        Multiple Choice & Single answer
       </div>
       <p className="text-gray-700 mb-6">
         Read the text and answer the multiple-choice question by selecting the
         correct response. Only one response is correct.
       </p>
-      {/* Question Heading */}
       <div className="flex items-center gap-2 mb-4">
         <span className="rounded px-4 py-2 font-bold text-white bg-[#810000] text-base tracking-wide">
           #{currentQ._id}
@@ -274,24 +342,20 @@ export default function DynamicPage({ params }) {
           {currentQ.heading}
         </span>
       </div>
-      {/* Timer */}
       <div className="mb-4 flex items-center gap-3">
         <span className="text-[#810000] font-medium text-base">
           Remaining Time:{" "}
-          <span className="font-bold">00: {formatTime(timeLeft)} sec</span>
+          <span className="font-bold">{formatTime(timeLeft)}</span>
         </span>
       </div>
-      {/* Prompt */}
       <div className="border border-[#810000] rounded bg-[#faf9f9] p-5 mb-4 text-gray-900 text-base whitespace-pre-line">
         {currentQ.prompt}
       </div>
-      {/* MCQ Question */}
       <div className="border border-[#810000] rounded bg-white p-3 mb-2 text-[#810000] text-base font-semibold">
         {currentQ.text}
       </div>
-      {/* Options */}
       <div className="border border-[#810000] rounded bg-[#faf9f9] p-4 mb-2">
-        {currentQ.options && currentQ.options.length > 0 ? (
+        {currentQ.options?.length > 0 ? (
           currentQ.options.map((opt, i) => {
             const abc = String.fromCharCode(65 + i);
             return (
@@ -313,7 +377,6 @@ export default function DynamicPage({ params }) {
                   checked={selected === i}
                   onChange={() => setSelected(i)}
                   className="accent-[#810000] w-4 h-4"
-                  style={{ accentColor: "#810000" }}
                 />
                 <span
                   className={`text-base font-bold flex items-center justify-center w-7 h-7 rounded-full border border-[#810000] ${
@@ -340,130 +403,29 @@ export default function DynamicPage({ params }) {
           </div>
         )}
       </div>
-      {/* Controls */}
+
       <div className="flex gap-3 mb-2 mt-3">
         <button
-          className="flex items-center gap-1 px-6 py-2 rounded border border-gray-400 text-gray-700 hover:bg-gray-100 font-medium text-base"
+          className="flex items-center gap-1 px-6 py-2 rounded border border-gray-400 text-gray-700 hover:bg-gray-100 font-medium text-base disabled:opacity-50"
           onClick={() => {
             setSelected(null);
             setTimeLeft(RECORD_SECONDS);
             setTimerStarted(false);
-            setShowResponse(false);
-            setResponseData(null);
+            setSubmitResult(null);
+            setShowSubmissionModal(false);
           }}
-          disabled={timeLeft === 0}
+          disabled={timeLeft === 0 || isSubmitting}
         >
           Restart
         </button>
         <button
-          className="flex items-center gap-1 px-6 py-2 rounded border-2 border-[#810000] bg-white text-[#810000] font-semibold text-base hover:bg-[#810000] hover:text-white transition"
+          className="flex items-center gap-1 px-6 py-2 rounded border-2 border-[#810000] bg-white text-[#810000] font-semibold text-base hover:bg-[#810000] hover:text-white transition disabled:opacity-50"
           onClick={handleSubmit}
-          disabled={selected === null || timeLeft === 0}
+          disabled={selected === null || timeLeft === 0 || isSubmitting}
         >
-          Submit
+          {isSubmitting ? "Submitting..." : "Submit"}
         </button>
       </div>
-
-      {/* Simple Response Modal */}
-      {showResponse && responseData && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-[#810000] to-[#a50000] p-4 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-white">
-                {responseData.isCorrect ? (
-                  <CheckCircle className="w-6 h-6" />
-                ) : (
-                  <XCircle className="w-6 h-6" />
-                )}
-                <h3 className="text-xl font-bold">Quiz Result</h3>
-              </div>
-              <button
-                onClick={() => setShowResponse(false)}
-                className="text-white hover:bg-white/20 rounded-full p-1 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="p-6 text-center">
-              {/* Result Icon */}
-              <div className="mb-6">
-                <div
-                  className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 ${
-                    responseData.isCorrect ? "bg-green-100" : "bg-red-100"
-                  }`}
-                >
-                  {responseData.isCorrect ? (
-                    <CheckCircle className="w-12 h-12 text-green-500" />
-                  ) : (
-                    <XCircle className="w-12 h-12 text-red-500" />
-                  )}
-                </div>
-
-                {/* Status Text */}
-                <div
-                  className={`text-2xl font-bold mb-2 ${
-                    responseData.isCorrect ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  {responseData.isCorrect ? "Well Done!" : "Try Again!"}
-                </div>
-              </div>
-
-              {/* Message */}
-              <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                <p className="text-gray-700 text-lg font-medium">
-                  {responseData.message}
-                </p>
-              </div>
-
-              {/* Selected Answer Display */}
-              <div className="bg-blue-50 rounded-lg p-4 mb-6">
-                <div className="text-sm text-blue-600 font-medium mb-2">
-                  Your Answer
-                </div>
-                <div className="text-lg font-bold text-blue-800">
-                  {String.fromCharCode(65 + selected)} -{" "}
-                  {currentQ.options[selected]}
-                </div>
-              </div>
-
-              {/* Result Status */}
-              <div
-                className={`rounded-lg p-4 mb-6 ${
-                  responseData.isCorrect ? "bg-green-50" : "bg-red-50"
-                }`}
-              >
-                <div
-                  className={`text-sm font-medium mb-1 ${
-                    responseData.isCorrect ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  Result
-                </div>
-                <div
-                  className={`text-xl font-bold ${
-                    responseData.isCorrect ? "text-green-800" : "text-red-800"
-                  }`}
-                >
-                  {responseData.isCorrect ? "Correct Answer" : "Wrong Answer"}
-                </div>
-              </div>
-
-              {/* Continue Button */}
-              <button
-                onClick={() => setShowResponse(false)}
-                className="w-full bg-[#810000] text-white py-3 rounded-lg font-semibold hover:bg-[#950000] transition-colors"
-              >
-                Continue
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {renderPagination()}
     </div>
   );

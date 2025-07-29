@@ -33,7 +33,7 @@ export default function ReadAloud() {
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
 
   // Fetch data with filters
-        const fetchData = async () => {
+  const fetchData = async () => {
     setIsLoading(true);
     setError("");
     try {
@@ -58,7 +58,7 @@ export default function ReadAloud() {
     }
     setIsLoading(false);
   };
-  
+
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line
@@ -73,14 +73,11 @@ export default function ReadAloud() {
     setBookmarkLoadingId(item._id);
     try {
       // Toggle bookmark: if true, remove; if false, add
-      const res = await fetchWithAuth(
-        `${baseUrl}/user/bookmark`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: item._id }),
-        }
-      );
+      const res = await fetchWithAuth(`${baseUrl}/user/bookmark`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: item._id }),
+      });
       if (res.ok) {
         // Update only the specific item's bookmark status
         setData((prev) =>
