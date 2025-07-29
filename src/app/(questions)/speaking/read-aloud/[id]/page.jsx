@@ -2,31 +2,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
-
-// Next.js-compatible dynamic import for react-mic
-const AudioRecorder = dynamic(
-  () =>
-    import("react-mic").then((mod) => {
-      return ({ onStop, record, ...props }) => (
-        <mod.ReactMic
-          record={record}
-          onStop={onStop}
-          strokeColor="#810000"
-          backgroundColor="#f9f9f9"
-          mimeType="audio/wav"
-          {...props}
-        />
-      );
-    }),
-  { ssr: false }
-);
+import MicRecorder from "mic-recorder-to-mp3";  // mic-recorder-to-mp3 import করা
 
 const RECORD_SECONDS = 35;
 
@@ -34,14 +10,16 @@ export default function DynamicPage({ params }) {
   const { id } = params;
   const router = useRouter();
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
+  const recorder = useRef(null); // MicRecorder instance
+
   // State
   const [question, setQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // Timer
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
+  const [mp3URL, setMp3URL] = useState(null);  // To hold the recorded mp3 URL
+
   const timerRef = useRef();
 
   // Fetch question by id
@@ -76,17 +54,33 @@ export default function DynamicPage({ params }) {
     return () => clearTimeout(timerRef.current);
   }, [isRecording, timeLeft]);
 
-  // react-mic will send blob to this
-  const handleMicStop = (recorded) => {
-    setAudioBlob(recorded.blob);
-    setIsRecording(false);
+  // Start recording
+  const startRecording = () => {
+    recorder.current = new MicRecorder({ bitRate: 128 });
+    recorder.current
+      .start()
+      .then(() => setIsRecording(true))
+      .catch((e) => console.error(e));
+  };
+
+  // Stop recording
+  const stopRecording = () => {
+    recorder.current
+      .stop()
+      .getMp3()
+      .then(([buffer, blob]) => {
+        setAudioBlob(blob);
+        setMp3URL(URL.createObjectURL(blob)); // Create URL for audio blob
+        setIsRecording(false);
+      })
+      .catch((e) => console.error(e));
   };
 
   // Submit handler
   const handleSubmit = async () => {
     if (!audioBlob || !question) return;
     const formData = new FormData();
-    formData.append("voice", audioBlob, "voice.wav");
+    formData.append("voice", audioBlob, "voice.mp3");  // Save as mp3
     formData.append("questionId", question._id);
 
     try {
@@ -135,7 +129,6 @@ export default function DynamicPage({ params }) {
       </div>
       {/* Audio Recorder */}
       <div className="border border-[#810000] rounded p-4 mb-6 bg-[#faf9f9] flex flex-col items-center">
-        <AudioRecorder record={isRecording} onStop={handleMicStop} />
         <div className="flex items-center w-full gap-2 mt-2">
           <span className="text-xs text-gray-600">
             {new Date((RECORD_SECONDS - timeLeft) * 1000)
@@ -189,7 +182,7 @@ export default function DynamicPage({ params }) {
               if (!isRecording && timeLeft > 0) {
                 setTimeLeft(RECORD_SECONDS);
                 setAudioBlob(null);
-                setIsRecording(true);
+                startRecording();
               }
             }}
             disabled={isRecording || timeLeft === 0}
@@ -198,7 +191,7 @@ export default function DynamicPage({ params }) {
           </button>
           <button
             className="flex items-center gap-1 px-4 py-1 rounded bg-gray-500 text-white font-medium text-sm hover:bg-gray-700 disabled:bg-gray-300 disabled:text-gray-400"
-            onClick={() => setIsRecording(false)}
+            onClick={stopRecording}
             disabled={!isRecording}
           >
             <span>Stop</span>
