@@ -7,7 +7,12 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
+  Monitor,
+  Share2,
+  X,
+  Loader2,
 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 // 9:59 minutes in seconds
 const RECORD_SECONDS = 599;
@@ -24,6 +29,7 @@ export default function DynamicPage({ params }) {
 
   // Timer
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);
+  const [startTime, setStartTime] = useState(null);
   const timerRef = useRef();
   const [timerStarted, setTimerStarted] = useState(false);
 
@@ -32,7 +38,21 @@ export default function DynamicPage({ params }) {
 
   // Pagination dropdown
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  // AI Score Modal state
+  const [showAiScoreModal, setShowAiScoreModal] = useState(false);
+
+  // Submitting state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
+
+  // Simplified score data
+  const [resultData, setResultData] = useState({
+    score: 0,
+    feedback: "",
+    timeTaken: "00:00",
+  });
 
   // Fetch all questions and find current index
   useEffect(() => {
@@ -46,8 +66,11 @@ export default function DynamicPage({ params }) {
         let idx = 0;
         let questionObj = null;
 
-        // API can send as {questions:[]} or {question:{}}
-        if (data.questions && Array.isArray(data.questions) && data.questions.length) {
+        if (
+          data.questions &&
+          Array.isArray(data.questions) &&
+          data.questions.length
+        ) {
           arr = data.questions;
           idx = arr.findIndex((q) => q._id === id);
           questionObj = arr[idx !== -1 ? idx : 0];
@@ -61,6 +84,7 @@ export default function DynamicPage({ params }) {
         setCurrentIdx(idx);
         setCurrentQ(questionObj);
         setSelected([]);
+        setStartTime(null); // Reset start time on new question
       } catch {
         setQuestions([]);
         setCurrentIdx(0);
@@ -84,41 +108,86 @@ export default function DynamicPage({ params }) {
   useEffect(() => {
     if (!timerStarted) return;
     if (timeLeft === 0) return;
+
+    // Set start time when timer first starts
+    if (startTime === null) {
+      setStartTime(Date.now());
+    }
+
     timerRef.current = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearTimeout(timerRef.current);
-  }, [timerStarted, timeLeft]);
+  }, [timerStarted, timeLeft, startTime]);
 
   // Handle option change (multiple)
   const handleOptionChange = (idx) => {
     setSelected((prev) => {
       if (prev.includes(idx)) {
-        // deselect if already selected
         return prev.filter((i) => i !== idx);
       } else {
-        // select new
         return [...prev, idx];
       }
     });
   };
 
-  // Submit handler
+  // Format MM:SS
+  function formatTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
+
+  // Submit handler with time tracking
   const handleSubmit = async () => {
     if (!currentQ || selected.length === 0) return;
-    const payload = {
-      questionId: currentQ._id,
-      answers: selected, // array of selected option indexes
-    };
+
+    setIsSubmitting(true); // Start submitting
+
+    const timeTaken = startTime
+      ? Math.floor((Date.now() - startTime) / 1000)
+      : 0;
+
+    // Get the selected answer texts
+    const selectedAnswers = selected.map((idx) => currentQ.options[idx]);
+
     try {
+      // First submit the answers
       await fetchWithAuth("/test/mcq_multiple/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          questionId: currentQ._id,
+          answers: selected,
+          timeTaken: timeTaken,
+        }),
       });
-      alert(
-        "Your answer has been submitted! (Demo: backend response not shown)"
+
+      // Then get the result
+      const resultResponse = await fetchWithAuth(
+        `${baseUrl}/test/reading/mcq_multiple/result`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            questionId: currentQ._id,
+            selectedAnswers: selectedAnswers,
+          }),
+        }
       );
+
+      const result = await resultResponse.json();
+
+      // Update state with the simple result
+      setResultData({
+        score: result.score,
+        feedback: result.feedback,
+        timeTaken: formatTime(timeTaken),
+      });
+
+      setShowAiScoreModal(true);
     } catch (e) {
       alert("Something went wrong! Try again.");
+    } finally {
+      setIsSubmitting(false); // End submitting
     }
   };
 
@@ -206,13 +275,6 @@ export default function DynamicPage({ params }) {
     </div>
   );
 
-  // Format MM:SS
-  const formatTime = (sec) => {
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-  };
-
   if (loading || !currentQ) {
     return (
       <div className="flex justify-center items-center min-h-[40vh]">
@@ -230,6 +292,7 @@ export default function DynamicPage({ params }) {
         Read the text and answer the multiple-choice question by selecting all
         correct responses. You may select more than one response.
       </p>
+
       {/* Question Heading */}
       <div className="flex items-center gap-2 mb-4">
         <span className="rounded px-4 py-2 font-bold text-white bg-[#810000] text-base tracking-wide">
@@ -239,6 +302,7 @@ export default function DynamicPage({ params }) {
           {currentQ.heading}
         </span>
       </div>
+
       {/* Timer */}
       <div className="mb-4 flex items-center gap-3">
         <span className="text-[#810000] font-medium text-base">
@@ -246,15 +310,17 @@ export default function DynamicPage({ params }) {
           <span className="font-bold">00: {formatTime(timeLeft)} sec</span>
         </span>
       </div>
+
       {/* Prompt */}
       <div className="border border-[#810000] rounded bg-[#faf9f9] p-5 mb-4 text-gray-900 text-base whitespace-pre-line">
         {currentQ.prompt}
       </div>
+
       {/* MCQ Question */}
       <div className="border border-[#810000] rounded bg-white p-3 mb-2 text-[#810000] text-base font-semibold">
-        {/* Use 'text' field from API for MCQ question */}
         {currentQ.text}
       </div>
+
       {/* Options */}
       <div className="border border-[#810000] rounded bg-[#faf9f9] p-4 mb-2">
         {currentQ.options.map((opt, i) => {
@@ -279,6 +345,7 @@ export default function DynamicPage({ params }) {
                 onChange={() => handleOptionChange(i)}
                 className="accent-[#810000] w-4 h-4"
                 style={{ accentColor: "#810000" }}
+                disabled={isSubmitting}
               />
               <span
                 className={`text-base font-bold flex items-center justify-center w-7 h-7 rounded-full border border-[#810000] ${
@@ -298,28 +365,79 @@ export default function DynamicPage({ params }) {
           );
         })}
       </div>
+
       {/* Controls */}
       <div className="flex gap-3 mb-2 mt-3">
         <button
-          className="flex items-center gap-1 px-6 py-2 rounded border border-gray-400 text-gray-700 hover:bg-gray-100 font-medium text-base"
+          className="flex items-center gap-1 px-6 py-2 rounded border border-gray-400 text-gray-700 hover:bg-gray-100 font-medium text-base disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={() => {
             setSelected([]);
             setTimeLeft(RECORD_SECONDS);
             setTimerStarted(false);
+            setStartTime(null);
           }}
-          disabled={timeLeft === 0}
+          disabled={timeLeft === 0 || isSubmitting}
         >
           Restart
         </button>
         <button
-          className="flex items-center gap-1 px-6 py-2 rounded border-2 border-[#810000] bg-white text-[#810000] font-semibold text-base hover:bg-[#810000] hover:text-white transition"
+          className="flex items-center gap-2 px-6 py-2 rounded border-2 border-[#810000] bg-white text-[#810000] font-semibold text-base hover:bg-[#810000] hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-[#810000]"
           onClick={handleSubmit}
-          disabled={selected.length === 0 || timeLeft === 0}
+          disabled={selected.length === 0 || timeLeft === 0 || isSubmitting}
         >
-          Submit
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Submitting...
+            </>
+          ) : (
+            "Submit"
+          )}
         </button>
       </div>
+
       {renderPagination()}
+
+      {/* Simplified Result Modal */}
+      {showAiScoreModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-[#810000]">Your Result</h2>
+              <button
+                onClick={() => setShowAiScoreModal(false)}
+                className="text-gray-500 hover:text-[#810000]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Time Taken */}
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 text-center">
+              <p className="text-gray-600 mb-1">Time Taken:</p>
+              <p className="text-xl font-bold text-[#810000]">
+                {resultData.timeTaken}
+              </p>
+            </div>
+
+            {/* Score Summary */}
+            <div className="text-center mb-6">
+              <p className="text-4xl font-bold text-[#810000] mb-2">
+                {resultData.score}
+              </p>
+              <p className="text-gray-600 text-lg">{resultData.feedback}</p>
+            </div>
+
+            <button
+              className="w-full mt-4 px-4 py-3 bg-[#810000] text-white rounded-lg hover:bg-[#a50000] transition font-semibold"
+              onClick={() => setShowAiScoreModal(false)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
