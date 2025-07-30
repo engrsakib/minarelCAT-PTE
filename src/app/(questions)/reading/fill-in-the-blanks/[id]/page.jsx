@@ -189,6 +189,31 @@ export default function DynamicPage({ params }) {
     const s = sec % 60;
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   }
+
+  // Function to speak the clicked word
+  const speakWord = (word) => {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(word);
+      utterance.lang = 'en-US';
+      speechSynthesis.speak(utterance);
+    } else {
+      console.log('Text-to-speech not supported in this browser');
+    }
+  };
+
+  // Render prompt text with interactive words
+  const renderPromptText = (text) => {
+    return text.split(/\s+/).map((word, index) => (
+      <span 
+        key={index}
+        className="word hover:text-red-600 transition-colors cursor-pointer"
+        onClick={() => speakWord(word)}
+        style={{ display: 'inline-block', marginRight: '4px' }}
+      >
+        {word}
+      </span>
+    ));
+  };
  
   if (loading || !currentQ) {
     return (
@@ -250,7 +275,7 @@ export default function DynamicPage({ params }) {
       <div className="border border-[#810000] rounded-lg bg-[#faf9f9] p-4 sm:p-5 mb-4 text-gray-900 text-sm sm:text-base leading-relaxed whitespace-pre-line">
         {splitParts.map((part, i) => (
           <React.Fragment key={i}>
-            {part}
+            {renderPromptText(part)}
             {i < blanks.length && (
               <span className="inline-block align-middle mx-0.5 sm:mx-1">
                 <span className="font-bold text-[#810000] mr-1">
@@ -412,6 +437,9 @@ export default function DynamicPage({ params }) {
         select:disabled {
           background: #eee;
           color: #bbb;
+        }
+        .word:hover {
+          color: #810000 !important;
         }
       `}</style>
     </div>
