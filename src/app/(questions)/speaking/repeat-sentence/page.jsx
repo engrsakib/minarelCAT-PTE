@@ -20,7 +20,7 @@ function trimText(text, max = 34) {
   return text.slice(0, max - 1) + "…";
 }
 
-export default function repeatSentence() {
+export default function ReadAloud() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
@@ -33,31 +33,31 @@ export default function repeatSentence() {
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
 
   // Fetch data with filters
-    const fetchData = async () => {
-  setIsLoading(true);
-  setError("");
-  try {
-    // tab-এর মানই হবে query-এর মান
-    const query = tab;
-    const response = await fetchWithAuth(
-      `${baseUrl}/user/bookmark`
-    );
-    const result = await response.json();
-    if (result?.questions) {
-      setData(result.questions);
-      setTotalPages(Math.ceil(result.questionsCount / itemsPerPage));
-    } else {
+  const fetchData = async () => {
+    setIsLoading(true);
+    setError("");
+    try {
+      // tab-এর মানই হবে query-এর মান
+      const query = tab;
+      const response = await fetchWithAuth(
+        `${baseUrl}/test/speaking/repeat_sentence?query=${query}`
+      );
+      const result = await response.json();
+      if (result?.questions) {
+        setData(result.questions);
+        setTotalPages(Math.ceil(result.questionsCount / itemsPerPage));
+      } else {
+        setData([]);
+        setTotalPages(1);
+        setError("No data found");
+      }
+    } catch (err) {
+      setError("An error occurred");
       setData([]);
       setTotalPages(1);
-      setError("No data found");
     }
-  } catch (err) {
-    setError("An error occurred");
-    setData([]);
-    setTotalPages(1);
-  }
-  setIsLoading(false);
-};
+    setIsLoading(false);
+  };
 
   useEffect(() => {
     fetchData();
@@ -73,14 +73,11 @@ export default function repeatSentence() {
     setBookmarkLoadingId(item._id);
     try {
       // Toggle bookmark: if true, remove; if false, add
-      const res = await fetchWithAuth(
-        `${baseUrl}/test/speaking/read_aloud/bookmark`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: item._id }),
-        }
-      );
+      const res = await fetchWithAuth(`${baseUrl}/user/bookmark`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: item._id }),
+      });
       if (res.ok) {
         // Update only the specific item's bookmark status
         setData((prev) =>
