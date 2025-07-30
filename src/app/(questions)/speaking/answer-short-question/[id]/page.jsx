@@ -1,9 +1,8 @@
 "use client";
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
 import MicRecorder from "mic-recorder-to-mp3";
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
 
 const RECORD_SECONDS = 40; // Answer time
 const AUDIO_DURATION = 35; // For the audio player bar (UI, not actual duration)
@@ -11,11 +10,15 @@ const AUDIO_DURATION = 35; // For the audio player bar (UI, not actual duration)
 export default function RepeatSentencePage({ params }) {
   const { id } = params;
   const router = useRouter();
-  const baseUrl = process.env.NEXT_PUBLIC_URL || "https://example.com";
+  const baseURL = process.env.NEXT_PUBLIC_URL;
 
   // State
   const [question, setQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [serverResponse, setServerResponse] = useState({});
+  //=============Modal State==========================
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  console.log("==========SERVER RESPONSE==========", serverResponse);
 
   // Timer
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);
@@ -38,12 +41,12 @@ export default function RepeatSentencePage({ params }) {
     async function getQuestion() {
       setLoading(true);
       try {
-        const res = await fetchWithAuth(`${baseUrl}/user/get-question/${id}`);
+        const res = await fetchWithAuth(`${baseURL}/user/get-question/${id}`);
         const data = await res.json();
         setQuestion(data?.question || null);
       } catch {
         setQuestion(null);
-      }``
+      }
       setLoading(false);
       setTimeLeft(RECORD_SECONDS);
       setAudioProgress(0);
@@ -123,14 +126,17 @@ export default function RepeatSentencePage({ params }) {
     const formData = new FormData();
     formData.append("voice", audioBlob, "voice.mp3");
     formData.append("questionId", question._id);
+
     try {
-      await fetchWithAuth("/test/speaking/repeat_sentence/submit", {
-        method: "POST",
-        body: formData,
-      });
-      alert(
-        "Your answer has been submitted! (Demo: backend response not shown)"
+      const response = await fetchWithAuth(
+        `${baseURL}/test/speaking/answer_short_question/result`,
+        {
+          method: "POST",
+          body: formData,
+        }
       );
+      setServerResponse(await response.json());
+      setIsModalOpen(!isModalOpen);
     } catch (e) {
       alert("Something went wrong! Try again.");
     }
@@ -146,11 +152,42 @@ export default function RepeatSentencePage({ params }) {
 
   return (
     <div className="w-full lg:w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
+      {/* =========================Modal Contents starts here=============== */}
+      <Modal
+        isModalOpen={isModalOpen}
+        setIsModalOpen={() => setIsModalOpen(!isModalOpen)}
+      >
+        <div className="size-80 bg-white rounded-2xl flex flex-col gap-2 justify-center items-center">
+          <h1 className="text-3xl font-semibold text-[#660303]">🎉 Results</h1>
+          <p>
+            <span className="font-bold">Enabling Skills: </span>
+            {serverResponse?.result["Enabling Skills"]}
+          </p>
+          <p>
+            <span className="font-bold">Fluency: </span>
+            {serverResponse?.result?.Fluency}
+          </p>
+          <p>
+            <span className="font-bold">Listening: </span>
+            {serverResponse?.result?.Listening}
+          </p>
+          <p>
+            <span className="font-bold">Pronunciation: </span>
+            {serverResponse?.result?.Pronunciation}
+          </p>
+          <p>
+            <span className="font-bold">Speaking: </span>
+            {serverResponse?.result?.Speaking}
+          </p>
+        </div>
+      </Modal>
+      {/* =========================Modal Contents ends here=============== */}
       <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
         Answer a Short Question
       </div>
       <p className="text-gray-700 mb-6">
-        Listen to and read a description of a situation. You will have 40 seconds to answer the question. <br />
+        Listen to and read a description of a situation. You will have 40
+        seconds to answer the question. <br />
         Please answer as completely as you can.
       </p>
       {/* Question Heading */}
@@ -291,3 +328,36 @@ export default function RepeatSentencePage({ params }) {
     </div>
   );
 }
+
+//===========================Modal Component=================
+const Modal = ({ isModalOpen, children, setIsModalOpen }) => {
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = "hidden"; // Disable scrolling
+    } else {
+      document.body.style.overflow = "auto"; // Enable scrolling again
+    }
+
+    return () => {
+      document.body.style.overflow = "auto"; // Cleanup function in case modal unmounts
+    };
+  }, [isModalOpen]);
+  return (
+    <div
+      onClick={setIsModalOpen}
+      className={`${
+        isModalOpen
+          ? "h-dvh w-full fixed inset-0 z-50 bg-black/50 flex flex-col justify-center items-center"
+          : "hidden"
+      }`}
+    >
+      <div
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+};
