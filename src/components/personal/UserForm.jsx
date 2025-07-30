@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import fetchWithAuth from "../../lib/fetchWithAuth";
-import {  toast } from "react-toastify";
+  import { ToastContainer, toast } from 'react-toastify';
 export default function UserForm({ data }) {
   const [changePass, setChangePass] = useState(false);
   const baseUrl = process.env.NEXT_PUBLIC_URL;
@@ -40,7 +40,7 @@ export default function UserForm({ data }) {
         confirmPassword: "",
       }));
     } else {
-      toast.success("Wow so easy!")
+      toast.error("Passwords are not matching")
       setChangePass(true);
     }
     try {
@@ -58,10 +58,10 @@ export default function UserForm({ data }) {
 
       const result = await response.json();
       console.log("Update success:", result);
-      alert("Profile updated successfully!");
+      toast.success("Profile updated successfully!");
     } catch (error) {
       console.error("Update failed:", error);
-      toast("Update failed. Please try again.");
+      toast.error("Update failed. Please try again.");
     }
   };
 
@@ -233,6 +233,7 @@ export default function UserForm({ data }) {
           </button>
         </form>
       </div>
+        <ToastContainer />
     </div>
   );
 }

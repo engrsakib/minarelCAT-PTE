@@ -1,11 +1,11 @@
 "use client";
 import React, { useRef, useState, useEffect } from "react";
-import fetchWithAuth from "../../../../lib/fetchWithAuth";
+import fetchWithAuth from "../../../lib/fetchWithAuth";
 import Image from "next/image";
-import frame from "../../../../../public/frame.png";
-import dummy from "../../../../../public/dummy-image.png";
-import edit from "../../../../../public/edit.png";
-import UserForm from "../../../../components/personal/UserForm";
+import frame from "../../../../public/frame.png";
+import dummy from "../../../../public/dummy-image.png";
+import edit from "../../../../public/edit.png";
+import UserForm from "../../../components/personal/UserForm";
 
 const Profile = () => {
   const fileInputRef = useRef(null);

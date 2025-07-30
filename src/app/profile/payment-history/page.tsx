@@ -1,12 +1,12 @@
 import React from "react";
-import empty from '../../../../../public/emty.png'
+import empty from '../../../../public/emty.png'
 import Image from "next/image";
 const PaymentHistory = () => {
   return (
-    <div>
+    <div className="">
       <div className="overflow-x-auto">
         <table className="table-auto w-full border-collapse">
-          <tr className="bg-gradient-to-r from-[#7D0000] to-[#973333] text-white flex p-2  md:gap-18 md:px-10  mt-2 text-left ">
+          <tr className="bg-gradient-to-r from-[#7D0000] to-[#973333] text-white text-xs md:text-sm flex p-2  md:gap-18 md:px-10  mt-2 text-left ">
             <th className=" border-r-1 border-white md:border-none">SI. No.</th>
             <th className=" border-r-1 border-white md:border-none">Transaction ID</th>
             <th className=" border-r-1 border-white md:border-none">Transaction Date</th>

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import fetchWithAuth from "../../../../lib/fetchWithAuth";
-import bel from "../../../../../public/bell.png";
+import fetchWithAuth from "../../../lib/fetchWithAuth";
+import bel from "../../../../public/bell.png";
 import Image from "next/image";
 
 const Notifications = () => {
