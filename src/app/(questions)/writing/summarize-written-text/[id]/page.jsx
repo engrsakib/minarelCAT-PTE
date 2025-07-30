@@ -187,6 +187,31 @@ export default function RepeatSentencePage({ params }) {
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
+  // Function to speak the clicked word
+  const speakWord = (word) => {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(word);
+      utterance.lang = 'en-US';
+      speechSynthesis.speak(utterance);
+    } else {
+      console.log('Text-to-speech not supported in this browser');
+    }
+  };
+
+  // Render prompt text with interactive words
+  const renderPromptText = (text) => {
+    return text.split(/\s+/).map((word, index) => (
+      <span 
+        key={index}
+        className="word hover:text-red-600 transition-colors cursor-pointer"
+        onClick={() => speakWord(word)}
+        style={{ display: 'inline-block', marginRight: '4px' }}
+      >
+        {word}
+      </span>
+    ));
+  };
+
   if (loading || !question) {
     return (
       <div className="flex justify-center items-center min-h-[40vh]">
@@ -198,7 +223,7 @@ export default function RepeatSentencePage({ params }) {
   return (
     <div className="w-full lg:w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
       <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
-        Respond to a Situation (Writing)
+        Summarize Spoken Text (Writing)
       </div>
       <p className="text-gray-700 mb-6">
         Read a description of a situation. You will have{" "}
@@ -227,7 +252,7 @@ export default function RepeatSentencePage({ params }) {
       </div>
       {/* Prompt */}
       <div className="border border-[#810000] rounded p-4 mb-4 bg-white text-gray-900 whitespace-pre-line">
-        {question.prompt}
+        {renderPromptText(question.prompt)}
       </div>
       {/* Writing Box */}
       <div className="border border-[#810000] rounded p-0 mb-3 bg-[#faf9f9] flex flex-col items-stretch relative">
@@ -292,6 +317,9 @@ export default function RepeatSentencePage({ params }) {
         textarea:disabled {
           background: #f5f5f5;
           color: #aaa;
+        }
+        .word:hover {
+          color: #810000 !important;
         }
       `}</style>
 

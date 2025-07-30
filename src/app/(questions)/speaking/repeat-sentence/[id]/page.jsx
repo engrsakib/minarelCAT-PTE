@@ -2,14 +2,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
 import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
-import AudioPlayer from "../../../../../components/audio/AudioPlayer";
+// import AudioPlayer from "../../../../../components/audio/AudioPlayer";
 import MicRecorder from "mic-recorder-to-mp3";
 
 // Constants
-const RECORD_SECONDS = 40; // Answer time
-const PREPARE_SECONDS = 35; // Preparation time before answer
+const RECORD_SECONDS = 40;
 
 export default function RepeatSentencePage({ params }) {
   const { id } = params;
@@ -21,8 +19,6 @@ export default function RepeatSentencePage({ params }) {
   const [loading, setLoading] = useState(true);
 
   // Timers
-  const [prepTime, setPrepTime] = useState(PREPARE_SECONDS);
-  const [isThinking, setIsThinking] = useState(true);
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
@@ -32,8 +28,13 @@ export default function RepeatSentencePage({ params }) {
   const [audioPlaying, setAudioPlaying] = useState(false);
   const audioRef = useRef();
 
-  // Mic Recorder instance
+  // Mic Recorder instance (MUST be initialized in useEffect or on first use)
   const recorder = useRef(null);
+
+  // Recorder initialization
+  useEffect(() => {
+    recorder.current = new MicRecorder({ bitRate: 128 });
+  }, []);
 
   // Fetch the question
   useEffect(() => {
@@ -47,8 +48,6 @@ export default function RepeatSentencePage({ params }) {
         setQuestion(null);
       }
       setLoading(false);
-      setPrepTime(PREPARE_SECONDS);
-      setIsThinking(true);
       setTimeLeft(RECORD_SECONDS);
       setAudioBlob(null);
       setIsRecording(false);
@@ -56,23 +55,6 @@ export default function RepeatSentencePage({ params }) {
     getQuestion();
     // eslint-disable-next-line
   }, [id]);
-
-  // Prepare/Thinking timer logic
-  useEffect(() => {
-    if (!isThinking) return;
-    if (prepTime === 0) {
-      setIsThinking(false);
-      setTimeout(() => {
-        if (audioRef.current) {
-          audioRef.current.currentTime = 0;
-          audioRef.current.play();
-        }
-      }, 500); // small delay after prep
-      return;
-    }
-    timerRef.current = setTimeout(() => setPrepTime((t) => t - 1), 1000);
-    return () => clearTimeout(timerRef.current);
-  }, [isThinking, prepTime]);
 
   // Answer timer logic
   useEffect(() => {
@@ -92,28 +74,35 @@ export default function RepeatSentencePage({ params }) {
   };
   const handleAudioEnded = () => {
     setAudioPlaying(false);
-    setIsRecording(true);
-    setTimeLeft(RECORD_SECONDS);
   };
 
   // Start recording function
-  const startRecording = () => {
-    if (recorder.current) {
-      recorder.current.start().then(() => {
-        setIsRecording(true);
-        setAudioBlob(null);
-        setTimeLeft(RECORD_SECONDS);
-      });
+  const startRecording = async () => {
+    try {
+      if (!recorder.current) {
+        recorder.current = new MicRecorder({ bitRate: 128 });
+      }
+      await recorder.current.start();
+      setIsRecording(true);
+      setAudioBlob(null);
+      setTimeLeft(RECORD_SECONDS);
+    } catch (err) {
+      alert("Microphone access denied or not supported.");
+      setIsRecording(false);
     }
   };
 
   // Stop recording function
-  const stopRecording = () => {
+  const stopRecording = async () => {
     if (recorder.current) {
-      recorder.current.stop().getMp3().then(([buffer, blob]) => {
+      try {
+        const [buffer, blob] = await recorder.current.stop().getMp3();
         setAudioBlob(blob);
         setIsRecording(false);
-      });
+      } catch {
+        setAudioBlob(null);
+        setIsRecording(false);
+      }
     }
   };
 
@@ -149,19 +138,11 @@ export default function RepeatSentencePage({ params }) {
         {question.heading}
       </div>
       <p className="text-gray-700 mb-6">
-        Listen to and read a description of a situation. You will have 35
-        seconds to think about your answer. Then you will hear a beep. You will
-        have 40 seconds to answer the question. <br />
+        Listen to and read a description of a situation. You will have 40 seconds to answer the question. <br />
         Please answer as completely as you can.
       </p>
-      {/* Timer */}
-      <div className="mb-2 text-[#810000] font-medium text-base">
-        Beginning in{" "}
-        <span className="font-bold">{isThinking ? prepTime : "0"}</span> sec
-      </div>
       {/* Audio Player */}
       <div className="border border-[#810000] rounded p-4 mb-4 bg-[#faf9f9] flex flex-col items-center">
-        {/* Use audioUrl from DB */}
         {question.audioUrl && (
           <audio
             ref={audioRef}
@@ -179,6 +160,13 @@ export default function RepeatSentencePage({ params }) {
       </div>
       {/* Audio Recorder */}
       <div className="border border-[#810000] rounded p-4 mb-6 bg-[#faf9f9] flex flex-col items-center">
+        <div>
+          {isRecording ? (
+            <div>Recording... Speak now</div>
+          ) : (
+            <div>Click Start to record</div>
+          )}
+        </div>
         <div className="flex items-center w-full gap-2 mt-2">
           <span className="text-xs text-gray-600">
             {new Date((RECORD_SECONDS - timeLeft) * 1000)
@@ -228,23 +216,14 @@ export default function RepeatSentencePage({ params }) {
           </button>
           <button
             className="flex items-center gap-1 px-4 py-1 rounded bg-[#810000] text-white font-medium text-sm hover:bg-[#5d0000] disabled:bg-gray-300 disabled:text-gray-400"
-            onClick={() => {
-              if (!isRecording && timeLeft > 0 && !isThinking) {
-                setTimeLeft(RECORD_SECONDS);
-                setAudioBlob(null);
-                setIsRecording(true);
-                startRecording();
-              }
-            }}
-            disabled={
-              isRecording || timeLeft === 0 || isThinking || audioPlaying
-            }
+            onClick={startRecording}
+            disabled={isRecording || timeLeft === 0 || audioPlaying}
           >
             <span>Start</span>
           </button>
           <button
             className="flex items-center gap-1 px-4 py-1 rounded bg-gray-500 text-white font-medium text-sm hover:bg-gray-700 disabled:bg-gray-300 disabled:text-gray-400"
-            onClick={() => stopRecording()}
+            onClick={stopRecording}
             disabled={!isRecording}
           >
             <span>Stop</span>
