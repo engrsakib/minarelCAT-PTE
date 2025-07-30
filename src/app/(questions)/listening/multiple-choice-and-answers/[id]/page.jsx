@@ -1,5 +1,5 @@
 "use client";
-import  { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
 import {
@@ -14,6 +14,10 @@ import AudioPlayer from "../../../../../components/audio/AudioPlayer";
 const RECORD_SECONDS = 599;
 
 export default function DynamicPage({ params }) {
+  const [serverResponse, setServerResponse] = useState({});
+
+  console.log("=========Server Response============", serverResponse);
+
   const { id } = params;
   const router = useRouter();
   const baseURL = process.env.NEXT_PUBLIC_URL;
@@ -21,9 +25,10 @@ export default function DynamicPage({ params }) {
   // State
   const [currentQ, setCurrentQ] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   //==================Modal States======================
-  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Timer
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);
@@ -90,6 +95,7 @@ export default function DynamicPage({ params }) {
 
   // Submit handler
   const handleSubmit = async () => {
+    setIsSubmitting(true);
     if (!currentQ || selected.length === 0) return;
     const selectedAnswers = selected.map((eachId) => currentQ.options[eachId]);
     const payload = {
@@ -98,7 +104,7 @@ export default function DynamicPage({ params }) {
     };
 
     try {
-      await fetchWithAuth(
+      const response = await fetchWithAuth(
         `${baseURL}/test/listening/multiple-choice-multiple-answers/result`,
         {
           method: "POST",
@@ -106,10 +112,10 @@ export default function DynamicPage({ params }) {
           body: JSON.stringify(payload),
         }
       );
-      alert("Your answer has been submitted! (Demo: backend response not shown)");
-    } catch (e) {
-      alert("Something went wrong! Try again.");
-    }
+      setServerResponse(await response.json());
+      setIsSubmitting(true);
+      setIsModalOpen(!isModalOpen);
+    } catch (e) {}
   };
 
   // Format MM:SS
@@ -129,6 +135,35 @@ export default function DynamicPage({ params }) {
 
   return (
     <div className="w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
+      {/* ===========================Modal Contents starts here======================== */}
+
+      <Modal
+        isModalOpen={isModalOpen}
+        setIsModalOpen={() => setIsModalOpen(!isModalOpen)}
+      >
+        <div className="size-80 bg-white rounded-2xl flex flex-col gap-2 justify-center items-center">
+          <h1 className="text-3xl font-semibold text-[#660303]">🎉 Results</h1>
+          <p>
+            <span className="font-bold">Score:</span>{" "}
+            {serverResponse?.result?.score}
+          </p>
+          <p>
+            <span className="font-bold">Total Correct Answer:</span>{" "}
+            {serverResponse?.result?.totalCorrectAnswers}
+          </p>
+          <p>
+            <span className="font-bold">Correct Answers Give:</span>{" "}
+            {serverResponse?.result?.correctAnswersGiven.toString()}
+          </p>
+          <p>
+            <span className="font-bold">Feedback:</span>{" "}
+            {serverResponse?.feedback}
+          </p>
+        </div>
+      </Modal>
+
+      {/* ===========================Modal Contents starts here======================== */}
+
       <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
         Multiple Choice &amp; Multiple answer
       </div>
@@ -226,7 +261,7 @@ export default function DynamicPage({ params }) {
           onClick={handleSubmit}
           disabled={selected.length === 0 || timeLeft === 0}
         >
-          Submit
+          {isSubmitting?"Submitting...":"Submit"}
         </button>
       </div>
       {/* If you want to show modal or pagination, add here if needed */}

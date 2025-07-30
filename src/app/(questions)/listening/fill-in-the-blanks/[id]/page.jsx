@@ -21,9 +21,11 @@ export default function DynamicPage({ params }) {
   // State
   const [currentQ, setCurrentQ] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [serverResponse, setServerResponse] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   //==================Modal States======================
-  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Timer
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);
@@ -90,17 +92,21 @@ export default function DynamicPage({ params }) {
       questionId: currentQ._id,
       selectedAnswers: answers,
     };
-
     try {
-      await fetchWithAuth("/test/listening-fill-in-the-blanks/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      alert("Your answer has been submitted! (Demo: backend response not shown)");
-    } catch (e) {
-      alert("Something went wrong! Try again.");
-    }
+      setIsSubmitting(true);
+      const response = await fetchWithAuth(
+        `${baseUrl}/test/listening/listening-fill-in-the-blanks/result`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+      const result = await response.json();
+      setServerResponse(result);
+      setIsSubmitting(false);
+      setIsModalOpen(!isModalOpen);
+    } catch (e) {}
   };
 
   // Format MM:SS
@@ -154,13 +160,20 @@ export default function DynamicPage({ params }) {
         <div className="size-80 bg-white rounded-2xl flex flex-col gap-2 justify-center items-center">
           <h1 className="text-3xl font-semibold text-[#660303]">🎉 Results</h1>
           <p>
-            <span className="font-bold">Score:</span> 3
+            <span className="font-bold">Score:</span>{" "}
+            {serverResponse?.result?.score}
           </p>
           <p>
-            <span className="font-bold">Total Correct Answer:</span> 3
+            <span className="font-bold">Total Correct Answer:</span>{" "}
+            {serverResponse?.result?.totalCorrectAnswers}
           </p>
           <p>
-            <span className="font-bold">Feedback:</span> You scored 3 out of 3.
+            <span className="font-bold">Correct Answers Give:</span>{" "}
+            {serverResponse?.result?.correctAnswersGiven.toString()}
+          </p>
+          <p>
+            <span className="font-bold">Feedback:</span>{" "}
+            {serverResponse?.feedback}
           </p>
         </div>
       </Modal>
@@ -170,7 +183,8 @@ export default function DynamicPage({ params }) {
         Listening Fill in the Blanks
       </div>
       <p className="text-gray-700 mb-6">
-        Listen to the audio and fill in the blanks in the passage by selecting the correct answer for each blank.
+        Listen to the audio and fill in the blanks in the passage by selecting
+        the correct answer for each blank.
       </p>
       {/* Question Heading */}
       <div className="flex items-center gap-2 mb-4">
@@ -196,68 +210,69 @@ export default function DynamicPage({ params }) {
       )}
       {/* Prompt with answer dropdowns (if marker present) */}
       <div className="border border-[#810000] rounded bg-[#faf9f9] p-5 mb-4 text-gray-900 text-base whitespace-pre-line">
-        {splitParts.length > 1 && blanks.length > 0
-          ? splitParts.map((part, i) => (
-              <React.Fragment key={i}>
-                {part}
-                {i < blanks.length && (
-                  <span className="inline-block align-middle mx-1">
-                    <select
-                      value={answers[i] || ""}
-                      onChange={handleAnswerChange(i)}
-                      className="border border-[#810000] bg-white rounded px-2 py-1 text-[#810000] font-semibold focus:outline-none focus:ring-2 focus:ring-[#810000] appearance-none mb-1"
-                      style={{
-                        backgroundImage:
-                          "url(\"data:image/svg+xml;charset=UTF-8,%3Csvg width='24' height='24' fill='none' stroke='%23810000' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
-                        backgroundPosition: "right 0.75rem center",
-                        backgroundRepeat: "no-repeat",
-                        backgroundSize: "1em",
-                      }}
-                    >
-                      <option value="">Select answer</option>
-                      {blanks[i]?.options.map((opt, j) => (
-                        <option key={j} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
+        {splitParts.length > 1 && blanks.length > 0 ? (
+          splitParts.map((part, i) => (
+            <React.Fragment key={i}>
+              {part}
+              {i < blanks.length && (
+                <span className="inline-block align-middle mx-1">
+                  <select
+                    value={answers[i] || ""}
+                    onChange={handleAnswerChange(i)}
+                    className="border border-[#810000] bg-white rounded px-2 py-1 text-[#810000] font-semibold focus:outline-none focus:ring-2 focus:ring-[#810000] appearance-none mb-1"
+                    style={{
+                      backgroundImage:
+                        "url(\"data:image/svg+xml;charset=UTF-8,%3Csvg width='24' height='24' fill='none' stroke='%23810000' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
+                      backgroundPosition: "right 0.75rem center",
+                      backgroundRepeat: "no-repeat",
+                      backgroundSize: "1em",
+                    }}
+                  >
+                    <option value="">Select answer</option>
+                    {blanks[i]?.options.map((opt, j) => (
+                      <option key={j} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                </span>
+              )}
+            </React.Fragment>
+          ))
+        ) : (
+          // fallback: just show prompt, blanks options below
+          <div>
+            <span>{prompt}</span>
+            <div className="mt-4 flex flex-col gap-2">
+              {blanks.map((blank, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="font-bold text-[#810000] mr-1">
+                    {String.fromCharCode(97 + i)}){/* (a), (b), ... */}
                   </span>
-                )}
-              </React.Fragment>
-            ))
-          : // fallback: just show prompt, blanks options below
-            <div>
-              <span>{prompt}</span>
-              <div className="mt-4 flex flex-col gap-2">
-                {blanks.map((blank, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <span className="font-bold text-[#810000] mr-1">
-                      {String.fromCharCode(97 + i)}){/* (a), (b), ... */}
-                    </span>
-                    <select
-                      value={answers[i] || ""}
-                      onChange={handleAnswerChange(i)}
-                      className="border border-[#810000] bg-white rounded px-2 py-1 text-[#810000] font-semibold focus:outline-none focus:ring-2 focus:ring-[#810000] appearance-none mb-1"
-                      style={{
-                        backgroundImage:
-                          "url(\"data:image/svg+xml;charset=UTF-8,%3Csvg width='24' height='24' fill='none' stroke='%23810000' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
-                        backgroundPosition: "right 0.75rem center",
-                        backgroundRepeat: "no-repeat",
-                        backgroundSize: "1em",
-                      }}
-                    >
-                      <option value="">Select answer</option>
-                      {blank.options.map((opt, j) => (
-                        <option key={j} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                ))}
-              </div>
+                  <select
+                    value={answers[i] || ""}
+                    onChange={handleAnswerChange(i)}
+                    className="border border-[#810000] bg-white rounded px-2 py-1 text-[#810000] font-semibold focus:outline-none focus:ring-2 focus:ring-[#810000] appearance-none mb-1"
+                    style={{
+                      backgroundImage:
+                        "url(\"data:image/svg+xml;charset=UTF-8,%3Csvg width='24' height='24' fill='none' stroke='%23810000' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
+                      backgroundPosition: "right 0.75rem center",
+                      backgroundRepeat: "no-repeat",
+                      backgroundSize: "1em",
+                    }}
+                  >
+                    <option value="">Select answer</option>
+                    {blank.options.map((opt, j) => (
+                      <option key={j} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ))}
             </div>
-        }
+          </div>
+        )}
       </div>
       {/* Controls */}
       <div className="flex gap-3 mb-2 mt-3">
@@ -277,7 +292,7 @@ export default function DynamicPage({ params }) {
           onClick={handleSubmit}
           disabled={answers.some((a) => !a) || timeLeft === 0}
         >
-          Submit
+          {isSubmitting ? "Submitting..." : "Submit"}
         </button>
       </div>
       {/* Pagination: not used but kept for consistency */}
