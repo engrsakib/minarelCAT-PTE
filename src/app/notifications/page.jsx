@@ -118,9 +118,9 @@ export default function NotificationBell({
                 No notifications!
               </li>
             ) : (
-              notificationData.map((n) => (
+              notificationData.map((n,index) => (
                 <li
-                  key={n.id}
+                  key={index}
                   className={`
                     mb-3 last:mb-0 p-5 border border-gray-100 shadow-sm bg-white
                     flex items-start gap-3

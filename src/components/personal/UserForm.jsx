@@ -2,13 +2,15 @@
 import React, { useState } from "react";
 import fetchWithAuth from "../../lib/fetchWithAuth";
   import { ToastContainer, toast } from 'react-toastify';
-export default function UserForm({ data }) {
+export default function UserForm({ data ,onUpdateSuccess}) {
   const [changePass, setChangePass] = useState(false);
   const baseUrl = process.env.NEXT_PUBLIC_URL;
 
-   
+    console.log("user id from form : ",data._id);
+    
 
   const [formData, setFormData] = useState({
+    _id: data._id,
     name: data.name || "",
     phoneCountry: "Bangladesh",
     phone: data.phone || "",
@@ -28,42 +30,74 @@ export default function UserForm({ data }) {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (formData.newPassword === formData.confirmPassword) {
-      setChangePass(false);
+  if (changePass && formData.newPassword !== formData.confirmPassword) {
+    toast.error("Passwords are not matching");
+    return;
+  }
 
-      setFormData((prev) => ({
-        ...prev,
-        password: formData.newPassword,
-        newPassword: "",
-        confirmPassword: "",
-      }));
-    } else {
-      toast.error("Passwords are not matching")
-      setChangePass(true);
+  // Build object with only changed fields
+  const changedFields = {};
+
+  if (formData.name !== data.name) changedFields.name = formData.name;
+  if (formData.phone !== data.phone) changedFields.phone = formData.phone;
+  if (formData.phoneCountry !== (data.phoneCountry || "Bangladesh")) changedFields.phoneCountry = formData.phoneCountry;
+  if (formData.city !== data.city) changedFields.city = formData.city;
+  if (formData.email !== data.email) changedFields.email = formData.email;
+
+  
+
+  if (changePass && formData.newPassword) {
+    changedFields.password = formData.newPassword;
+  }
+
+  // If nothing changed, show info toast and exit
+  if (Object.keys(changedFields).length === 0) {
+    toast.info("No changes detected.");
+    return;
+  }
+
+  changedFields._id = formData._id; // Always include _id
+
+  try {
+    const response = await fetchWithAuth(`${baseUrl}/user/update-user`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(changedFields),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
     }
-    try {
-      const response = await fetchWithAuth(`${baseUrl}/user/update-user`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
+    const result = await response.json();
+    toast.success("Updated successfully");
+    toast.success("Profile updated successfully!");
 
-      const result = await response.json();
-      console.log("Update success:", result);
-      toast.success("Profile updated successfully!");
-    } catch (error) {
-      console.error("Update failed:", error);
-      toast.error("Update failed. Please try again.");
-    }
-  };
+    // Reset password fields
+    setFormData((prev) => ({
+      ...prev,
+      newPassword: "",
+      confirmPassword: "",
+    }));
+    setChangePass(false);
+  } catch (error) {
+    console.error("Update failed:", error);
+    toast.error("Update failed. Please try again.");
+  }
+   
+  if (onUpdateSuccess) {
+    e.preventDefault()
+    toast.success("Updated successfully");
+  await onUpdateSuccess();
+  
+}
+};
+
+
 
   return (
     <div>

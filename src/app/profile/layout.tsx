@@ -33,6 +33,11 @@ const Layout = ({
     }
   }, [lastSegment]);
 
+//   function logout(){
+//     localStorage.removeItem('refreshToken');
+// window.location.href = '/';
+//   }
+
 
   return (
     <div className='mx-10  md:mx-80 mt-5 md:mt-15'>
@@ -67,7 +72,7 @@ const Layout = ({
                <Link className={`${lastSegment === "payment-history" ? "text-[#EF0000]" : ""}`} href="/profile/payment-history">Payment History</Link>
                <Link className={`${lastSegment === "notifications" ? "text-[#EF0000]" : ""}`} href="/profile/notifications">Notification   </Link> 
                 
-               <button className='flex justify-start'>Log Out</button>
+               {/* <button onClick={logout} className='flex justify-start'>Log Out</button> */}
             </div>
             {children}
         </div> 
