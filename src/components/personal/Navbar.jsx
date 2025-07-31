@@ -70,32 +70,32 @@ const [notificationData, setNotificationData] = useState(null);
         }
       }
     },
-    [page, readIds]
+    []
   );
 
-    useEffect(() => {
-      const fetchUserData = async () => {
-        try {
+    // useEffect(() => {
+    //   const fetchUserData = async () => {
+    //     try {
           
-          const response = await fetchWithAuth(
-            `${baseUrl}/user/notification?page=1&limit=10`
-          );
+    //       const response = await fetchWithAuth(
+    //         `${baseUrl}/user/notification?page=1&limit=10`
+    //       );
   
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
+    //       if (!response.ok) {
+    //         throw new Error(`HTTP error! status: ${response.status}`);
+    //       }
   
-          const data = await response.json();
-          setNotificationData(data.data);
-        } catch (error) {
-          console.error("Error fetching user info:", error);
-        } finally {
+    //       const data = await response.json();
+    //       setNotificationData(data.data);
+    //     } catch (error) {
+    //       console.error("Error fetching user info:", error);
+    //     } finally {
           
-        }
-      };
+    //     }
+    //   };
   
-      if (baseUrl) fetchUserData();
-    }, [baseUrl]);
+    //   if (baseUrl) fetchUserData();
+    // }, []);
   
   
   // Initial load & periodic poll
