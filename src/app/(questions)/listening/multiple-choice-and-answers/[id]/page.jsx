@@ -8,7 +8,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import AudioPlayer from "../../../../../components/audio/AudioPlayer";
+
 
 // 9:59 minutes in seconds
 const RECORD_SECONDS = 599;

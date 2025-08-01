@@ -13,7 +13,6 @@ import { IoNotificationsOutline } from "react-icons/io5";
 import fetchWithAuth from "../../lib/fetchWithAuth";
 import NotificationBell from "@/app/notifications/page";
 
-// FAKE NOTIFICATIONS fallback
 const FAKE_NOTIFICATIONS = Array.from({ length: 30 }, (_, i) => ({
   id: "fake-" + (i + 1),
   message: `This is a sample notification #${i + 1}`,
@@ -36,6 +35,36 @@ export default function Navbar() {
   const [notifLoading, setNotifLoading] = useState(false);
   const panelRef = useRef(null);
 
+  // Hide everything above navbar on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const nav = document.getElementById("navbar-sticky");
+      if (nav) {
+        if (window.scrollY > 0) {
+          // Remove anything above navbar by setting a solid bg and z-index
+          nav.style.background = "#fff";
+          nav.style.boxShadow = "0 2px 16px 0 rgba(0,0,0,0.06)";
+        } else {
+          nav.style.background = "#fff";
+          nav.style.boxShadow = "0 2px 16px 0 rgba(0,0,0,0.06)";
+        }
+      }
+      // Hide absolutely everything above navbar
+      const hideAbove = document.getElementById("hide-above-navbar");
+      if (hideAbove) {
+        if (window.scrollY > 0) {
+          hideAbove.style.display = "none";
+        } else {
+          hideAbove.style.display = "";
+        }
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    // Initial check in case already scrolled
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   // Fetch notifications (server or fake)
   const loadNotifications = useCallback(
     async (initial = false) => {
@@ -50,7 +79,6 @@ export default function Navbar() {
         if (initial) {
           setNotifications(fetched);
           setPage(1);
-          // নতুন আইডি চেক (শুধু যেগুলো readIds-এ নেই)
           let newIds = fetched.map((n) => n.id);
           let newCount = newIds.filter(id => !readIds.includes(id)).length;
           setUnreadCount(newCount);
@@ -71,7 +99,6 @@ export default function Navbar() {
     [page, readIds]
   );
 
-  // Initial load & periodic poll
   useEffect(() => {
     loadNotifications(true);
     const interval = setInterval(() => loadNotifications(true), 30000);
@@ -109,12 +136,10 @@ export default function Navbar() {
     }, 800);
   };
 
-  // Bell button click: open panel, mark all current notifications as read
   const handleNotifClick = () => {
     setNotifOpen(true);
     setReadIds(notifications.map(n => n.id));
     setUnreadCount(0);
-    // fetchWithAuth("/api/notifications/mark-read", { method: "POST" });
   };
   const handleNotifClose = () => setNotifOpen(false);
 
@@ -122,7 +147,17 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="flex items-center gap-x-7 justify-between lg:h-[110px]  border border-red-700 p-4 md:p-10 rounded-full mt-7 lg:w-[80%] w-[95%] mx-auto sticky top-14 z-50 bg-white shadow-lg">
+      {/* Add this div to easily hide anything above navbar if needed */}
+      <div id="hide-above-navbar"></div>
+      <header
+        id="navbar-sticky"
+        className="flex items-center gap-x-7 justify-between lg:h-[110px] border border-red-700 p-4 md:p-10 rounded-full mt-7 lg:w-[80%] w-[95%] mx-auto sticky top-0 z-[100] bg-white shadow-lg transition-all duration-300"
+        style={{
+          // Ensures the header always stays at the top and covers everything above on scroll
+          left: 0,
+          right: 0,
+        }}
+      >
         {/* logo */}
         <div>
           <Logo />
@@ -163,7 +198,6 @@ export default function Navbar() {
               <span className={`absolute -top-2 -right-2 bg-[#7D0000] text-white text-xs font-bold rounded-full p-1 w-5 h-5 ${unreadCount === 0 ? "hidden" : ""}`}>{unreadCount}</span>
               <IoNotificationsOutline />
             </div>
-            {/* ড্রপডাউন প্যানেল */}
             <NotificationBell
               open={notifOpen}
               setOpen={setNotifOpen}
