@@ -2,7 +2,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 // import AudioPlayer from "../../../../../components/audio/AudioPlayer";
 import MicRecorder from "mic-recorder-to-mp3";
 
@@ -17,6 +22,10 @@ export default function RepeatSentencePage({ params }) {
   // State
   const [question, setQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [serverResponse, setServerResponse] = useState({});
+  console.log("SERVER RESPONSE===============>", serverResponse);
+  //=============Modal State==========================
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Timers
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);
@@ -87,7 +96,6 @@ export default function RepeatSentencePage({ params }) {
       setAudioBlob(null);
       setTimeLeft(RECORD_SECONDS);
     } catch (err) {
-      alert("Microphone access denied or not supported.");
       setIsRecording(false);
     }
   };
@@ -113,14 +121,16 @@ export default function RepeatSentencePage({ params }) {
     formData.append("voice", audioBlob, "voice.mp3");
     formData.append("questionId", question._id);
     try {
-      await fetchWithAuth("/test/speaking/repeat_sentence/submit", {
-        method: "POST",
-        body: formData,
-      });
-      alert("Your answer has been submitted! (Demo: backend response not shown)");
-    } catch (e) {
-      alert("Something went wrong! Try again.");
-    }
+      const response = await fetchWithAuth(
+        `${baseUrl}/test/speaking/repeat_sentence/result`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      setServerResponse(await response.json());
+      setIsModalOpen(!isModalOpen);
+    } catch (e) {}
   };
 
   if (loading || !question) {
@@ -133,12 +143,72 @@ export default function RepeatSentencePage({ params }) {
 
   return (
     <div className="w-full lg:w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
+      {/* =========================Modal Contents starts here=============== */}
+      <Modal
+        isModalOpen={isModalOpen}
+        setIsModalOpen={() => setIsModalOpen(!isModalOpen)}
+      >
+        <div className="size-96 bg-white rounded-2xl flex flex-col gap-2 justify-center items-center ">
+          <h1 className="text-3xl font-semibold text-[#660303]">🎉 Results</h1>
+          <p>
+            <span className="font-bold">Average Words: </span>
+            {serverResponse?.averageWords}
+          </p>
+
+          <p>
+            <span className="font-bold">Bad Words: </span>
+            {serverResponse?.badWords}
+          </p>
+
+          <p>
+            <span className="font-bold">Content: </span>
+            {serverResponse?.content}
+          </p>
+
+          <p>
+            <span className="font-bold">Fluency: </span>
+            {serverResponse?.fluency}
+          </p>
+
+          <p>
+            <span className="font-bold">Good Words: </span>
+            {serverResponse?.goodWords}
+          </p>
+
+          <p>
+            <span className="font-bold">Listening Score: </span>
+            {serverResponse?.listeningScore}
+          </p>
+
+          <p>
+            <span className="font-bold">Predicted Text: </span>
+            {serverResponse?.predictedText}
+          </p>
+
+          <p>
+            <span className="font-bold">Pronunciation: </span>
+            {serverResponse?.pronunciation}
+          </p>
+
+          <p>
+            <span className="font-bold">Speaking Score: </span>
+            {serverResponse?.speakingScore}
+          </p>
+
+          <p>
+            <span className="font-bold">Total Words: </span>
+            {serverResponse?.totalWords}
+          </p>
+        </div>
+      </Modal>
+      {/* =========================Modal Contents ends here=============== */}
       {/* Title/Heading */}
       <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
         {question.heading}
       </div>
       <p className="text-gray-700 mb-6">
-        Listen to and read a description of a situation. You will have 40 seconds to answer the question. <br />
+        Listen to and read a description of a situation. You will have 40
+        seconds to answer the question. <br />
         Please answer as completely as you can.
       </p>
       {/* Audio Player */}
@@ -233,3 +303,36 @@ export default function RepeatSentencePage({ params }) {
     </div>
   );
 }
+
+//===========================Modal Component=================
+const Modal = ({ isModalOpen, children, setIsModalOpen }) => {
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = "hidden"; // Disable scrolling
+    } else {
+      document.body.style.overflow = "auto"; // Enable scrolling again
+    }
+
+    return () => {
+      document.body.style.overflow = "auto"; // Cleanup function in case modal unmounts
+    };
+  }, [isModalOpen]);
+  return (
+    <div
+      onClick={setIsModalOpen}
+      className={`${
+        isModalOpen
+          ? "h-dvh w-full fixed inset-0 z-50 bg-black/50 flex flex-col justify-center items-center"
+          : "hidden"
+      }`}
+    >
+      <div
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+};

@@ -1,9 +1,7 @@
 "use client";
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
-import AudioPlayer from "../../../../../components/audio/AudioPlayer";
 import MicRecorder from "mic-recorder-to-mp3";
 
 // Constants
@@ -17,6 +15,9 @@ export default function RepeatSentencePage({ params }) {
   // State
   const [question, setQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [result, setResult] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   // Timers
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);
@@ -72,6 +73,7 @@ export default function RepeatSentencePage({ params }) {
   const handleAudioPlay = () => {
     setAudioPlaying(true);
   };
+
   const handleAudioEnded = () => {
     setAudioPlaying(false);
   };
@@ -109,17 +111,29 @@ export default function RepeatSentencePage({ params }) {
   // Submit handler
   const handleSubmit = async () => {
     if (!audioBlob || !question) return;
+
+    setSubmitLoading(true); // Start loading
+
     const formData = new FormData();
     formData.append("voice", audioBlob, "voice.mp3");
     formData.append("questionId", question._id);
+    formData.append("accent", "us");
+
     try {
-      await fetchWithAuth("/test/speaking/repeat_sentence/submit", {
-        method: "POST",
-        body: formData,
-      });
-      alert("Your answer has been submitted! (Demo: backend response not shown)");
+      const response = await fetchWithAuth(
+        `${baseUrl}/test/speaking/respond-to-a-situation/result`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      const data = await response.json();
+      setResult(data);
+      setShowModal(true);
     } catch (e) {
       alert("Something went wrong! Try again.");
+    } finally {
+      setSubmitLoading(false); // End loading
     }
   };
 
@@ -138,9 +152,11 @@ export default function RepeatSentencePage({ params }) {
         {question.heading}
       </div>
       <p className="text-gray-700 mb-6">
-        Listen to and read a description of a situation. You will have 40 seconds to answer the question. <br />
+        Listen to and read a description of a situation. You will have 40
+        seconds to answer the question. <br />
         Please answer as completely as you can.
       </p>
+
       {/* Audio Player */}
       <div className="border border-[#810000] rounded p-4 mb-4 bg-[#faf9f9] flex flex-col items-center">
         {question.audioUrl && (
@@ -154,20 +170,14 @@ export default function RepeatSentencePage({ params }) {
           />
         )}
       </div>
+
       {/* Prompt */}
       <div className="border border-[#810000] rounded p-4 mb-4 bg-white text-gray-900 whitespace-pre-line">
         {question.prompt}
       </div>
+
       {/* Audio Recorder */}
       <div className="border border-[#810000] rounded p-4 mb-6 bg-[#faf9f9] flex flex-col items-center">
-        <div>
-          {/* Add audio recording button or use start recording */}
-          {isRecording ? (
-            <div>Recording... Speak now</div>
-          ) : (
-            <div>Click Start to record</div>
-          )}
-        </div>
         <div className="flex items-center w-full gap-2 mt-2">
           <span className="text-xs text-gray-600">
             {new Date((RECORD_SECONDS - timeLeft) * 1000)
@@ -195,6 +205,7 @@ export default function RepeatSentencePage({ params }) {
             ? "Recording complete"
             : "Click Start to record"}
         </div>
+
         {/* Controls */}
         <div className="flex gap-3 mt-4 flex-wrap">
           <button
@@ -211,9 +222,9 @@ export default function RepeatSentencePage({ params }) {
           <button
             className="flex items-center gap-1 px-4 py-1 rounded bg-[#810000] text-white font-medium text-sm hover:bg-[#5d0000] disabled:bg-gray-300 disabled:text-gray-400"
             onClick={handleSubmit}
-            disabled={!audioBlob}
+            disabled={!audioBlob || submitLoading}
           >
-            <span>Submit</span>
+            <span>{submitLoading ? "Submitting..." : "Submit"}</span>
           </button>
           <button
             className="flex items-center gap-1 px-4 py-1 rounded bg-[#810000] text-white font-medium text-sm hover:bg-[#5d0000] disabled:bg-gray-300 disabled:text-gray-400"
@@ -231,6 +242,97 @@ export default function RepeatSentencePage({ params }) {
           </button>
         </div>
       </div>
+
+      {/* Result Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-lg mx-4 p-6 animate-fadeIn">
+            <h2 className="text-2xl font-bold text-[#810000] mb-4 text-center">
+              Test Results
+            </h2>
+
+            {result?.success ? (
+              <div className="space-y-4">
+                {/* Scores */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-700">
+                      Speaking Score
+                    </p>
+                    <p className="text-base">{result.data.speakingScore}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-700">
+                      Reading Score
+                    </p>
+                    <p className="text-base">{result.data.readingScore}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-700">
+                      Content
+                    </p>
+                    <p className="text-base">{result.data.content}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-700">
+                      Fluency
+                    </p>
+                    <p className="text-base">{result.data.fluency}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-700">
+                      Pronunciation
+                    </p>
+                    <p className="text-base">{result.data.pronunciation}</p>
+                  </div>
+                </div>
+
+                {/* Word Analysis */}
+                <div className="mt-4">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    Word Analysis
+                  </h3>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-700">
+                        Good Words
+                      </p>
+                      <p className="text-base">{result.data.goodWords}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-700">
+                        Average Words
+                      </p>
+                      <p className="text-base">{result.data.averageWords}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-700">
+                        Bad Words
+                      </p>
+                      <p className="text-base">{result.data.badWords}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="text-red-600 text-center mt-4">
+                Error loading results. Please try again.
+              </p>
+            )}
+
+            {/* Close button */}
+            <div className="mt-6 text-center">
+              <button
+                className="px-6 py-2 bg-[#810000] text-white rounded-full hover:bg-[#5d0000] transition-all"
+                onClick={() => setShowModal(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style jsx>{`
         .dropdown-scroll::-webkit-scrollbar {
           width: 4px;
@@ -238,7 +340,7 @@ export default function RepeatSentencePage({ params }) {
         }
         .dropdown-scroll::-webkit-scrollbar-thumb {
           background: #dedede;
-          border-radius: 2px; 
+          border-radius: 2px;
         }
       `}</style>
     </div>

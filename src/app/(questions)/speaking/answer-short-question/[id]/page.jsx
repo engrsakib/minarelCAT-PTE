@@ -9,6 +9,7 @@ const AUDIO_DURATION = 35; // For the audio player bar (UI, not actual duration)
 
 export default function RepeatSentencePage({ params }) {
   const { id } = params;
+  
   const router = useRouter();
   const baseURL = process.env.NEXT_PUBLIC_URL;
 
@@ -18,7 +19,7 @@ export default function RepeatSentencePage({ params }) {
   const [serverResponse, setServerResponse] = useState({});
   //=============Modal State==========================
   const [isModalOpen, setIsModalOpen] = useState(false);
-  console.log("==========SERVER RESPONSE==========", serverResponse);
+  // console.log("==========SERVER RESPONSE==========", serverResponse);
 
   // Timer
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);

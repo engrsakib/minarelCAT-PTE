@@ -56,7 +56,7 @@ export default function LogIn() {
       localStorage.setItem("accessToken", response?.data?.accessToken);
       localStorage.setItem("refreshToken", response?.data?.refreshToken);
       //   navigate("/"); // Redirect to the home page or dashboard after successful login
-      window.location.href = "/"; // Using window.location.href for redirection
+      window.location.href = "/dashboard"; // Using window.location.href for redirection
     } catch (err) {
       console.error("Login error:", err);
       setError("Login failed. Please check your credentials.");
