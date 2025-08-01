@@ -9,7 +9,6 @@ const AUDIO_DURATION = 35; // For the audio player bar (UI, not actual duration)
 
 export default function RepeatSentencePage({ params }) {
   const { id } = params;
-  
   const router = useRouter();
   const baseURL = process.env.NEXT_PUBLIC_URL;
 
@@ -162,7 +161,7 @@ export default function RepeatSentencePage({ params }) {
           <h1 className="text-3xl font-semibold text-[#660303]">🎉 Results</h1>
           <p>
             <span className="font-bold">Enabling Skills: </span>
-            {serverResponse?.result["Enabling Skills"]}
+            {serverResponse?.result?.EnablingSkills}
           </p>
           <p>
             <span className="font-bold">Fluency: </span>
