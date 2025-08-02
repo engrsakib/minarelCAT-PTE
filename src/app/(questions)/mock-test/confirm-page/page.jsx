@@ -9,15 +9,16 @@ import resolution from "../../../../../public/resolution.png";
 import microphone from "../../../../../public/microphone.png";
 import keyboard from "../../../../../public/keyboard.png";
 import keyboardimg from "../../../../../public/keyboardimg.png";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation"
 const SingleMockTest = ({ params: paramsPromise }) => {
-  const { item_id } = React.use(paramsPromise);
-
+  
+const searchParams = useSearchParams();
+  const item_id = searchParams.get('item_id');
   const [consentGiven, setConsentGiven] = useState(false);
   const router = useRouter();
   const handleContinue = () => {
     if (consentGiven && item_id) {
-      router.push(`/mock-test/${item_id}/single-test`);
+      router.push(`/mock-test/confirm-page/${item_id}`);
     }
   };
 
