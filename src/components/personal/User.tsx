@@ -1,9 +1,6 @@
 import * as React from "react";
-import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
-
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -13,8 +10,7 @@ import Link from "next/link";
 import { logoutAndRedirect } from "@/lib/fetchWithAuth";
 import { RootUser } from "@/types/user";
 
-type Checked = DropdownMenuCheckboxItemProps["checked"];
-
+// FIX: Use portal for dropdown content, position above navbar
 export function User({
   user,
   loading,
@@ -24,10 +20,6 @@ export function User({
   loading: boolean;
   error: string | null;
 }) {
-  const [showStatusBar, setShowStatusBar] = React.useState<Checked>(true);
-  const [showActivityBar, setShowActivityBar] = React.useState<Checked>(false);
-  const [showPanel, setShowPanel] = React.useState<Checked>(false);
-
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -38,15 +30,15 @@ export function User({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className="flex items-center gap-2 cursor-pointer">
+        <button className="flex items-center gap-2 cursor-pointer bg-transparent border-none p-0 focus:outline-none">
           <Image
             src={user?.user?.profile || "/default-profile.png"}
             alt={user?.user?.name}
-            width={50}
-            height={50}
-            className="rounded-full"
+            width={70}
+            height={70}
+            className="rounded-full object-fill border-2 border-gray-200 shadow"
           />
-          <div className="flex flex-col">
+          <div className="flex flex-col text-left">
             <h1 className="text-[#7D0000] text-2xl font-[500]">
               {user?.user?.name.slice(0, 6)}
               {user?.user?.name?.length > 6 ? "..." : ""}
@@ -56,29 +48,35 @@ export function User({
               {user?.user?._id.length > 6 ? "..." : ""}
             </h1>
           </div>
-        </div>
+        </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56">
+      {/* Use 'forceMount' and 'portal' to ensure the dropdown is rendered in a portal above the navbar */}
+      <DropdownMenuContent
+        className="w-56 z-[9999] shadow-xl"
+        sideOffset={12}
+        align="end"
+        forceMount
+        portal
+      >
         <DropdownMenuSeparator />
-        <DropdownMenuCheckboxItem
-          checked={showStatusBar}
-          onCheckedChange={setShowStatusBar}
+        <Link
+          href="/dashboard"
+          className="block px-4 py-2 hover:bg-gray-100 rounded text-gray-800 font-medium transition-all duration-200"
         >
-          <Link href="/dashboard">Dashboard</Link>
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuCheckboxItem
-          checked={showActivityBar}
-          onCheckedChange={setShowActivityBar}
-          
+          Dashboard
+        </Link>
+        <Link
+          href="/profile"
+          className="block px-4 py-2 hover:bg-gray-100 rounded text-gray-800 font-medium transition-all duration-200"
         >
-          <Link href="/profile">Profile</Link>
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuCheckboxItem
-          checked={showPanel}
-          onCheckedChange={setShowPanel}
+          Profile
+        </Link>
+        <button
+          onClick={logoutAndRedirect}
+          className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded text-red-700 font-medium transition-all duration-200"
         >
-          <button onClick={logoutAndRedirect}>Logout</button>
-        </DropdownMenuCheckboxItem>
+          Logout
+        </button>
       </DropdownMenuContent>
     </DropdownMenu>
   );
