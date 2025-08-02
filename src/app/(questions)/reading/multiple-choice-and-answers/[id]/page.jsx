@@ -194,7 +194,7 @@ export default function DynamicPage({ params }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             questionId: currentQ._id,
-            selectedAnswers: selectedAnswers,
+            answer: selectedAnswers,
           }),
         }
       );
