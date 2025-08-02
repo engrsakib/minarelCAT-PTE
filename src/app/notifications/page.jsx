@@ -2,6 +2,35 @@
 import React, { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 
+// Helper: Convert ISO date to "x minutes ago" etc.
+function getTimeAgo(isoDate) {
+  if (!isoDate) return "";
+  const now = new Date();
+  const date = new Date(isoDate);
+  const diffMs = now - date;
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHr = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHr / 24);
+  const diffWeek = Math.floor(diffDay / 7);
+  const diffMonth = Math.floor(diffDay / 30); // Approximate
+  const diffYear = Math.floor(diffDay / 365); // Approximate
+
+  if (diffMin < 1) return "just now";
+  if (diffMin === 1) return "1 minute ago";
+  if (diffMin < 60) return `${diffMin} minutes ago`;
+  if (diffHr === 1) return "1 hour ago";
+  if (diffHr < 24) return `${diffHr} hours ago`;
+  if (diffDay === 1) return "1 day ago";
+  if (diffDay < 7) return `${diffDay} days ago`;
+  if (diffWeek === 1) return "1 week ago";
+  if (diffWeek < 4) return `${diffWeek} weeks ago`;
+  if (diffMonth === 1) return "1 month ago";
+  if (diffMonth < 12) return `${diffMonth} months ago`;
+  if (diffYear === 1) return "1 year ago";
+  return `${diffYear} years ago`;
+}
+
 // NotificationBell: শুধুমাত্র ড্রপডাউন/প্যানেল দেখাবে, স্টেট ও ইভেন্ট parent (Navbar) থেকে নেবে
 export default function NotificationBell({
   open,
@@ -87,7 +116,7 @@ export default function NotificationBell({
             ) : (
               notifications.map((n) => (
                 <li
-                  key={n.id}
+                  key={n.id || n._id}
                   className={`
                     mb-3 last:mb-0 p-5 border border-gray-100 shadow-sm bg-white
                     flex items-start gap-3
@@ -95,8 +124,10 @@ export default function NotificationBell({
                   `}
                 >
                   <div className="flex-1">
-                    <div className="text-gray-900 text-[16.5px] font-medium mb-1">{n.message}</div>
-                    <div className="text-xs text-gray-400">{n.timeAgo}</div>
+                    <div className="text-gray-900 text-[16.5px] font-medium mb-1">{n.title}</div>
+                    <div className="text-xs text-gray-400">
+                      {getTimeAgo(n.time)}
+                    </div>
                   </div>
                 </li>
               ))
