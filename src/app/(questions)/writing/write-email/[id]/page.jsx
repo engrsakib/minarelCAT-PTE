@@ -117,7 +117,7 @@ export default function RepeatSentencePage({ params }) {
           },
           body: JSON.stringify({
             questionId: id,
-            email: answer.trim(),
+            answer: answer.trim(),
           }),
         }
       );
