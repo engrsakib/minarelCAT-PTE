@@ -90,7 +90,7 @@ export default function DynamicPage({ params }) {
     if (!currentQ) return;
     const payload = {
       questionId: currentQ._id,
-      selectedAnswers: answers,
+      answer: answers,
     };
     try {
       setIsSubmitting(true);

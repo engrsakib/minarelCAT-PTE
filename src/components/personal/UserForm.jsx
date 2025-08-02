@@ -197,7 +197,7 @@ export default function UserForm({ data ,onUpdateSuccess}) {
                 value={formData.email}
                 onChange={handleChange}
                 className="w-full border bg-slate-100 border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-                required
+                readOnly
               />
             </div>
           </div>

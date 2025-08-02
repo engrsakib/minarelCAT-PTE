@@ -115,7 +115,7 @@ export default function RepeatSentencePage({ params }) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            userSummary,
+            answer: userSummary,
             questionId,
           }),
         }
@@ -189,23 +189,23 @@ export default function RepeatSentencePage({ params }) {
 
   // Function to speak the clicked word
   const speakWord = (word) => {
-    if ('speechSynthesis' in window) {
+    if ("speechSynthesis" in window) {
       const utterance = new SpeechSynthesisUtterance(word);
-      utterance.lang = 'en-US';
+      utterance.lang = "en-US";
       speechSynthesis.speak(utterance);
     } else {
-      console.log('Text-to-speech not supported in this browser');
+      console.log("Text-to-speech not supported in this browser");
     }
   };
 
   // Render prompt text with interactive words
   const renderPromptText = (text) => {
     return text.split(/\s+/).map((word, index) => (
-      <span 
+      <span
         key={index}
         className="word hover:text-red-600 transition-colors cursor-pointer"
         onClick={() => speakWord(word)}
-        style={{ display: 'inline-block', marginRight: '4px' }}
+        style={{ display: "inline-block", marginRight: "4px" }}
       >
         {word}
       </span>
