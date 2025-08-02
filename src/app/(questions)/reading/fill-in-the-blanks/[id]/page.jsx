@@ -3,35 +3,35 @@ import React, { useEffect, useState, useRef } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
- 
+
 // 9:59 minutes in seconds
 const RECORD_SECONDS = 599;
- 
+
 export default function DynamicPage({ params }) {
   const { id } = params;
   const router = useRouter();
- 
+
   // State
   const [questions, setQuestions] = useState([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [currentQ, setCurrentQ] = useState(null);
   const [loading, setLoading] = useState(true);
- 
+
   // Timer
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);
   const timerRef = useRef();
   const [timerStarted, setTimerStarted] = useState(false);
- 
+
   // Dropdown answers
   const [answers, setAnswers] = useState([]);
- 
+
   // Response state
   const [showResponse, setShowResponse] = useState(false);
   const [responseData, setResponseData] = useState(null);
- 
+
   // Submitting state
   const [isSubmitting, setIsSubmitting] = useState(false);
- 
+
   // Fetch all questions and find current index
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
   useEffect(() => {
@@ -78,7 +78,7 @@ export default function DynamicPage({ params }) {
     getQuestions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
- 
+
   // Timer logic (start on page load or when loading is complete)
   useEffect(() => {
     if (loading) return;
@@ -86,7 +86,7 @@ export default function DynamicPage({ params }) {
       setTimerStarted(true);
     }
   }, [loading, timerStarted]);
- 
+
   useEffect(() => {
     if (!timerStarted) return;
     if (timeLeft === 0) {
@@ -96,31 +96,26 @@ export default function DynamicPage({ params }) {
     timerRef.current = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearTimeout(timerRef.current);
   }, [timerStarted, timeLeft]);
- 
+
   // Answer change handler
   const handleAnswerChange = (idx) => (e) => {
     const arr = [...answers];
     arr[idx] = e.target.value;
     setAnswers(arr);
   };
- 
+
   // Submit handler
   const handleSubmit = async () => {
     if (!currentQ) return;
- 
+
     setIsSubmitting(true); // Set submitting state
- 
+
     // Create payload in the required format
     const payload = {
       questionId: currentQ._id,
-      blanks: answers
-        .map((selectedAnswer, index) => ({
-          index: index,
-          selectedAnswer: selectedAnswer,
-        }))
-        .filter((blank) => blank.selectedAnswer),
+      answer: answers.filter((ans) => !!ans),
     };
- 
+
     try {
       const response = await fetchWithAuth(
         `${baseUrl}/test/reading/reading-fill-in-the-blanks/result`,
@@ -130,7 +125,7 @@ export default function DynamicPage({ params }) {
           body: JSON.stringify(payload),
         }
       );
- 
+
       if (response.ok) {
         const data = await response.json();
         setResponseData(data);
@@ -145,13 +140,13 @@ export default function DynamicPage({ params }) {
       setIsSubmitting(false); // Reset submitting state
     }
   };
- 
+
   // Pagination controls
   const goToIndex = (idx) => {
     if (idx < 0 || idx >= questions.length) return;
     router.push(`/question/reading-writing-blanks/${questions[idx]._id}`);
   };
- 
+
   // Render pagination
   const renderPagination = () => (
     <div className="flex items-center justify-end gap-2 mt-6">
@@ -182,7 +177,7 @@ export default function DynamicPage({ params }) {
       </button>
     </div>
   );
- 
+
   // Format MM:SS
   function formatTime(sec) {
     const m = Math.floor(sec / 60);
@@ -192,29 +187,29 @@ export default function DynamicPage({ params }) {
 
   // Function to speak the clicked word
   const speakWord = (word) => {
-    if ('speechSynthesis' in window) {
+    if ("speechSynthesis" in window) {
       const utterance = new SpeechSynthesisUtterance(word);
-      utterance.lang = 'en-US';
+      utterance.lang = "en-US";
       speechSynthesis.speak(utterance);
     } else {
-      console.log('Text-to-speech not supported in this browser');
+      console.log("Text-to-speech not supported in this browser");
     }
   };
 
   // Render prompt text with interactive words
   const renderPromptText = (text) => {
     return text.split(/\s+/).map((word, index) => (
-      <span 
+      <span
         key={index}
         className="word hover:text-red-600 transition-colors cursor-pointer"
         onClick={() => speakWord(word)}
-        style={{ display: 'inline-block', marginRight: '4px' }}
+        style={{ display: "inline-block", marginRight: "4px" }}
       >
         {word}
       </span>
     ));
   };
- 
+
   if (loading || !currentQ) {
     return (
       <div className="flex justify-center items-center min-h-[40vh] text-lg font-medium text-gray-600">
@@ -222,7 +217,7 @@ export default function DynamicPage({ params }) {
       </div>
     );
   }
- 
+
   // Prompt split for blanks
   const prompt = currentQ.prompt || "";
   const blanks = currentQ.blanks || [];
@@ -230,17 +225,17 @@ export default function DynamicPage({ params }) {
   let regex = /___/g;
   let match;
   let cursor = 0;
- 
+
   if (prompt.match(/\([a-e]\)/g)) {
     regex = /\([a-e]\)/g;
   }
- 
+
   while ((match = regex.exec(prompt))) {
     splitParts.push(prompt.slice(cursor, match.index));
     cursor = match.index + match[0].length;
   }
   splitParts.push(prompt.slice(cursor));
- 
+
   return (
     <div className="w-full lg:max-w-[90%] xl:max-w-[80%] mx-auto py-4 px-4 sm:py-6 sm:px-6 relative">
       <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#810000] border-b-2 border-[#810000] pb-2 mb-4 sm:mb-6">
@@ -250,7 +245,7 @@ export default function DynamicPage({ params }) {
         Below is a text with blanks. Click on each blank, a list of choices will
         appear. Select the appropriate answer choice for each blank.
       </p>
- 
+
       {/* Question Heading */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-4">
         <span className="rounded px-3 py-1 sm:px-4 sm:py-2 font-bold text-white bg-[#810000] text-sm sm:text-base tracking-wide min-w-[70px] text-center">
@@ -262,7 +257,7 @@ export default function DynamicPage({ params }) {
           </h2>
         )}
       </div>
- 
+
       {/* Timer */}
       <div className="mb-4 flex items-center gap-3 text-sm sm:text-base">
         <span className="text-[#810000] font-medium">
@@ -270,7 +265,7 @@ export default function DynamicPage({ params }) {
           <span className="font-bold">00: {formatTime(timeLeft)} sec</span>
         </span>
       </div>
- 
+
       {/* Prompt with answer dropdowns */}
       <div className="border border-[#810000] rounded-lg bg-[#faf9f9] p-4 sm:p-5 mb-4 text-gray-900 text-sm sm:text-base leading-relaxed whitespace-pre-line">
         {splitParts.map((part, i) => (
@@ -288,7 +283,7 @@ export default function DynamicPage({ params }) {
           </React.Fragment>
         ))}
       </div>
- 
+
       {/* Answer options below */}
       <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-4">
         {blanks.map((blank, i) => (
@@ -317,7 +312,7 @@ export default function DynamicPage({ params }) {
           </div>
         ))}
       </div>
- 
+
       {/* Controls */}
       <div className="flex flex-wrap gap-3 mb-2 mt-3">
         <button
@@ -369,7 +364,7 @@ export default function DynamicPage({ params }) {
           )}
         </button>
       </div>
- 
+
       {/* Response Modal */}
       {showResponse && responseData && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
@@ -383,7 +378,7 @@ export default function DynamicPage({ params }) {
                 <X className="w-5 h-5" />
               </button>
             </div>
- 
+
             <div className="p-6 text-center">
               <div className="mb-6">
                 <div className="text-6xl font-bold text-[#810000] mb-2">
@@ -392,7 +387,7 @@ export default function DynamicPage({ params }) {
                 <div className="text-lg text-gray-600 mb-4">
                   out of {responseData.result.totalBlanks}
                 </div>
- 
+
                 <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
                   <div
                     className="bg-[#810000] h-3 rounded-full transition-all duration-500"
@@ -405,7 +400,7 @@ export default function DynamicPage({ params }) {
                     }}
                   ></div>
                 </div>
- 
+
                 <div className="text-2xl font-semibold text-[#810000]">
                   {Math.round(
                     (responseData.result.score /
@@ -415,11 +410,11 @@ export default function DynamicPage({ params }) {
                   %
                 </div>
               </div>
- 
+
               <div className="bg-gray-50 rounded-lg p-4 mb-6">
                 <p className="text-gray-700 text-lg">{responseData.feedback}</p>
               </div>
- 
+
               <button
                 onClick={() => setShowResponse(false)}
                 className="w-full bg-[#810000] text-white py-3 rounded-lg font-semibold hover:bg-[#950000] transition-colors"
@@ -430,9 +425,9 @@ export default function DynamicPage({ params }) {
           </div>
         </div>
       )}
- 
+
       {renderPagination()}
- 
+
       <style jsx>{`
         select:disabled {
           background: #eee;
