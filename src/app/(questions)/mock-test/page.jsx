@@ -13,6 +13,7 @@ import {
 
 import { useRouter } from "next/navigation";
 
+
 export default function AllMockTest() {
   const router = useRouter();
   const baseUrl = process.env.NEXT_PUBLIC_ADMIN_URL || "";
@@ -73,7 +74,7 @@ export default function AllMockTest() {
         setLoading(false);
       });
   };
-
+  
   // Format duration to string like "02:30"
   const formatDuration = (duration) => {
     if (!duration) return "--";
@@ -89,11 +90,7 @@ export default function AllMockTest() {
   return (
     <div className="max-w-full mt-14 min-h-screen mx-auto bg-[#f6f6f7]">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-4 md:px-8 py-5 bg-gradient-to-r from-[#a91e22] to-[#811b1c]">
-        <h1 className="text-2xl font-semibold text-white tracking-wide mb-2 md:mb-0">
-          Full Mock Test
-        </h1>
-      </div>
+      
 
       {/* Content */}
       <div className="p-2 xs:p-4 sm:p-6 md:p-8">
@@ -120,7 +117,7 @@ export default function AllMockTest() {
                     <span className="hidden sm:block text-gray-400">|</span>
                     <button
                       type="button"
-                      onClick={() => router.push(`/mock-test/${item._id}`)}
+                      onClick={() => router.push(`/mock-test/confirm-page?item_id=${item._id}`)}
                       className="font-medium text-base text-[#333] flex-1 text-left hover:underline focus:outline-none"
                       tabIndex={0}
                     >

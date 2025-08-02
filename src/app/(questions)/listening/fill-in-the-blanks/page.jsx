@@ -6,7 +6,7 @@ import { ChevronLeft, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-// Tab options
+// Tab options here
 const TABS = [
   { label: "All", value: "all" },
   { label: "Not Practiced", value: "not_practiced" },
