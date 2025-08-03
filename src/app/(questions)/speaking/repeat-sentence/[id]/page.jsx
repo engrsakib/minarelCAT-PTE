@@ -259,7 +259,7 @@ export default function RepeatSentencePage({ params }) {
             Restart
           </button>
           <button
-            className="flex items-center gap-1 px-4 py-1 rounded bg-[#810000] text-white font-medium text-sm hover:bg-[#5d0000] disabled:bg-[#5d0000] disabled:text-white"
+            className="flex items-center gap-1 px-4 py-1 rounded bg-[#810000] text-white font-medium text-sm hover:bg-[#5d0000] disabled:bg-gray-300 disabled:text-gray-400"
             onClick={handleSubmit}
             disabled={!audioBlob || isSubmitting}
           >
@@ -313,83 +313,85 @@ const Modal = ({ isModalOpen, setIsModalOpen, onClose, serverResponse }) => {
           e.stopPropagation();
         }}
       >
-        <Card className="w-[500px] max-w-[90vw] max-h-[80vh] overflow-y-auto">
-          <CardContent className="p-6">
-            <div className="text-center mb-6">
-              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-              <h2 className="text-3xl font-bold text-[#810000] mb-2">
+        <Card className="w-[380px] sm:w-[450px] max-w-[95vw] max-h-[85vh] overflow-y-auto mt-10">
+          <CardContent className="p-4 sm:p-6">
+            <div className="text-center mb-4">
+              <CheckCircle className="w-12 h-12 sm:w-14 sm:h-14 text-green-500 mx-auto mb-3" />
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#810000] mb-2">
                 🎉 Results
               </h2>
-              <p className="text-gray-600">Here's your speech analysis</p>
+              <p className="text-sm text-gray-600">
+                Here's your speech analysis
+              </p>
             </div>
 
-            <div className="grid gap-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-blue-800 mb-1">
+            <div className="grid gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
+                  <h3 className="font-semibold text-blue-800 mb-1 text-sm">
                     Speaking Score
                   </h3>
-                  <p className="text-2xl font-bold text-blue-600">
+                  <p className="text-xl sm:text-2xl font-bold text-blue-600">
                     {serverResponse?.speakingScore || "N/A"}
                   </p>
                 </div>
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-green-800 mb-1">
+                <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
+                  <h3 className="font-semibold text-green-800 mb-1 text-sm">
                     Listening Score
                   </h3>
-                  <p className="text-2xl font-bold text-green-600">
+                  <p className="text-xl sm:text-2xl font-bold text-green-600">
                     {serverResponse?.listeningScore || "N/A"}
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                <div className="bg-purple-50 p-3 rounded-lg text-center">
-                  <h4 className="font-semibold text-purple-800 text-sm mb-1">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                <div className="bg-purple-50 p-2 sm:p-3 rounded-lg text-center">
+                  <h4 className="font-semibold text-purple-800 text-xs mb-1">
                     Fluency
                   </h4>
-                  <p className="text-lg font-bold text-purple-600">
+                  <p className="text-sm sm:text-lg font-bold text-purple-600">
                     {serverResponse?.fluency || "N/A"}
                   </p>
                 </div>
-                <div className="bg-orange-50 p-3 rounded-lg text-center">
-                  <h4 className="font-semibold text-orange-800 text-sm mb-1">
+                <div className="bg-orange-50 p-2 sm:p-3 rounded-lg text-center">
+                  <h4 className="font-semibold text-orange-800 text-xs mb-1">
                     Content
                   </h4>
-                  <p className="text-lg font-bold text-orange-600">
+                  <p className="text-sm sm:text-lg font-bold text-orange-600">
                     {serverResponse?.content || "N/A"}
                   </p>
                 </div>
-                <div className="bg-pink-50 p-3 rounded-lg text-center">
-                  <h4 className="font-semibold text-pink-800 text-sm mb-1">
+                <div className="bg-pink-50 p-2 sm:p-3 rounded-lg text-center">
+                  <h4 className="font-semibold text-pink-800 text-xs mb-1">
                     Pronunciation
                   </h4>
-                  <p className="text-lg font-bold text-pink-600">
+                  <p className="text-sm sm:text-lg font-bold text-pink-600">
                     {serverResponse?.pronunciation || "N/A"}
                   </p>
                 </div>
               </div>
 
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-gray-800 mb-2">
+              <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                <h4 className="font-semibold text-gray-800 mb-2 text-sm">
                   Word Analysis
                 </h4>
-                <div className="grid grid-cols-3 gap-3 text-sm">
-                  <div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs sm:text-sm">
+                  <div className="flex justify-between sm:block">
                     <span className="text-gray-600">Total Words:</span>
-                    <span className="font-semibold ml-1">
+                    <span className="font-semibold sm:ml-1">
                       {serverResponse?.totalWords || 0}
                     </span>
                   </div>
-                  <div>
+                  <div className="flex justify-between sm:block">
                     <span className="text-green-600">Good Words:</span>
-                    <span className="font-semibold ml-1 text-green-700">
+                    <span className="font-semibold sm:ml-1 text-green-700">
                       {serverResponse?.goodWords || 0}
                     </span>
                   </div>
-                  <div>
+                  <div className="flex justify-between sm:block">
                     <span className="text-red-600">Bad Words:</span>
-                    <span className="font-semibold ml-1 text-red-700">
+                    <span className="font-semibold sm:ml-1 text-red-700">
                       {serverResponse?.badWords || 0}
                     </span>
                   </div>
@@ -397,11 +399,11 @@ const Modal = ({ isModalOpen, setIsModalOpen, onClose, serverResponse }) => {
               </div>
 
               {serverResponse?.predictedText && (
-                <div className="bg-indigo-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-indigo-800 mb-2">
+                <div className="bg-indigo-50 p-3 sm:p-4 rounded-lg">
+                  <h4 className="font-semibold text-indigo-800 mb-2 text-sm">
                     Predicted Text
                   </h4>
-                  <p className="text-indigo-700 italic">
+                  <p className="text-indigo-700 italic text-sm">
                     "{serverResponse.predictedText}"
                   </p>
                 </div>
@@ -409,7 +411,7 @@ const Modal = ({ isModalOpen, setIsModalOpen, onClose, serverResponse }) => {
 
               <button
                 onClick={onClose}
-                className="w-full mt-4 px-4 py-2 bg-[#810000] text-white rounded hover:bg-[#5d0000] font-medium"
+                className="w-full mt-3 px-4 py-2 bg-[#810000] text-white rounded hover:bg-[#5d0000] font-medium text-sm"
               >
                 Close
               </button>
