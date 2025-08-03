@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
 import {
@@ -8,70 +8,141 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-
+import AudioPlayer from "@/components/audio/AudioPlayer";
 
 // 9:59 minutes in seconds
 const RECORD_SECONDS = 599;
 
-export default function DynamicPage({ params }) {
+// Beautiful Result Modal Component (theme styled)
+const ResultModal = React.memo(function ResultModal({
+  isOpen,
+  onClose,
+  result,
+  feedback,
+}) {
+  useEffect(() => {
+    if (isOpen) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "auto";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-[1000] bg-gradient-to-br from-[#7D0000]/70 via-[#fff]/60 to-[#810000]/70 flex justify-center items-center backdrop-blur-md transition-all"
+      style={{ animation: "fadeIn 0.3s" }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-3xl shadow-2xl px-8 py-8 flex flex-col gap-6 items-center relative border-4 border-[#810000]/20 max-w-md w-full animate-popup"
+      >
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-[#7D0000] hover:text-[#810000] text-2xl cursor-pointer font-bold bg-white/70 px-2 rounded-full border border-[#810000]/30 shadow"
+          title="Close"
+        >
+          ×
+        </button>
+
+        <div className="flex items-center justify-center mb-2 gap-2">
+          <span className="text-4xl">🎉</span>
+          <span className="ml-1 text-3xl font-extrabold text-[#810000] drop-shadow">Results</span>
+        </div>
+
+        <div className="flex gap-7 w-full justify-center mb-2">
+          <div className="flex flex-col items-center">
+            <span className="text-base font-semibold text-[#7D0000]">Score</span>
+            <span className="text-xl font-bold text-[#810000]">{result?.score ?? "-"}</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="text-base font-semibold text-[#7D0000]">Correct</span>
+            <span className="text-xl font-bold text-[#810000]">{result?.totalCorrectAnswers ?? "-"}</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="text-base font-semibold text-[#7D0000]">Your Correct</span>
+            <span className="text-xl font-bold text-[#810000]">{result?.correctAnswersGiven?.toString() ?? "-"}</span>
+          </div>
+        </div>
+        <div className="mt-2 mb-2 w-full px-2">
+          <span className="font-bold text-[#810000]">Feedback:</span>
+          <span className="block text-gray-700 text-base mt-1 bg-[#faf9f9] p-3 rounded-xl border border-[#810000]/20 shadow-sm">
+            {feedback ?? "No feedback"}
+          </span>
+        </div>
+      </div>
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0 }
+          to { opacity: 1 }
+        }
+        .animate-popup {
+          animation: popup 0.35s cubic-bezier(.2,1.5,.5,1) both;
+        }
+        @keyframes popup {
+          0% { transform: scale(.8) translateY(40px); opacity: 0;}
+          100% { transform: scale(1) translateY(0); opacity: 1;}
+        }
+      `}</style>
+    </div>
+  );
+});
+
+function DynamicPageComponent({ params }) {
   const [serverResponse, setServerResponse] = useState({});
-
-  console.log("=========Server Response============", serverResponse);
-
   const { id } = params;
   const router = useRouter();
   const baseURL = process.env.NEXT_PUBLIC_URL;
 
-  // State
   const [currentQ, setCurrentQ] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  //==================Modal States======================
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Timer
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);
   const timerRef = useRef();
   const [timerStarted, setTimerStarted] = useState(false);
 
-  // Multi-answer selection
   const [selected, setSelected] = useState([]);
-
-  // Pagination dropdown (not needed for single question mode)
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Fetch question (single)
-  useEffect(() => {
-    async function getQuestion() {
-      setLoading(true);
-      try {
-        const res = await fetchWithAuth(`${baseURL}/user/get-question/${id}`);
-        const data = await res.json();
-        if (data?.question) {
-          setCurrentQ(data.question);
-          setSelected([]);
-        } else {
-          setCurrentQ(null);
-          setSelected([]);
-        }
-      } catch {
+  // Memoized fetch function so it doesn't auto-call
+  const getQuestion = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetchWithAuth(`${baseURL}/user/get-question/${id}`);
+      const data = await res.json();
+      if (data?.question) {
+        setCurrentQ(data.question);
+        setSelected([]);
+      } else {
         setCurrentQ(null);
         setSelected([]);
       }
-      setLoading(false);
-      setTimeLeft(RECORD_SECONDS);
-      setTimerStarted(false);
+    } catch {
+      setCurrentQ(null);
+      setSelected([]);
     }
+    setLoading(false);
+    setTimeLeft(RECORD_SECONDS);
+    setTimerStarted(false);
+  }, [baseURL, id]);
+
+  useEffect(() => {
     getQuestion();
     // eslint-disable-next-line
-  }, [id]);
+  }, [getQuestion]);
 
   // Timer logic (start on page load)
   useEffect(() => {
     if (loading) return;
     if (!timerStarted) setTimerStarted(true);
-  }, [loading]);
+  }, [loading, timerStarted]);
 
   useEffect(() => {
     if (!timerStarted) return;
@@ -80,27 +151,24 @@ export default function DynamicPage({ params }) {
     return () => clearTimeout(timerRef.current);
   }, [timerStarted, timeLeft]);
 
-  // Handle option change (multiple)
-  const handleOptionChange = (idx) => {
+  // Memoized handlers
+  const handleOptionChange = useCallback((idx) => {
     setSelected((prev) => {
       if (prev.includes(idx)) {
-        // deselect if already selected
         return prev.filter((i) => i !== idx);
       } else {
-        // select new
         return [...prev, idx];
       }
     });
-  };
+  }, []);
 
-  // Submit handler
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     setIsSubmitting(true);
     if (!currentQ || selected.length === 0) return;
     const selectedAnswers = selected.map((eachId) => currentQ.options[eachId]);
     const payload = {
       questionId: currentQ._id,
-      selectedAnswers, // array of selected option texts
+      answer: selectedAnswers,
     };
 
     try {
@@ -114,16 +182,16 @@ export default function DynamicPage({ params }) {
       );
       setServerResponse(await response.json());
       setIsSubmitting(true);
-      setIsModalOpen(!isModalOpen);
+      setIsModalOpen(true);
     } catch (e) {}
-  };
+  }, [currentQ, selected, baseURL]);
 
   // Format MM:SS
-  const formatTime = (sec) => {
+  const formatTime = useCallback((sec) => {
     const m = Math.floor(sec / 60);
     const s = sec % 60;
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-  };
+  }, []);
 
   if (loading || !currentQ) {
     return (
@@ -135,34 +203,14 @@ export default function DynamicPage({ params }) {
 
   return (
     <div className="w-full lg:max-w-[80%] mx-auto py-6 px-2 relative">
-      {/* ===========================Modal Contents starts here======================== */}
-
-      <Modal
-        isModalOpen={isModalOpen}
-        setIsModalOpen={() => setIsModalOpen(!isModalOpen)}
-      >
-        <div className="size-80 bg-white rounded-2xl flex flex-col gap-2 justify-center items-center">
-          <h1 className="text-3xl font-semibold text-[#660303]">🎉 Results</h1>
-          <p>
-            <span className="font-bold">Score:</span>{" "}
-            {serverResponse?.result?.score}
-          </p>
-          <p>
-            <span className="font-bold">Total Correct Answer:</span>{" "}
-            {serverResponse?.result?.totalCorrectAnswers}
-          </p>
-          <p>
-            <span className="font-bold">Correct Answers Give:</span>{" "}
-            {serverResponse?.result?.correctAnswersGiven.toString()}
-          </p>
-          <p>
-            <span className="font-bold">Feedback:</span>{" "}
-            {serverResponse?.feedback}
-          </p>
-        </div>
-      </Modal>
-
-      {/* ===========================Modal Contents starts here======================== */}
+      {/* ============== Beautiful Result Modal =============== */}
+      <ResultModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        result={serverResponse?.result}
+        feedback={serverResponse?.feedback}
+      />
+      {/* ============== End Result Modal =============== */}
 
       <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
         Multiple Choice &amp; Multiple answer
@@ -196,8 +244,6 @@ export default function DynamicPage({ params }) {
       </div>
       {/* MCQ Options */}
       <div className="border border-[#810000] rounded bg-white p-3 mb-2 text-[#810000] text-base font-semibold">
-        {/* If you want a questionText, e.g. "Select all correct", can use here */}
-        {/* {currentQ.questionText} */}
         নিচের অপশনগুলো থেকে একাধিক সঠিক উত্তরের অপশন সিলেক্ট করুন।
       </div>
       {/* Options */}
@@ -261,85 +307,13 @@ export default function DynamicPage({ params }) {
           onClick={handleSubmit}
           disabled={selected.length === 0 || timeLeft === 0}
         >
-          {isSubmitting?"Submitting...":"Submit"}
+          {isSubmitting ? "Submitting..." : "Submit"}
         </button>
       </div>
-      {/* If you want to show modal or pagination, add here if needed */}
     </div>
   );
 }
 
-//Modal Component
-const Modal = ({ isModalOpen, children, setIsModalOpen }) => {
-  useEffect(() => {
-    if (isModalOpen) {
-      document.body.style.overflow = "hidden"; // Disable scrolling
-    } else {
-      document.body.style.overflow = "auto"; // Enable scrolling again
-    }
-
-    return () => {
-      document.body.style.overflow = "auto"; // Cleanup function in case modal unmounts
-    };
-  }, [isModalOpen]);
-  return (
-    <div
-      onClick={setIsModalOpen}
-      className={`${
-        isModalOpen
-          ? "h-dvh w-full fixed inset-0 z-50 bg-black/50 flex flex-col justify-center items-center"
-          : "hidden"
-      }`}
-    >
-      <div
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
-      >
-        {children}
-      </div>
-    </div>
-  );
-};
-
-// (Optional) Circular Progressbar (not used, but provided)
-const CircularProgress = ({ value = 75, size = 200 }) => {
-  const strokeWidth = 10;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (value / 100) * circumference;
-
-  return (
-    <svg width={size} height={size}>
-      <circle
-        stroke="#e5e7eb"
-        fill="transparent"
-        strokeWidth={strokeWidth}
-        r={radius}
-        cx={size / 2}
-        cy={size / 2}
-      />
-      <circle
-        stroke="red"
-        fill="transparent"
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-        r={radius}
-        cx={size / 2}
-        cy={size / 2}
-        strokeDasharray={circumference}
-        strokeDashoffset={offset}
-        className="transition-all duration-300"
-      />
-      <text
-        x="50%"
-        y="50%"
-        dominantBaseline="middle"
-        textAnchor="middle"
-        className="fill-black text-xl font-bold"
-      >
-        {value}%
-      </text>
-    </svg>
-  );
-};
+// Memoized main component
+const DynamicPage = React.memo(DynamicPageComponent);
+export default DynamicPage;
