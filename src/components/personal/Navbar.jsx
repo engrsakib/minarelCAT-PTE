@@ -161,7 +161,7 @@ export default function Navbar() {
       </header>
 
       <div className="w-[95%] relative mx-auto mt-4">
-        {isOpen && <LanguageSkills isOpen={isOpen} setIsOpen={setIsOpen} />}
+        {isOpen && <LanguageSkills isOpen={isOpen} setIsOpen={setIsOpen} className="w-full bg-white" />}
       </div>
     </>
   );

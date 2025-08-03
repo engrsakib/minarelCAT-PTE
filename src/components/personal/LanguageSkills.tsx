@@ -96,7 +96,7 @@ const LanguageSkills: React.FC<LanguageSkillsProps> = ({ isOpen, setIsOpen }) =>
   if (!isOpen) return null
 
   return (
-    <div className="fixed top-40 inset-0 z-50 bg-black/30 backdrop-blur-sm">
+    <div className="fixed top-28 inset-0 z-50 bg-black/30 backdrop-blur-sm">
       {/* Modal Content - Full height on mobile, 2/3 on md, 1/3 on lg+ */}
       <div
         className={`fixed top-0 left-0 right-0 bg-white shadow-2xl h-full md:h-[66.66vh] lg:h-[33.33vh] transition-transform duration-300 ease-out ${
