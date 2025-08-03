@@ -7,12 +7,26 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
+  CheckCircle,
 } from "lucide-react";
 // import AudioPlayer from "../../../../../components/audio/AudioPlayer";
 import MicRecorder from "mic-recorder-to-mp3";
 
 // Constants
 const RECORD_SECONDS = 40;
+
+// Card components (if not available from shadcn/ui, create simple versions)
+const Card = ({ children, className = "" }) => (
+  <div
+    className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`}
+  >
+    {children}
+  </div>
+);
+
+const CardContent = ({ children, className = "" }) => (
+  <div className={`p-6 ${className}`}>{children}</div>
+);
 
 export default function RepeatSentencePage({ params }) {
   const { id } = params;
@@ -23,6 +37,7 @@ export default function RepeatSentencePage({ params }) {
   const [question, setQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
   const [serverResponse, setServerResponse] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   console.log("SERVER RESPONSE===============>", serverResponse);
   //=============Modal State==========================
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -117,9 +132,12 @@ export default function RepeatSentencePage({ params }) {
   // Submit handler
   const handleSubmit = async () => {
     if (!audioBlob || !question) return;
+
+    setIsSubmitting(true);
     const formData = new FormData();
     formData.append("voice", audioBlob, "voice.mp3");
     formData.append("questionId", question._id);
+
     try {
       const response = await fetchWithAuth(
         `${baseUrl}/test/speaking/repeat_sentence/result`,
@@ -129,8 +147,17 @@ export default function RepeatSentencePage({ params }) {
         }
       );
       setServerResponse(await response.json());
-      setIsModalOpen(!isModalOpen);
-    } catch (e) {}
+      setIsModalOpen(true);
+    } catch (e) {
+      console.error("Submission error:", e);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Close modal handler
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
   };
 
   if (loading || !question) {
@@ -146,62 +173,12 @@ export default function RepeatSentencePage({ params }) {
       {/* =========================Modal Contents starts here=============== */}
       <Modal
         isModalOpen={isModalOpen}
-        setIsModalOpen={() => setIsModalOpen(!isModalOpen)}
-      >
-        <div className="size-96 bg-white rounded-2xl flex flex-col gap-2 justify-center items-center ">
-          <h1 className="text-3xl font-semibold text-[#660303]">🎉 Results</h1>
-          <p>
-            <span className="font-bold">Average Words: </span>
-            {serverResponse?.averageWords}
-          </p>
-
-          <p>
-            <span className="font-bold">Bad Words: </span>
-            {serverResponse?.badWords}
-          </p>
-
-          <p>
-            <span className="font-bold">Content: </span>
-            {serverResponse?.content}
-          </p>
-
-          <p>
-            <span className="font-bold">Fluency: </span>
-            {serverResponse?.fluency}
-          </p>
-
-          <p>
-            <span className="font-bold">Good Words: </span>
-            {serverResponse?.goodWords}
-          </p>
-
-          <p>
-            <span className="font-bold">Listening Score: </span>
-            {serverResponse?.listeningScore}
-          </p>
-
-          <p>
-            <span className="font-bold">Predicted Text: </span>
-            {serverResponse?.predictedText}
-          </p>
-
-          <p>
-            <span className="font-bold">Pronunciation: </span>
-            {serverResponse?.pronunciation}
-          </p>
-
-          <p>
-            <span className="font-bold">Speaking Score: </span>
-            {serverResponse?.speakingScore}
-          </p>
-
-          <p>
-            <span className="font-bold">Total Words: </span>
-            {serverResponse?.totalWords}
-          </p>
-        </div>
-      </Modal>
+        setIsModalOpen={handleCloseModal}
+        onClose={handleCloseModal}
+        serverResponse={serverResponse}
+      />
       {/* =========================Modal Contents ends here=============== */}
+
       {/* Title/Heading */}
       <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
         {question.heading}
@@ -211,6 +188,7 @@ export default function RepeatSentencePage({ params }) {
         seconds to answer the question. <br />
         Please answer as completely as you can.
       </p>
+
       {/* Audio Player */}
       <div className="border border-[#810000] rounded p-4 mb-4 bg-[#faf9f9] flex flex-col items-center">
         {question.audioUrl && (
@@ -224,10 +202,12 @@ export default function RepeatSentencePage({ params }) {
           />
         )}
       </div>
+
       {/* Prompt */}
       <div className="border border-[#810000] rounded p-4 mb-4 bg-white text-gray-900 whitespace-pre-line">
         {question.prompt}
       </div>
+
       {/* Audio Recorder */}
       <div className="border border-[#810000] rounded p-4 mb-6 bg-[#faf9f9] flex flex-col items-center">
         <div>
@@ -264,6 +244,7 @@ export default function RepeatSentencePage({ params }) {
             ? "Recording complete"
             : "Click Start to record"}
         </div>
+
         {/* Controls */}
         <div className="flex gap-3 mt-4 flex-wrap">
           <button
@@ -273,28 +254,30 @@ export default function RepeatSentencePage({ params }) {
               setTimeLeft(RECORD_SECONDS);
               setIsRecording(false);
             }}
-            disabled={isRecording}
+            disabled={isRecording || isSubmitting}
           >
             Restart
           </button>
           <button
-            className="flex items-center gap-1 px-4 py-1 rounded bg-[#810000] text-white font-medium text-sm hover:bg-[#5d0000] disabled:bg-gray-300 disabled:text-gray-400"
+            className="flex items-center gap-1 px-4 py-1 rounded bg-[#810000] text-white font-medium text-sm hover:bg-[#5d0000] disabled:bg-[#5d0000] disabled:text-white"
             onClick={handleSubmit}
-            disabled={!audioBlob}
+            disabled={!audioBlob || isSubmitting}
           >
-            <span>Submit</span>
+            <span>{isSubmitting ? "Submitting..." : "Submit"}</span>
           </button>
           <button
             className="flex items-center gap-1 px-4 py-1 rounded bg-[#810000] text-white font-medium text-sm hover:bg-[#5d0000] disabled:bg-gray-300 disabled:text-gray-400"
             onClick={startRecording}
-            disabled={isRecording || timeLeft === 0 || audioPlaying}
+            disabled={
+              isRecording || timeLeft === 0 || audioPlaying || isSubmitting
+            }
           >
             <span>Start</span>
           </button>
           <button
             className="flex items-center gap-1 px-4 py-1 rounded bg-gray-500 text-white font-medium text-sm hover:bg-gray-700 disabled:bg-gray-300 disabled:text-gray-400"
             onClick={stopRecording}
-            disabled={!isRecording}
+            disabled={!isRecording || isSubmitting}
           >
             <span>Stop</span>
           </button>
@@ -305,7 +288,7 @@ export default function RepeatSentencePage({ params }) {
 }
 
 //===========================Modal Component=================
-const Modal = ({ isModalOpen, children, setIsModalOpen }) => {
+const Modal = ({ isModalOpen, setIsModalOpen, onClose, serverResponse }) => {
   useEffect(() => {
     if (isModalOpen) {
       document.body.style.overflow = "hidden"; // Disable scrolling
@@ -317,21 +300,122 @@ const Modal = ({ isModalOpen, children, setIsModalOpen }) => {
       document.body.style.overflow = "auto"; // Cleanup function in case modal unmounts
     };
   }, [isModalOpen]);
+
+  if (!isModalOpen) return null;
+
   return (
     <div
       onClick={setIsModalOpen}
-      className={`${
-        isModalOpen
-          ? "h-dvh w-full fixed inset-0 z-50 bg-black/50 flex flex-col justify-center items-center"
-          : "hidden"
-      }`}
+      className="h-dvh w-full fixed inset-0 z-50 bg-black/50 flex flex-col justify-center items-center"
     >
       <div
         onClick={(e) => {
           e.stopPropagation();
         }}
       >
-        {children}
+        <Card className="w-[500px] max-w-[90vw] max-h-[80vh] overflow-y-auto">
+          <CardContent className="p-6">
+            <div className="text-center mb-6">
+              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+              <h2 className="text-3xl font-bold text-[#810000] mb-2">
+                🎉 Results
+              </h2>
+              <p className="text-gray-600">Here's your speech analysis</p>
+            </div>
+
+            <div className="grid gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-blue-800 mb-1">
+                    Speaking Score
+                  </h3>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {serverResponse?.speakingScore || "N/A"}
+                  </p>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-green-800 mb-1">
+                    Listening Score
+                  </h3>
+                  <p className="text-2xl font-bold text-green-600">
+                    {serverResponse?.listeningScore || "N/A"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-purple-50 p-3 rounded-lg text-center">
+                  <h4 className="font-semibold text-purple-800 text-sm mb-1">
+                    Fluency
+                  </h4>
+                  <p className="text-lg font-bold text-purple-600">
+                    {serverResponse?.fluency || "N/A"}
+                  </p>
+                </div>
+                <div className="bg-orange-50 p-3 rounded-lg text-center">
+                  <h4 className="font-semibold text-orange-800 text-sm mb-1">
+                    Content
+                  </h4>
+                  <p className="text-lg font-bold text-orange-600">
+                    {serverResponse?.content || "N/A"}
+                  </p>
+                </div>
+                <div className="bg-pink-50 p-3 rounded-lg text-center">
+                  <h4 className="font-semibold text-pink-800 text-sm mb-1">
+                    Pronunciation
+                  </h4>
+                  <p className="text-lg font-bold text-pink-600">
+                    {serverResponse?.pronunciation || "N/A"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-gray-800 mb-2">
+                  Word Analysis
+                </h4>
+                <div className="grid grid-cols-3 gap-3 text-sm">
+                  <div>
+                    <span className="text-gray-600">Total Words:</span>
+                    <span className="font-semibold ml-1">
+                      {serverResponse?.totalWords || 0}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-green-600">Good Words:</span>
+                    <span className="font-semibold ml-1 text-green-700">
+                      {serverResponse?.goodWords || 0}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-red-600">Bad Words:</span>
+                    <span className="font-semibold ml-1 text-red-700">
+                      {serverResponse?.badWords || 0}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {serverResponse?.predictedText && (
+                <div className="bg-indigo-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-indigo-800 mb-2">
+                    Predicted Text
+                  </h4>
+                  <p className="text-indigo-700 italic">
+                    "{serverResponse.predictedText}"
+                  </p>
+                </div>
+              )}
+
+              <button
+                onClick={onClose}
+                className="w-full mt-4 px-4 py-2 bg-[#810000] text-white rounded hover:bg-[#5d0000] font-medium"
+              >
+                Close
+              </button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
