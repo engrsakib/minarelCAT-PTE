@@ -269,7 +269,7 @@ export default function DynamicPage({ params }) {
           disabled={isSubmitting}
         />
         <button
-          className="px-5 py-2 rounded border-2  bg-white text-[#810000] font-semibold text-base hover:bg-[#810000] hover:text-white transition disabled:bg-[#810000] disabled:text-white disabled:cursor-not-allowed"
+          className="px-5 py-2 rounded border-2 border-[#810000] bg-white text-[#810000] font-semibold text-base hover:bg-[#810000] hover:text-white transition disabled:bg-[#810000] disabled:text-white disabled:cursor-not-allowed"
           onClick={handleSubmit}
           disabled={!summary.trim() || isSubmitting}
         >
