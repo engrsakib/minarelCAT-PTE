@@ -116,7 +116,7 @@ export default function DynamicPage({ params }) {
 
     const payload = {
       questionId: currentQ._id,
-      userAnswer: currentQ.options[selected],
+      answer: currentQ.options[selected],
     };
 
     try {
