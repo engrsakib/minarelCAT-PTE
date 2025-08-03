@@ -1501,21 +1501,23 @@ export default function DynamicMockTest({ params }) {
         const formData = new FormData();
         formData.append("voice", answer, "voice.mp3");
         formData.append("questionId", questionId);
+        formData.append("mockTestId", mockTestId);
         
-        await fetchWithAuth(`${baseUrl}/test/submit-answer`, {
+        await fetchWithAuth(`${baseUrl}/full-mock-test/result-single-question`, {
           method: "POST",
           body: formData
         });
       } else {
         // For text answers
-        await fetchWithAuth(`${baseUrl}/test/submit-answer`, {
+        await fetchWithAuth(`${baseUrl}/full-mock-test/result-single-question`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
             questionId,
-            answer
+            answer,
+            mockTestId
           })
         });
       }
