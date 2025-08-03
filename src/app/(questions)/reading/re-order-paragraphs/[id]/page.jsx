@@ -248,7 +248,7 @@ export default function DynamicPage({ params }) {
 
     const payload = {
       questionId: currentQ._id,
-      userReorderedOptions: target.map((item) => item.text),
+      answer: target.map((item) => item.text),
     };
 
     try {
