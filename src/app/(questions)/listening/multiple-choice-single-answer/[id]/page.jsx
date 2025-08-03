@@ -7,6 +7,10 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Trophy,
 } from "lucide-react";
 import AudioPlayer from "../../../../../components/audio/AudioPlayer";
 
@@ -26,6 +30,7 @@ export default function DynamicPage({ params }) {
 
   //==================Modal States======================
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [submissionTime, setSubmissionTime] = useState(null);
 
   // Timer
   const [timeLeft, setTimeLeft] = useState(RECORD_SECONDS);
@@ -81,10 +86,15 @@ export default function DynamicPage({ params }) {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     if (!currentQ || selected === null) return;
+
+    // Calculate time taken
+    const timeTaken = RECORD_SECONDS - timeLeft;
+    setSubmissionTime(timeTaken);
+
     const selectedAnswers = [currentQ.options[selected]];
     const payload = {
       questionId: currentQ._id,
-      selectedAnswers,
+      answer: selectedAnswers, // Changed from selectedAnswers to answer as per your requirement
     };
 
     try {
@@ -99,8 +109,10 @@ export default function DynamicPage({ params }) {
       setServerResponse(await response.json());
       setIsSubmitting(false);
 
-      setIsModalOpen(!isModalOpen);
-    } catch (e) {}
+      setIsModalOpen(true);
+    } catch (e) {
+      setIsSubmitting(false);
+    }
   };
 
   // Format MM:SS
@@ -118,35 +130,25 @@ export default function DynamicPage({ params }) {
     );
   }
 
+  // Enhanced Modal Component
+  const renderResultModal = () => (
+    <EnhancedModal
+      isModalOpen={isModalOpen}
+      setIsModalOpen={() => setIsModalOpen(false)}
+      serverResponse={serverResponse}
+      submissionTime={submissionTime}
+      formatTime={formatTime}
+      onClose={() => {
+        setIsModalOpen(false);
+        // Optionally redirect or reset the quiz
+      }}
+    />
+  );
+
   // Pagination controls (dropdown + prev/next, styled right-bottom)
-  // Kept as-is per your instruction, but you can remove if you want
   const renderPagination = () => (
     <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end w-max">
-      <Modal
-        isModalOpen={isModalOpen}
-        setIsModalOpen={() => setIsModalOpen(!isModalOpen)}
-      >
-        <div className="size-80 bg-white rounded-2xl flex flex-col gap-2 justify-center items-center">
-          <h1 className="text-3xl font-semibold text-[#660303]">🎉 Results</h1>
-          <p>
-            <span className="font-bold">Score:</span>{" "}
-            {serverResponse?.result?.score}
-          </p>
-          <p>
-            <span className="font-bold">Total Correct Answer:</span>{" "}
-            {serverResponse?.result?.totalCorrectAnswers}
-          </p>
-          <p>
-            <span className="font-bold">Correct Answers Give:</span>{" "}
-            {serverResponse?.result?.correctAnswersGiven.toString()}
-          </p>
-          <p>
-            <span className="font-bold">Feedback:</span>{" "}
-            {serverResponse?.feedback}
-          </p>
-        </div>
-      </Modal>
-      {/* Pagination controls UI code can be added here if you want */}
+      {renderResultModal()}
     </div>
   );
 
@@ -245,9 +247,9 @@ export default function DynamicPage({ params }) {
         <button
           className="flex items-center gap-1 px-6 py-2 rounded border-2 border-[#810000] bg-white text-[#810000] font-semibold text-base hover:bg-[#810000] hover:text-white transition"
           onClick={handleSubmit}
-          disabled={selected === null || timeLeft === 0}
+          disabled={selected === null || timeLeft === 0 || isSubmitting}
         >
-          {isSubmitting ? "Submitting...." : "Submit"}
+          {isSubmitting ? "Submitting..." : "Submit"}
         </button>
       </div>
       {renderPagination()}
@@ -255,33 +257,145 @@ export default function DynamicPage({ params }) {
   );
 }
 
-//==================Modal=======================
-const Modal = ({ isModalOpen, children, setIsModalOpen }) => {
+//==================Enhanced Modal=======================
+const EnhancedModal = ({
+  isModalOpen,
+  setIsModalOpen,
+  serverResponse,
+  submissionTime,
+  formatTime,
+  onClose,
+}) => {
   useEffect(() => {
     if (isModalOpen) {
-      document.body.style.overflow = "hidden"; // Disable scrolling
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = "auto"; // Enable scrolling again
+      document.body.style.overflow = "auto";
     }
     return () => {
-      document.body.style.overflow = "auto"; // Cleanup function in case modal unmounts
+      document.body.style.overflow = "auto";
     };
   }, [isModalOpen]);
+
+  if (!isModalOpen) return null;
+
+  const { result, feedback } = serverResponse;
+  const isCorrect = result?.correctAnswersGiven;
+  const score = result?.score || 0;
+  const totalQuestions = result?.totalCorrectAnswers || 1;
+
   return (
     <div
       onClick={setIsModalOpen}
-      className={`${
-        isModalOpen
-          ? "h-dvh w-full fixed inset-0 z-50 bg-black/50 flex flex-col justify-center items-center"
-          : "hidden"
-      }`}
+      className="h-dvh w-full fixed inset-0 z-50 bg-black/60 flex flex-col justify-center items-center backdrop-blur-sm mt-10"
     >
       <div
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-3xl shadow-2xl max-w-md w-full mx-4 overflow-hidden transform transition-all duration-300 scale-100"
       >
-        {children}
+        {/* Header */}
+        <div
+          className={`${
+            isCorrect
+              ? "bg-gradient-to-r from-green-500 to-green-600"
+              : "bg-gradient-to-r from-red-500 to-red-600"
+          } p-6 text-white text-center`}
+        >
+          <div className="flex justify-center mb-3">
+            {isCorrect ? (
+              <CheckCircle className="w-16 h-16 text-white" />
+            ) : (
+              <XCircle className="w-16 h-16 text-white" />
+            )}
+          </div>
+          <h2 className="text-2xl font-bold mb-2">
+            {isCorrect ? "Excellent!" : "Try Again!"}
+          </h2>
+          <p className="text-white/90">
+            {isCorrect ? "You got it right!" : "Better luck next time!"}
+          </p>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-4">
+          {/* Score Section */}
+          <div className="bg-gray-50 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-gray-600 font-medium">Your Score</span>
+              <div className="flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-yellow-500" />
+                <span className="text-2xl font-bold text-[#810000]">
+                  {score}/{totalQuestions}
+                </span>
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div
+                className={`h-3 rounded-full transition-all duration-500 ${
+                  isCorrect ? "bg-green-500" : "bg-red-500"
+                }`}
+                style={{ width: `${(score / totalQuestions) * 100}%` }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Time Section */}
+          {submissionTime !== null && (
+            <div className="bg-blue-50 rounded-xl p-4">
+              <div className="flex items-center gap-3">
+                <Clock className="w-5 h-5 text-blue-500" />
+                <div>
+                  <p className="text-sm text-gray-600">Time Taken</p>
+                  <p className="text-lg font-semibold text-blue-700">
+                    {formatTime(submissionTime)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Feedback Section */}
+          {feedback && (
+            <div className="bg-yellow-50 rounded-xl p-4">
+              <h4 className="font-semibold text-gray-800 mb-2">Feedback</h4>
+              <p className="text-gray-700 text-sm leading-relaxed">
+                {feedback}
+              </p>
+            </div>
+          )}
+
+          {/* Additional Stats */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-purple-50 rounded-lg p-3 text-center">
+              <p className="text-sm text-gray-600">Correct Answers</p>
+              <p className="text-lg font-bold text-purple-600">
+                {result?.totalCorrectAnswers || 0}
+              </p>
+            </div>
+            <div className="bg-indigo-50 rounded-lg p-3 text-center">
+              <p className="text-sm text-gray-600">Status</p>
+              <p
+                className={`text-lg font-bold ${
+                  isCorrect ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                {isCorrect ? "Passed" : "Failed"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="p-6 pt-0">
+          <button
+            onClick={onClose}
+            className="w-full bg-[#810000] hover:bg-[#660000] text-white font-semibold py-3 px-6 rounded-xl transition duration-200 transform hover:scale-105"
+          >
+            Continue
+          </button>
+        </div>
       </div>
     </div>
   );
