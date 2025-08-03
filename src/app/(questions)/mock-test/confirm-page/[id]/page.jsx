@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, use } from "react";
 import { useRouter } from "next/navigation";
 import {
   CheckCircle,
@@ -27,7 +27,7 @@ const RECORD_SECONDS = 35;
 // Read Aloud Component
 const ReadAloudComponent = ({ question, onAnswer }) => {
   const [isRecording, setIsRecording] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
+  const [recordingTime, setRecordingTime] = useState(RECORD_SECONDS);
   const [audioBlob, setAudioBlob] = useState(null);
   const [mp3URL, setMp3URL] = useState(null);
   const recorder = useRef(null);
@@ -42,6 +42,14 @@ const ReadAloudComponent = ({ question, onAnswer }) => {
     timerRef.current = setTimeout(() => setRecordingTime((t) => t - 1), 1000);
     return () => clearTimeout(timerRef.current);
   }, [isRecording, recordingTime]);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [timerRef]);
 
   const startRecording = () => {
     recorder.current = new MicRecorder({ bitRate: 128 });
@@ -309,7 +317,7 @@ const RepeatSentenceComponent = ({ question, onAnswer }) => {
   );
 };
 
-// Respond to Situation Component
+// Respond to Situation Component  
 const RespondToSituationComponent = ({ question, onAnswer }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -750,25 +758,15 @@ const RWFillInTheBlanksComponent = ({ question, onAnswer }) => {
   };
 
   const renderPromptWithBlanks = () => {
-    let text = question.prompt;
+    let text = question.prompt || '';
     const blanks = question.blanks || [];
+    
+    if (blanks.length === 0) {
+      return <span>{text}</span>;
+    }
     
     blanks.forEach((blank, index) => {
       const placeholder = `(${String.fromCharCode(97 + blank.index)})`;
-      const dropdown = (
-        <select
-          key={index}
-          value={answers[blank.index] || ''}
-          onChange={(e) => handleAnswerChange(blank.index, e.target.value)}
-          className="mx-1 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">Select...</option>
-          {blank.options.map((option, optIndex) => (
-            <option key={optIndex} value={option}>{option}</option>
-          ))}
-        </select>
-      );
-      
       text = text.replace(placeholder, `<BLANK_${index}>`);
     });
 
@@ -854,7 +852,7 @@ const MCQMultipleComponent = ({ question, onAnswer }) => {
       </div>
       
       <div className="space-y-3">
-        {question.options.map((option, index) => (
+        {question.options?.map((option, index) => (
           <label key={index} className="flex items-start gap-3 cursor-pointer">
             <input
               type="checkbox"
@@ -897,7 +895,7 @@ const MCQSingleComponent = ({ question, onAnswer }) => {
       </div>
       
       <div className="space-y-3">
-        {question.options.map((option, index) => (
+        {question.options?.map((option, index) => (
           <label key={index} className="flex items-start gap-3 cursor-pointer">
             <input
               type="radio"
@@ -1144,7 +1142,7 @@ const ListeningMCQComponent = ({ question, onAnswer, isMultiple = false }) => {
       </div>
       
       <div className="space-y-3">
-        {question.options.map((option, index) => (
+        {question.options?.map((option, index) => (
           <label key={index} className="flex items-start gap-3 cursor-pointer">
             <input
               type={isMultiple ? "checkbox" : "radio"}
@@ -1163,8 +1161,8 @@ const ListeningMCQComponent = ({ question, onAnswer, isMultiple = false }) => {
 };
 
 // Main Question Renderer
-const QuestionRenderer = ({ question, questionIndex, onAnswer }) => {
-  const { type, subtype } = question;
+const QuestionRenderer = ({ question, onAnswer }) => {
+  const { subtype } = question;
   
   switch (subtype) {
     case 'read_aloud':
@@ -1277,12 +1275,12 @@ const ResultModal = ({ isOpen, onClose, result }) => {
 
 // Main Dynamic Mock Test Component
 export default function DynamicMockTest({ params }) {
-  const { id: mockTestId } = params;
-//   console.log(mockTestId)
+  // Use React.use() to unwrap the Promise params
+  const resolvedParams = use(params);
+  const mockTestId = resolvedParams.id;
+  
   const router = useRouter();
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
-
-
   
   const [testData, setTestData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1292,11 +1290,11 @@ export default function DynamicMockTest({ params }) {
   const [showResultModal, setShowResultModal] = useState(false);
   const [testResult, setTestResult] = useState(null);
 
-    console.log(testData)
-
   // Fetch test data
   useEffect(() => {
     const fetchTestData = async () => {
+      if (!mockTestId) return;
+      
       setLoading(true);
       try {
         const response = await fetchWithAuth(`${baseUrl}/full-mock-test/get/${mockTestId}`);
@@ -1304,13 +1302,12 @@ export default function DynamicMockTest({ params }) {
         setTestData(data);
       } catch (error) {
         console.error("Failed to fetch test data:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
-    if (mockTestId) {
-      fetchTestData();
-    }
+    fetchTestData();
   }, [mockTestId, baseUrl]);
 
   // Handle answer changes
@@ -1323,16 +1320,22 @@ export default function DynamicMockTest({ params }) {
 
   // Submit individual answer
   const submitAnswer = async (questionId, answer) => {
+    if (!answer) return;
+
     try {
-      const formData = new FormData();
-      
       if (answer instanceof Blob) {
         // For audio files
+        const formData = new FormData();
         formData.append("voice", answer, "voice.mp3");
         formData.append("questionId", questionId);
+        
+        await fetchWithAuth(`${baseUrl}/test/submit-answer`, {
+          method: "POST",
+          body: formData
+        });
       } else {
         // For text answers
-        const response = await fetchWithAuth(`${baseUrl}/test/submit-answer`, {
+        await fetchWithAuth(`${baseUrl}/test/submit-answer`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -1350,9 +1353,12 @@ export default function DynamicMockTest({ params }) {
 
   // Navigate to next question
   const nextQuestion = async () => {
+    if (!testData?.questions || isSubmitting) return;
+
     const currentQuestion = testData.questions[currentQuestionIndex];
     const currentAnswer = answers[currentQuestion._id];
     
+    // Submit current answer if exists
     if (currentAnswer) {
       await submitAnswer(currentQuestion._id, currentAnswer);
     }
@@ -1360,7 +1366,7 @@ export default function DynamicMockTest({ params }) {
     if (currentQuestionIndex < testData.questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
-      // Submit test
+      // Submit entire test
       await submitTest();
     }
   };
@@ -1382,11 +1388,12 @@ export default function DynamicMockTest({ params }) {
       setShowResultModal(true);
     } catch (error) {
       console.error("Failed to submit test:", error);
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
-  if (loading || !testData) {
+  if (loading || !testData || !testData.questions || testData.questions.length === 0) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
@@ -1407,7 +1414,7 @@ export default function DynamicMockTest({ params }) {
               <h1 className="text-2xl font-bold text-gray-800">{testData.name}</h1>
               <div className="flex items-center mt-1 text-gray-600">
                 <Clock className="h-4 w-4 mr-1" />
-                <span>Duration: {testData.duration.hours}h {testData.duration.minutes}m</span>
+                <span>Duration: {testData.duration?.hours || 0}h {testData.duration?.minutes || 0}m</span>
               </div>
             </div>
             <div className="text-right">
@@ -1429,7 +1436,6 @@ export default function DynamicMockTest({ params }) {
       <div className="max-w-4xl mx-auto px-4 py-6">
         <QuestionRenderer 
           question={currentQuestion} 
-          questionIndex={currentQuestionIndex}
           onAnswer={(answer) => handleAnswerChange(currentQuestion._id, answer)}
         />
         
