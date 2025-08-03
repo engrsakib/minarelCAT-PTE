@@ -167,10 +167,10 @@ export default function DynamicPage({ params }) {
 
     const payload = {
       questionId: currentQ._id,
-      userSummary: summary.trim(),
+      answer: summary.trim(),
     };
 
-    console.log("🚀 Submitting payload:", payload);
+    // console.log("🚀 Submitting payload:", payload);
 
     try {
       //submission status
