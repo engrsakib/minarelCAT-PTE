@@ -48,6 +48,7 @@ export function User({
               {user?.user?._id.length > 6 ? "..." : ""}
             </h1>
           </div>
+          
         </button>
       </DropdownMenuTrigger>
       {/* Use 'forceMount' and 'portal' to ensure the dropdown is rendered in a portal above the navbar */}

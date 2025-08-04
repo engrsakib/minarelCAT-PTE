@@ -136,10 +136,10 @@ export default function Navbar() {
                 </div>
               )}
             />
-            <div className="relative">
+            <div className="relative ">
               <User user={user} loading={loading} error={error} className="z-50" />
-              <div className="absolute right-25 top-10 bg-yellow-500 flex items-center gap-x-1 text-white p-0.5 text-[12px] rounded">
-                <Crown className="w-[20px] h-auto" />
+              <div className="absolute right-31  top-10 bg-yellow-500 flex items-center gap-x-1 text-white p-0.5 text-[12px] rounded">
+                <Crown className="w-[15px] h-auto" />
                 <span>{user.user.userSubscription.credits}</span>
               </div>
             </div>

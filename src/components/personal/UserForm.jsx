@@ -191,6 +191,7 @@ export default function UserForm({ data ,onUpdateSuccess}) {
             </label>
             <div className="flex-1">
               <input
+              disabled
                 type="email"
                 id="email"
                 name="email"

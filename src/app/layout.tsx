@@ -30,8 +30,8 @@ export default function RootLayout({
     <html lang="en">
       <body className={` ${poppins.variable} antialiased bg-white`}>
         {/* header */}
-        <Navbar />
-        
+        <Navbar />        
+
         <section className="min-h-dvh">
           {children}
         </section>
