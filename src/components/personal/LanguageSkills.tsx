@@ -157,7 +157,7 @@ const LanguageSkills: React.FC<LanguageSkillsProps> = ({ isOpen, setIsOpen }) =>
                 )
               })}
             </div>
-          </div>
+          </div> 
         </div>
       </div>
     </div>
