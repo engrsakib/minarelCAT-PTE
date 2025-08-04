@@ -51,7 +51,7 @@ export default function PracticeOverview() {
     <div className="min-h-screen  relative overflow-hidden">
       {/* Decorative curved lines */}
 
-      <div className="relative z-10 container mx-auto px-4 py-8 max-w-6xl">
+      <div className="relative z-10 container mx-auto px-4 py-8 max-w-6xl ">
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
@@ -89,8 +89,8 @@ export default function PracticeOverview() {
         </div>
 
         {/* Content Card */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12">
-          <div className="grid md:grid-cols-2 gap-8 items-start">
+        <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12 box-border">
+          <div className="grid md:grid-cols-2 gap-8 items-start md:items-center h-auto md:h-[267px] w-full">
             {/* Left side - Number and label */}
             <div className="text-center md:text-left">
               <div className="text-6xl md:text-8xl font-bold text-red-900 mb-2">
@@ -119,6 +119,7 @@ export default function PracticeOverview() {
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );
