@@ -7,11 +7,23 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
+  CheckCircle,
 } from "lucide-react";
 import AudioPlayer from "./../../../../../components/audio/AudioPlayer";
-// Audio Player Component (use your previous one if it was custom)
-
 import { Progress } from "@/components/ui/progress";
+
+// Card components (if not available from shadcn/ui, create simple versions)
+const Card = ({ children, className = "" }) => (
+  <div
+    className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`}
+  >
+    {children}
+  </div>
+);
+
+const CardContent = ({ children, className = "" }) => (
+  <div className={`p-6 ${className}`}>{children}</div>
+);
 
 export default function DynamicPage({ params }) {
   const { id } = params;
@@ -161,7 +173,6 @@ export default function DynamicPage({ params }) {
   // Submit handler
   const handleSubmit = async () => {
     if (!summary.trim() || !currentQ || !currentQ._id) {
-      // alert("Summary or question is missing!");
       return;
     }
 
@@ -170,10 +181,7 @@ export default function DynamicPage({ params }) {
       answer: summary.trim(),
     };
 
-    // console.log("🚀 Submitting payload:", payload);
-
     try {
-      //submission status
       setIsSubmitting(true);
       const response = await fetchWithAuth(
         `${baseUrl}/test/listening/summarize-spoken-text/result`,
@@ -189,18 +197,22 @@ export default function DynamicPage({ params }) {
 
       if (!response.ok) {
         console.error("❌ Server responded with error:", result);
-        // alert(`Error: ${result.message || "Something went wrong!"}`);
         return;
       }
-      //submission status
-      setIsSubmitting(false);
+
       setSummary("");
-      setIsModalOpen(!isModalOpen);
+      setIsModalOpen(true);
       console.log("✅ Server response:", result);
     } catch (e) {
       console.error("🔥 Submission failed:", e);
-      // alert("Something went wrong! Try again.");
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  // Close modal handler
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
   };
 
   if (loading || !currentQ) {
@@ -216,127 +228,12 @@ export default function DynamicPage({ params }) {
       {/* =========================Modal Contents starts here=============== */}
       <Modal
         isModalOpen={isModalOpen}
-        setIsModalOpen={() => setIsModalOpen(!isModalOpen)}
-      >
-        <div className="w-[100dvw] h-[90dvh] md:w-[50dvw] md:h-[50dvh] bg-white overflow-y-scroll">
-          <div className="h-[15%] bg-[#810000] p-4">
-            <p className="text-white text-3xl font-semibold">Result</p>
-          </div>
-          <div className="p-4">
-            <p className="text-gray-600">
-              <span className="font-bold">Original Transcript</span>:{" "}
-              {serverResponse?.original_transcript}
-            </p>
-            <p className="text-gray-600 mt-2">
-              <span className="font-bold">User Summary</span>:{" "}
-              {serverResponse?.user_summary}
-            </p>
-          </div>
-          <div className="p-4 text-gray-600">
-            <h1 className="text-xl font-semibold">Summarize Text Score</h1>
-            <p className="text-lg font-medium text-gray-700">Scores</p>
-            <div className="flex gap-2 my-2">
-              <div className="bg-gray-200 grow p-2 rounded-md">
-                <p>
-                  Content :{" "}
-                  {serverResponse?.summarize_text_score?.scores?.content}/10
-                </p>
-                <Progress value={20} />
-              </div>
-
-              <div className="bg-gray-200 grow p-2 rounded-md">
-                <p>
-                  Form: {serverResponse?.summarize_text_score?.scores?.form}/10
-                </p>
-                <Progress value={10} />
-              </div>
-
-              <div className="bg-gray-200 grow p-2 rounded-md">
-                <p>
-                  Grammar:{" "}
-                  {serverResponse?.summarize_text_score?.scores?.grammar}
-                  /10
-                </p>
-
-                <Progress value={20} />
-              </div>
-
-              <div className="bg-gray-200 grow p-2 rounded-md">
-                <p>
-                  Vocabulary:{" "}
-                  {serverResponse?.summarize_text_score?.scores?.vocabulary}/10
-                </p>
-                <Progress value={20} />
-              </div>
-
-              <div className="bg-gray-200 grow p-2 rounded-md">
-                <p>
-                  Coherence:{" "}
-                  {serverResponse?.summarize_text_score?.scores?.coherence}/10
-                </p>
-                <Progress value={20} />
-              </div>
-            </div>
-
-            <p className="text-lg font-medium text-gray-700">
-              Total scores: {serverResponse?.summarize_text_score?.total_score}
-              /10
-            </p>
-            <div className="bg-gray-200 grow p-2 rounded-md">
-              <Progress value={90} />
-            </div>
-
-            <p className="text-lg font-medium text-gray-700 py-4">
-              Word Counts: {serverResponse?.summarize_text_score?.word_count}
-            </p>
-            <h1 className="text-lg font-medium text-gray-700">Feedback</h1>
-
-            <div className="bg-gray-200 border rounded-md p-2 mb-2">
-              <h2 className="font-medium">Strength</h2>
-              <p>{serverResponse?.summarize_text_score?.feedback?.strengths}</p>
-            </div>
-
-            <div className="bg-gray-200 border rounded-md p-2 mb-2">
-              <h2 className="font-medium">Improvements</h2>
-              <p>
-                {serverResponse?.summarize_text_score?.feedback?.improvements}
-              </p>
-            </div>
-
-            <div className="bg-gray-200 border rounded-md p-2 mb-2">
-              <h2 className="font-medium">Overall</h2>
-              <p>{serverResponse?.summarize_text_score?.feedback?.overall}</p>
-            </div>
-            <h1 className="text-lg font-medium text-gray-700">Summary</h1>
-            <div>
-              <p>
-                Quality Score: {serverResponse?.summary?.summary_quality_score}
-                /10
-              </p>
-              <Progress
-                value={
-                  serverResponse?.summary?.summary_quality_score < 10
-                    ? serverResponse?.summary?.summary_quality_score * 10
-                    : serverResponse?.summary?.summary_quality_score * 1
-                }
-              ></Progress>
-              <div className="my-2 bg-gray-100 p-2 rounded-md">
-                <h2 className="text-lg">Combined Assessment</h2>
-                <p>
-                  Writing Ability:{" "}
-                  {
-                    serverResponse?.summary?.combined_assessment
-                      ?.summary_writing_ability
-                  }
-                </p>
-                <Progress value={90}></Progress>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Modal>
-
+        setIsModalOpen={handleCloseModal}
+        onClose={handleCloseModal}
+        serverResponse={serverResponse}
+      />
       {/* =========================Modal Contents ends here=============== */}
+
       <div className="text-2xl font-semibold text-[#810000] border-b border-[#810000] pb-2 mb-6">
         Summarize Spoken Text
       </div>
@@ -344,17 +241,19 @@ export default function DynamicPage({ params }) {
         Listen to the recording. Write a summary. Your summary should be between
         50 and 70 words. Include the question ID with your submission.
       </p>
+
       {/* Question Heading */}
       <div className="bg-[#810000] text-white px-5 py-2 rounded mb-2 text-lg font-semibold tracking-wide flex items-center gap-2">
         <span>#{currentQ._id}</span>
         <span>|</span>
         <span>{currentQ.heading}</span>
       </div>
+
       {/* Audio Player */}
       <div className="border border-[#810000] rounded p-4 mb-4 bg-white text-gray-900 whitespace-pre-line">
-        {/* <AudioPlayer src={currentQ.audioUrl} /> */}
         <AudioPlayer src={currentQ.audioUrl} />
       </div>
+
       {/* Textarea for summary */}
       <div className="border border-[#810000] rounded p-4 mb-6 bg-[#faf9f9] flex flex-col items-start">
         <label htmlFor="summary" className="text-[#810000] font-semibold mb-2">
@@ -367,48 +266,264 @@ export default function DynamicPage({ params }) {
           placeholder={`Example: [${currentQ._id}] ...your summary here...`}
           value={summary}
           onChange={(e) => setSummary(e.target.value)}
+          disabled={isSubmitting}
         />
         <button
-          className="px-5 py-2 rounded border-2 border-[#810000] bg-white text-[#810000] font-semibold text-base hover:bg-[#810000] hover:text-white transition"
+          className="px-5 py-2 rounded border-2 border-[#810000] bg-white text-[#810000] font-semibold text-base hover:bg-[#810000] hover:text-white transition disabled:bg-[#810000] disabled:text-white disabled:cursor-not-allowed"
           onClick={handleSubmit}
-          disabled={!summary.trim()}
+          disabled={!summary.trim() || isSubmitting}
         >
-         {isSubmitting ? "Submitting..." : "Submit"}
+          {isSubmitting ? "Submitting..." : "Submit"}
         </button>
       </div>
       {renderPagination()}
     </div>
   );
 }
+
 //Modal Component
-const Modal = ({ isModalOpen, children, setIsModalOpen }) => {
-  //   console.log(isModalOpen);
+const Modal = ({ isModalOpen, setIsModalOpen, onClose, serverResponse }) => {
   useEffect(() => {
     if (isModalOpen) {
-      document.body.style.overflow = "hidden"; // Disable scrolling
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = "auto"; // Enable scrolling again
+      document.body.style.overflow = "auto";
     }
 
     return () => {
-      document.body.style.overflow = "auto"; // Cleanup function in case modal unmounts
+      document.body.style.overflow = "auto";
     };
   }, [isModalOpen]);
+
+  if (!isModalOpen) return null;
+
   return (
     <div
       onClick={setIsModalOpen}
-      className={`${
-        isModalOpen
-          ? "h-dvh w-full fixed inset-0 z-50 bg-black/50 flex flex-col justify-center items-center"
-          : "hidden"
-      }`}
+      className="h-dvh w-full fixed inset-0 z-50 bg-black/50 flex flex-col justify-center items-center"
     >
       <div
         onClick={(e) => {
           e.stopPropagation();
         }}
       >
-        {children}
+        <Card className="w-[90vw] sm:w-[600px] md:w-[700px] max-w-[95vw] max-h-[90vh] overflow-y-auto">
+          <CardContent className="p-4 sm:p-6">
+            <div className="text-center mb-4">
+              <CheckCircle className="w-12 h-12 sm:w-14 sm:h-14 text-green-500 mx-auto mb-3" />
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#810000] mb-2">
+                🎉 Results
+              </h2>
+              <p className="text-sm text-gray-600">
+                Here's your summary analysis
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {/* Original Transcript and User Summary */}
+              <div className="grid gap-3">
+                <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
+                  <h3 className="font-semibold text-blue-800 mb-2 text-sm">
+                    Original Transcript
+                  </h3>
+                  <p className="text-blue-700 text-sm">
+                    {serverResponse?.original_transcript || "N/A"}
+                  </p>
+                </div>
+                <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
+                  <h3 className="font-semibold text-green-800 mb-2 text-sm">
+                    Your Summary
+                  </h3>
+                  <p className="text-green-700 text-sm">
+                    {serverResponse?.user_summary || "N/A"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Summarize Text Scores */}
+              <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                <h3 className="font-semibold text-gray-800 mb-3 text-lg">
+                  Summarize Text Score
+                </h3>
+
+                {/* Individual Scores */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mb-4">
+                  <div className="bg-white p-2 rounded text-center">
+                    <p className="text-xs font-medium text-gray-600">Content</p>
+                    <p className="text-lg font-bold text-purple-600">
+                      {serverResponse?.summarize_text_score?.scores?.content ||
+                        0}
+                      /10
+                    </p>
+                    <Progress
+                      value={
+                        (serverResponse?.summarize_text_score?.scores
+                          ?.content || 0) * 10
+                      }
+                      className="h-2"
+                    />
+                  </div>
+                  <div className="bg-white p-2 rounded text-center">
+                    <p className="text-xs font-medium text-gray-600">Form</p>
+                    <p className="text-lg font-bold text-orange-600">
+                      {serverResponse?.summarize_text_score?.scores?.form || 0}
+                      /10
+                    </p>
+                    <Progress
+                      value={
+                        (serverResponse?.summarize_text_score?.scores?.form ||
+                          0) * 10
+                      }
+                      className="h-2"
+                    />
+                  </div>
+                  <div className="bg-white p-2 rounded text-center">
+                    <p className="text-xs font-medium text-gray-600">Grammar</p>
+                    <p className="text-lg font-bold text-pink-600">
+                      {serverResponse?.summarize_text_score?.scores?.grammar ||
+                        0}
+                      /10
+                    </p>
+                    <Progress
+                      value={
+                        (serverResponse?.summarize_text_score?.scores
+                          ?.grammar || 0) * 10
+                      }
+                      className="h-2"
+                    />
+                  </div>
+                  <div className="bg-white p-2 rounded text-center">
+                    <p className="text-xs font-medium text-gray-600">
+                      Vocabulary
+                    </p>
+                    <p className="text-lg font-bold text-indigo-600">
+                      {serverResponse?.summarize_text_score?.scores
+                        ?.vocabulary || 0}
+                      /10
+                    </p>
+                    <Progress
+                      value={
+                        (serverResponse?.summarize_text_score?.scores
+                          ?.vocabulary || 0) * 10
+                      }
+                      className="h-2"
+                    />
+                  </div>
+                  <div className="bg-white p-2 rounded text-center sm:col-span-2 lg:col-span-1">
+                    <p className="text-xs font-medium text-gray-600">
+                      Coherence
+                    </p>
+                    <p className="text-lg font-bold text-teal-600">
+                      {serverResponse?.summarize_text_score?.scores
+                        ?.coherence || 0}
+                      /10
+                    </p>
+                    <Progress
+                      value={
+                        (serverResponse?.summarize_text_score?.scores
+                          ?.coherence || 0) * 10
+                      }
+                      className="h-2"
+                    />
+                  </div>
+                </div>
+
+                {/* Total Score */}
+                <div className="bg-[#810000] text-white p-3 rounded-lg mb-3">
+                  <p className="text-sm opacity-90">Total Score</p>
+                  <p className="text-2xl font-bold">
+                    {serverResponse?.summarize_text_score?.total_score || 0}/10
+                  </p>
+                  <Progress
+                    value={
+                      (serverResponse?.summarize_text_score?.total_score || 0) *
+                      10
+                    }
+                    className="h-3 bg-white/20"
+                  />
+                </div>
+
+                {/* Word Count */}
+                <div className="text-center text-sm text-gray-600 mb-4">
+                  Word Count:{" "}
+                  <span className="font-semibold">
+                    {serverResponse?.summarize_text_score?.word_count || 0}
+                  </span>
+                </div>
+              </div>
+
+              {/* Feedback */}
+              <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                <h3 className="font-semibold text-gray-800 mb-3 text-lg">
+                  Feedback
+                </h3>
+                <div className="space-y-3">
+                  <div className="bg-green-100 border-l-4 border-green-500 p-3 rounded">
+                    <h4 className="font-medium text-green-800">Strengths</h4>
+                    <p className="text-green-700 text-sm">
+                      {serverResponse?.summarize_text_score?.feedback
+                        ?.strengths || "N/A"}
+                    </p>
+                  </div>
+                  <div className="bg-yellow-100 border-l-4 border-yellow-500 p-3 rounded">
+                    <h4 className="font-medium text-yellow-800">
+                      Improvements
+                    </h4>
+                    <p className="text-yellow-700 text-sm">
+                      {serverResponse?.summarize_text_score?.feedback
+                        ?.improvements || "N/A"}
+                    </p>
+                  </div>
+                  <div className="bg-blue-100 border-l-4 border-blue-500 p-3 rounded">
+                    <h4 className="font-medium text-blue-800">Overall</h4>
+                    <p className="text-blue-700 text-sm">
+                      {serverResponse?.summarize_text_score?.feedback
+                        ?.overall || "N/A"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Summary Quality */}
+              <div className="bg-indigo-50 p-3 sm:p-4 rounded-lg">
+                <h3 className="font-semibold text-indigo-800 mb-3 text-lg">
+                  Summary Quality
+                </h3>
+                <div className="mb-3">
+                  <p className="text-sm text-indigo-700 mb-1">
+                    Quality Score:{" "}
+                    <span className="font-bold">
+                      {serverResponse?.summary?.summary_quality_score || 0}/10
+                    </span>
+                  </p>
+                  <Progress
+                    value={
+                      (serverResponse?.summary?.summary_quality_score || 0) * 10
+                    }
+                    className="h-3"
+                  />
+                </div>
+                <div className="bg-white p-3 rounded">
+                  <h4 className="font-medium text-indigo-800 mb-2">
+                    Writing Ability
+                  </h4>
+                  <p className="text-indigo-700 text-sm mb-2">
+                    {serverResponse?.summary?.combined_assessment
+                      ?.summary_writing_ability || "N/A"}
+                  </p>
+                  <Progress value={90} className="h-2" />
+                </div>
+              </div>
+
+              <button
+                onClick={onClose}
+                className="w-full mt-4 px-4 py-2 bg-[#810000] text-white rounded hover:bg-[#5d0000] font-medium text-sm"
+              >
+                Close
+              </button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
