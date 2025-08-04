@@ -123,7 +123,7 @@ const LanguageSkills: React.FC<LanguageSkillsProps> = ({ isOpen, setIsOpen }) =>
                 return (
                   <div
                     key={index}
-                    className="bg-white flex flex-col h-full lg:items-center items-center justify-center"
+                    className="bg-white flex flex-col h-full lg:items-center items-center"
                     style={{ minWidth: 0 }}
                   >
                     {/* Header with Icon */}

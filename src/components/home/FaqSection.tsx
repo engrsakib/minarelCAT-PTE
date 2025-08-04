@@ -13,9 +13,10 @@ interface FAQItem {
 
 export default function FAQSection() {
   const [faqs, setFaqs] = useState<FAQItem[]>([])
-  const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set())
+  const [expandedItem, setExpandedItem] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
-    const baseUrl = process.env.NEXT_PUBLIC_URL || ""
+  const baseUrl = process.env.NEXT_PUBLIC_URL || ""
+
   // Mock API data - replace with your actual API endpoint
   const fetchFAQs = async () => {
     try {
@@ -91,13 +92,9 @@ export default function FAQSection() {
   }, [baseUrl])
 
   const toggleExpanded = (id: number) => {
-    const newExpandedItems = new Set(expandedItems)
-    if (newExpandedItems.has(id)) {
-      newExpandedItems.delete(id)
-    } else {
-      newExpandedItems.add(id)
-    }
-    setExpandedItems(newExpandedItems)
+    // If clicking on the currently expanded item, close it
+    // Otherwise, open the clicked item (closing any other open item)
+    setExpandedItem(expandedItem === id ? null : id)
   }
 
   if (loading) {
@@ -149,11 +146,11 @@ export default function FAQSection() {
               >
                 <button
                   onClick={() => toggleExpanded(faq.id)}
-                  className="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-inset"
+                  className="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none"
                 >
                   <span className="text-gray-800 font-medium text-base sm:text-lg pr-4">{faq.question}</span>
                   <div className="flex-shrink-0">
-                    {expandedItems.has(faq.id) ? (
+                    {expandedItem === faq.id ? (
                       <Minus className="w-5 h-5 text-gray-600" />
                     ) : (
                       <Plus className="w-5 h-5 text-gray-600" />
@@ -161,7 +158,7 @@ export default function FAQSection() {
                   </div>
                 </button>
 
-                {expandedItems.has(faq.id) && (
+                {expandedItem === faq.id && (
                   <div className="px-6 pb-5">
                     <div className="pt-2 border-t border-red-100">
                       <p className="text-gray-700 text-sm sm:text-base leading-relaxed">{faq.answer}</p>
