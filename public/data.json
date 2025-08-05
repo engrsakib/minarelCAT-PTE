@@ -1,5 +1,6 @@
 {
   "speaking": {
+    "id": "speaking",
     "title": "Speaking Practice",
     "count": 580,
     "label": "Speaking Question",
@@ -7,10 +8,11 @@
     "details": [
       "AI speech analysis for fluency & pronunciation",
       "Repeated Sentence, Describe Image, and Retell Lecture exercise AI speech analysis for fluency & pronunciation",
-      "Repeated Sentence, Describe Image, and Retell Lecture exercise s"
+      "Repeated Sentence, Describe Image, and Retell Lecture exercises"
     ]
   },
   "writing": {
+    "id": "writing",
     "title": "Writing Practice",
     "count": 420,
     "label": "Writing Question",
@@ -22,6 +24,7 @@
     ]
   },
   "reading": {
+    "id": "reading",
     "title": "Reading Practice",
     "count": 350,
     "label": "Reading Question",
@@ -33,6 +36,7 @@
     ]
   },
   "listening": {
+    "id": "listening",
     "title": "Listening Practice",
     "count": 290,
     "label": "Listening Question",

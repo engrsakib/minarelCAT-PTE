@@ -1,7 +1,7 @@
 "use client";
 import fetchWithAuth from "@/lib/fetchWithAuth";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ChevronLeft, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,12 @@ export default function ReadAloud() {
   const [bookmarkLoadingId, setBookmarkLoadingId] = useState(null);
   const router = useRouter();
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
+
+  //Getting the pathName
+  const pathName = usePathname();
+  const unCleanedLastPart = pathName.split("/").pop();
+  const withSpaces = unCleanedLastPart.replace(/-/g, " ");
+  const lastPart = withSpaces.charAt(0).toUpperCase() + withSpaces.slice(1);
 
   // Fetch data with filters
   const fetchData = async () => {
@@ -74,14 +80,11 @@ export default function ReadAloud() {
     setBookmarkLoadingId(item._id);
     try {
       // Toggle bookmark: if true, remove; if false, add
-      const res = await fetchWithAuth(
-        `${baseUrl}/user/bookmark`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: item._id }),
-        }
-      );
+      const res = await fetchWithAuth(`${baseUrl}/user/bookmark`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: item._id }),
+      });
       if (res.ok) {
         // Update only the specific item's bookmark status
         setData((prev) =>
@@ -137,10 +140,10 @@ export default function ReadAloud() {
       <div className="bg-[#810000] text-white px-2 sm:px-4 py-3 rounded-md flex items-center justify-between mb-6">
         <button
           onClick={() => router.push("/")}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 cursor-pointer"
         >
           <ChevronLeft className="w-5 h-5" />
-          <h1 className="text-lg font-medium whitespace-nowrap">Read Aloud</h1>
+          <h1 className="text-lg font-medium whitespace-nowrap">{lastPart}</h1>
         </button>
       </div>
       {/* Tabs */}
@@ -165,9 +168,9 @@ export default function ReadAloud() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#810000]"></div>
           </div>
         ) : error ? (
-          <div className="text-center py-8 text-red-500">{error}</div>
+          <div className="text-center py-8 text-red-500 min-h-[50dvh]">{error}</div>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 min-h-[50dvh]">
             {data && data.length > 0 ? (
               data.map((item) => (
                 <div

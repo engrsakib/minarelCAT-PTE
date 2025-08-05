@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Mic, PenTool, BookOpen, Volume2 } from "lucide-react";
 import practiceData from "@/../public/data.json";
 
@@ -10,6 +10,7 @@ interface PracticeData {
   label: string;
   icon: string;
   details: string[];
+  id: string;
 }
 
 interface PracticeDataSet {
@@ -19,9 +20,33 @@ interface PracticeDataSet {
   listening: PracticeData;
 }
 
+// Define the structure of the API response
+interface QuestionCountResponse {
+  data: {
+    [key: string]: number;
+  };
+}
+
 type PracticeType = keyof PracticeDataSet;
 
 export default function PracticeOverview() {
+  // base url
+  const baseUrl = process.env.NEXT_PUBLIC_URL;
+
+  const [questionCount, setQuestionCount] = useState<QuestionCountResponse | null>(null);
+  console.log("Question counts==========>", questionCount);
+
+  // Getting question counts
+  useEffect(() => {
+    fetch(`${baseUrl}/user/questions-counts`)
+      .then((res) => res.json())
+      .then((data: QuestionCountResponse) => setQuestionCount(data))
+      .catch((error) => {
+        console.error("Error fetching question counts:", error);
+        setQuestionCount(null);
+      });
+  }, [baseUrl]);
+
   const [activeCategory, setActiveCategory] =
     useState<PracticeType>("speaking");
   const data = practiceData as PracticeDataSet;
@@ -46,6 +71,7 @@ export default function PracticeOverview() {
   };
 
   const currentData = data[activeCategory];
+  console.log("Current Data========>", currentData);
 
   return (
     <div className="min-h-screen  relative overflow-hidden">
@@ -70,7 +96,7 @@ export default function PracticeOverview() {
               key={category}
               onClick={() => setActiveCategory(category)}
               className={`
-                p-6 rounded-2xl transition-all duration-300 transform hover:scale-105
+                p-6 rounded-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer
                 ${
                   activeCategory === category
                     ? "bg-red-800 text-white shadow-lg"
@@ -89,12 +115,12 @@ export default function PracticeOverview() {
         </div>
 
         {/* Content Card */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12 box-border">
-          <div className="grid md:grid-cols-2 gap-8 items-start md:items-center h-auto md:h-[267px] w-full">
+        <div className="bg-white rounded-2xl shadow-lg p-4">
+          <div className="grid md:grid-cols-2  items-start md:items-center h-auto md:h-[267px] w-full md:w-6xl">
             {/* Left side - Number and label */}
-            <div className="text-center md:text-left">
+            <div className="text-center md:text-left p-0 md:p-4">
               <div className="text-6xl md:text-8xl font-bold text-red-900 mb-2">
-                {currentData.count}
+                {questionCount?.data?.[currentData.id] || 0}
               </div>
               <div className="text-gray-600 text-lg md:text-xl font-medium">
                 {currentData.label}
@@ -119,7 +145,6 @@ export default function PracticeOverview() {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );

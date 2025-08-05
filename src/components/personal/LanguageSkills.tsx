@@ -117,7 +117,7 @@ const LanguageSkills: React.FC<LanguageSkillsProps> = ({ isOpen, setIsOpen }) =>
         <div className="h-full w-full flex flex-col items-center justify-center">
           <div className="w-full max-w-7xl flex flex-col items-center justify-center">
             {/* Skills Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-0 lg:space-x-8 w-full justify-items-center items-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-0 lg:space-x-8 w-full justify-items-center items-center  pt-46 md:pt-0">
               {skillsData.map((skill, index) => {
                 const IconComponent = skill.icon
                 return (
