@@ -1,3 +1,4 @@
+"use client";
 import * as React from "react";
 import {
   DropdownMenu,
@@ -10,8 +11,11 @@ import Link from "next/link";
 import { logoutAndRedirect } from "@/lib/fetchWithAuth";
 import { RootUser } from "@/types/user";
 import { useState } from "react";
+import dummy from "../../../public/dummy-image.png"
 // FIX: Use portal for dropdown content, position above navbar
-export function User({
+export function User(
+  
+  {
   user,
   loading,
   error,
@@ -20,13 +24,14 @@ export function User({
   loading: boolean;
   error: string | null;
 }) {
+  const [dropDown, setDropDown] = useState(false)
   if (loading) {
     return <div>Loading...</div>;
   }
   if (error) {
     return <div>Error: {error}</div>;
   }
-  const [dropDown, setDropDown] = useState(false)
+  
 
   return (
     <DropdownMenu>
@@ -34,7 +39,7 @@ export function User({
         <button className="flex items-center gap-2 cursor-pointer bg-transparent border-none p-0 focus:outline-none">
           <div className="w-[60px] h-[60px] rounded-full overflow-hidden border-2 border-gray-200 shadow">
             <Image
-              src={user?.user?.profile || "/default-profile.png"}
+              src={user?.user?.profile || dummy}
               alt={user?.user?.name}
               width={70}
               height={70}

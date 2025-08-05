@@ -72,7 +72,7 @@ export default function MobileMenu({ open, onClose, setIsOpen, isOpen }) {
             <span>Login</span> <FaRightLong className="text-[20px]" />
           </Link>
           <Link
-            href="/auth/signin"
+            href="/auth/sign-up"
             className="text-[20px] font-normal bg-gradient-to-r from-[#D80000] to-[#720000] text-white px-4 py-2 rounded-full flex items-center justify-center hover:from-[#720000] hover:to-[#D80000] transition-all duration-300"
             onClick={onClose}
           >

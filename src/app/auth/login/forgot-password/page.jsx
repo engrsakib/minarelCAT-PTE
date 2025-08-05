@@ -2,12 +2,13 @@
 import { useState, FormEvent } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import { useRouter } from "next/navigation";
 
 export default function ForgotPassword() {
   const baseUrl = process.env.NEXT_PUBLIC_URL;
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-
+const router = useRouter();
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -23,6 +24,9 @@ export default function ForgotPassword() {
 
       if (!res.ok) {
         throw new Error(data?.message || "Something went wrong.");
+      }
+      if (res.ok) {
+        router.push(`/auth/login/otp?email=${email}`);
       }
 
       toast.success(data?.message || "Password reset link sent successfully!");

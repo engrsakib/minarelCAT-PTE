@@ -34,7 +34,7 @@ const ProgressDemo = () => {
     if (baseUrl) fetchUserData();
   }, [baseUrl]);
 
-  console.log("dashboard progress ", data);
+ 
 
 
   return (

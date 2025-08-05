@@ -38,8 +38,7 @@ const Layout = ({
     if (baseUrl) fetchUserData();
   }, [baseUrl]);
 
-  console.log("progress data from layout progress page : ", data);
-
+  
 
   return (
     <div>
