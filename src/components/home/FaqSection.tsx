@@ -142,29 +142,41 @@ export default function FAQSection() {
             {faqs.map((faq) => (
               <div
                 key={faq.id}
-                className="bg-red-50 rounded-lg overflow-hidden transition-all duration-200 hover:shadow-md"
+                className="bg-red-50 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-md transform hover:scale-[1.02]"
               >
                 <button
                   onClick={() => toggleExpanded(faq.id)}
-                  className="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none"
+                  className="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none transition-all duration-200 hover:bg-red-100"
                 >
-                  <span className="text-gray-800 font-medium text-base sm:text-lg pr-4">{faq.question}</span>
+                  <span className="text-gray-800 font-medium text-base sm:text-lg pr-4 transition-colors duration-200">
+                    {faq.question}
+                  </span>
                   <div className="flex-shrink-0">
-                    {expandedItem === faq.id ? (
-                      <Minus className="w-5 h-5 text-gray-600" />
-                    ) : (
-                      <Plus className="w-5 h-5 text-gray-600" />
-                    )}
+                    <div className="transition-transform duration-300 ease-in-out">
+                      {expandedItem === faq.id ? (
+                        <Minus className="w-5 h-5 text-gray-600 transform rotate-0 transition-transform duration-300" />
+                      ) : (
+                        <Plus className="w-5 h-5 text-gray-600 transform rotate-0 transition-transform duration-300" />
+                      )}
+                    </div>
                   </div>
                 </button>
 
-                {expandedItem === faq.id && (
+                <div
+                  className={`transition-all duration-300 ease-in-out ${
+                    expandedItem === faq.id
+                      ? "max-h-96 opacity-100"
+                      : "max-h-0 opacity-0"
+                  } overflow-hidden`}
+                >
                   <div className="px-6 pb-5">
-                    <div className="pt-2 border-t border-red-100">
-                      <p className="text-gray-700 text-sm sm:text-base leading-relaxed">{faq.answer}</p>
+                    <div className="pt-2 border-t border-red-100 transition-all duration-200">
+                      <p className="text-gray-700 text-sm sm:text-base leading-relaxed transform transition-transform duration-300">
+                        {faq.answer}
+                      </p>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
             ))}
           </div>

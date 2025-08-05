@@ -47,7 +47,7 @@ export default function AudioPlayer({ src }) {
   };
 
   return (
-    <div className="w-full flex items-center gap-3">
+    <div className="w-full flex items-center gap-3 flex-wrap md:flex-nowrap">
       <button
         className="w-12 h-12 rounded-full flex items-center justify-center shadow bg-[#810000] text-white hover:bg-[#5d0000] mr-3"
         onClick={handlePlayPause}
