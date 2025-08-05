@@ -174,7 +174,7 @@ export default function LogIn() {
                 </label>
               </div>
               <Link
-                href={"/auth/admin/recover-password"}
+                href={"/auth/login/forgot-password"}
                 className="text-[#7D0000] underline text-[20px] font-[500]"
               >
                 Forgot Password?

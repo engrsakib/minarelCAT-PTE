@@ -29,8 +29,17 @@ export default function Navbar() {
 
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
 
-  const loadNotifications = useCallback(
+ const loadNotifications = useCallback(
     async (initial = false) => {
+      // ⛔ Bail early if tokens are missing
+      const accessToken = localStorage.getItem("accessToken");
+      const refreshToken = localStorage.getItem("refreshToken");
+ 
+      if (!accessToken || !refreshToken) {
+        console.warn("No tokens found, skipping notification fetch.");
+        return;
+      }
+ 
       try {
         const currentPage = initial ? 1 : page;
         const response = await fetchWithAuth(
@@ -38,12 +47,13 @@ export default function Navbar() {
         );
         const data = await response.json();
         const fetched = Array.isArray(data.data) ? data.data : [];
+ 
         setHasMore(fetched.length === PAGE_SIZE);
-        
+ 
         if (initial) {
           setNotifications(fetched);
           setPage(1);
-          setUnreadCount(fetched.unseenCount || 0); 
+          setUnreadCount(fetched.unseenCount || 0);
         } else {
           setNotifications((prev) => [...prev, ...fetched]);
         }
@@ -138,7 +148,7 @@ export default function Navbar() {
             />
             <div className="relative ">
               <User user={user} loading={loading} error={error} className="z-50" />
-              <div className="absolute right-31  top-10 bg-yellow-500 flex items-center gap-x-1 text-white p-0.5 text-[12px] rounded">
+              <div className="absolute right-30 top-12 bg-yellow-500 flex items-center gap-x-1 text-white p-0.5 text-[12px] rounded">
                 <Crown className="w-[15px] h-auto" />
                 <span>{user.user.userSubscription.credits}</span>
               </div>
@@ -149,7 +159,7 @@ export default function Navbar() {
             <Link href="/auth/login" className="text-[20px] gap-2 font-[400] text-gray-900 flex items-center">
               <span>Login</span> <FaRightLong className="text-[20px]" />
             </Link>
-            <Link href="/" className="text-[20px] font-[400] ml-4 bg-gradient-to-r from-[#D80000] to-[#720000] p-8 text-white px-4 py-2 rounded-full w-[289px] h-[60px] flex items-center justify-center hover:bg-gradient-to-r hover:from-[#720000] transition-all duration-300">
+            <Link href="/auth/sign-up" className="text-[20px] font-[400] ml-4 bg-gradient-to-r from-[#D80000] to-[#720000] p-8 text-white px-4 py-2 rounded-full w-[289px] h-[60px] flex items-center justify-center hover:bg-gradient-to-r hover:from-[#720000] transition-all duration-300">
               Sign Up
             </Link>
           </div>

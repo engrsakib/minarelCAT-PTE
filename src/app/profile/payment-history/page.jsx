@@ -45,8 +45,7 @@ const PaymentHistory = () => {
     return date.toLocaleDateString("en-US", options);
   };
 
-  console.log("paymentHistory : ", paymentHistory);
-
+  
   return (
     <div className=" w-full mt-5">
      {

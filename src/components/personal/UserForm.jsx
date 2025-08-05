@@ -16,9 +16,10 @@ export default function UserForm({ data ,onUpdateSuccess}) {
     phone: data.phone || "",
     city: data.city || "",
     email: data.email || "",
+    oldPassword: "",
     password: "",
-    newPassword: "",
-    confirmPassword: "",
+    
+    
   });
 
   const handleChange = (e) => {
@@ -32,10 +33,10 @@ export default function UserForm({ data ,onUpdateSuccess}) {
   const handleSubmit = async (e) => {
   e.preventDefault();
 
-  if (changePass && formData.newPassword !== formData.confirmPassword) {
-    toast.error("Passwords are not matching");
-    return;
-  }
+  // if (changePass && formData.newPassword !== formData.confirmPassword) {
+  //   toast.error("Passwords are not matching");
+  //   return;
+  // }
 
   // Build object with only changed fields
   const changedFields = {};
@@ -223,20 +224,20 @@ export default function UserForm({ data ,onUpdateSuccess}) {
                 <div className="grid gap-2 md:flex md:gap-5 text-black w-full">
                   <input
                     type="password"
-                    id="new-password"
-                    name="newPassword"
-                    placeholder="New Password"
-                    value={formData.newPassword}
+                    id="old-password"
+                    name="oldPassword"
+                    placeholder="Old Password"
+                    value={formData.oldPassword}
                     onChange={handleChange}
                     className="w-full border bg-slate-100 border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
                     required
                   />
                   <input
                     type="password"
-                    id="confirm-password"
-                    name="confirmPassword"
-                    placeholder="Confirm Password"
-                    value={formData.confirmPassword}
+                    id="password"
+                    name="password"
+                    placeholder=" Password"
+                    value={formData.password}
                     onChange={handleChange}
                     className="w-full border bg-slate-100 border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
                     required
@@ -247,8 +248,8 @@ export default function UserForm({ data ,onUpdateSuccess}) {
                       setChangePass(false);
                       setFormData((prev) => ({
                         ...prev,
-                        newPassword: "",
-                        confirmPassword: "",
+                       password: "",
+                        oldPassword: "",
                       }));
                     }}
                   >
