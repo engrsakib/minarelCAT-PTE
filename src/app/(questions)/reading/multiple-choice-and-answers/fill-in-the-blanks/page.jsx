@@ -165,7 +165,7 @@ export default function ReadAloud() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#810000]"></div>
           </div>
         ) : error ? (
-          <div className="text-center py-8 text-red-500">{error}</div>
+          <div className="text-center py-8 text-red-500 min-h-[50dvh]">{error}</div>
         ) : (
           <div className="flex flex-col gap-4">
             {data && data.length > 0 ? (

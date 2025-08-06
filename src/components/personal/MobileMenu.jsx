@@ -6,10 +6,10 @@ import useLoggedInUser from "@/lib/useGetLoggedInUser";
 
 const navLinks = [
   { href: "/", label: "Home" },
-  { href: "#", label: "Practice" },  // Don't use href="#" for Practice, just trigger action
+  { href: "#", label: "Practice" }, // Don't use href="#" for Practice, just trigger action
   { href: "/questions/test", label: "Mock Test" },
   { href: "/subscription/pricing", label: "Pricing" },
-  { href: "/company/about", label: "About US" },  // Same for FAQ
+  { href: "/company/about", label: "About US" }, // Same for FAQ
 ];
 
 export default function MobileMenu({ open, onClose, setIsOpen, isOpen }) {
@@ -22,10 +22,10 @@ export default function MobileMenu({ open, onClose, setIsOpen, isOpen }) {
       setIsOpen(!isOpen); // Set `isOpen` to true for "Practice"
     }
     onClose(); // Always close the menu after clicking any link
-    
+
     // Redirect for links with valid href
     if (href !== "#") {
-      window.location.href = href;  // Redirect only for valid href links
+      window.location.href = href; // Redirect only for valid href links
     }
   };
 
@@ -42,9 +42,7 @@ export default function MobileMenu({ open, onClose, setIsOpen, isOpen }) {
           <FaTimes />
         </button>
         {/* user */}
-        {
-          user && <User user={user} loading={loading} error={error} />
-        }
+        {user && <User user={user} loading={loading} error={error} />}
 
         {/* Nav Links */}
         <nav className="flex flex-col gap-4 mt-10">
@@ -63,24 +61,30 @@ export default function MobileMenu({ open, onClose, setIsOpen, isOpen }) {
         <div className="my-6 border-t" />
 
         {/* Buttons */}
-        <div className="flex flex-col gap-3">
-          <Link
-            href="/auth/login"
-            className="text-[20px] gap-2 font-normal text-gray-900 flex items-center justify-center hover:text-[#D80000] transition"
-            onClick={onClose}
-          >
-            <span>Login</span> <FaRightLong className="text-[20px]" />
-          </Link>
-          <Link
-            href="/auth/signin"
-            className="text-[20px] font-normal bg-gradient-to-r from-[#D80000] to-[#720000] text-white px-4 py-2 rounded-full flex items-center justify-center hover:from-[#720000] hover:to-[#D80000] transition-all duration-300"
-            onClick={onClose}
-          >
-            Sign Up
-          </Link>
-        </div>
+        {user ? (
+          <button className="text-[20px] font-normal bg-gradient-to-r from-[#D80000] to-[#720000] text-white px-4 py-2 rounded-full flex items-center justify-center hover:from-[#720000] hover:to-[#D80000] transition-all duration-300">
+            Log Out
+          </button>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <Link
+              href="/auth/login"
+              className="text-[20px] gap-2 font-normal text-gray-900 flex items-center justify-center hover:text-[#D80000] transition"
+              onClick={onClose}
+            >
+              <span>Login</span> <FaRightLong className="text-[20px]" />
+            </Link>
+            <Link
+              href="/auth/signin"
+              className="text-[20px] font-normal bg-gradient-to-r from-[#D80000] to-[#720000] text-white px-4 py-2 rounded-full flex items-center justify-center hover:from-[#720000] hover:to-[#D80000] transition-all duration-300"
+              onClick={onClose}
+            >
+              Sign Up
+            </Link>
+          </div>
+        )}
       </div>
-      
+
       {/* Overlay click closes modal */}
       <div className="flex-1" onClick={onClose} />
 

@@ -243,7 +243,7 @@ export default function DynamicPage({ params }) {
       </p>
 
       {/* Question Heading */}
-      <div className="bg-[#810000] text-white px-5 py-2 rounded mb-2 text-lg font-semibold tracking-wide flex items-center gap-2">
+      <div className="bg-[#810000] text-white px-5 py-2 rounded mb-2 text-lg font-semibold tracking-wide flex flex-wrap md:flex-nowrap items-center gap-2">
         <span>#{currentQ._id}</span>
         <span>|</span>
         <span>{currentQ.heading}</span>
