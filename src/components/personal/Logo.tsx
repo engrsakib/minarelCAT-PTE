@@ -5,14 +5,16 @@ import Image from "next/image";
 
 export default function Logo() {
   return (
-    <div>
+    <div className="w-full max-w-[226px] h-auto">
       <Image
-            src={LogoImage}
-            alt="MineralCat Logo"
-            className='w-[226px] max-sm:w-[180px] max-sm:h-auto  rounded-full h-[65px] object-cover'
-            width={226}
-            height={65}
-            />
+        src={LogoImage}
+        alt="MineralCat Logo"
+        className="w-full h-auto rounded-full object-cover"
+        width={226}
+        height={65}
+        priority
+        sizes="(max-width: 640px) 180px, 226px"
+      />
     </div>
   )
 }

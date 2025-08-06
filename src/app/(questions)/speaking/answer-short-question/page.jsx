@@ -136,10 +136,10 @@ export default function repeatSentence() {
       <div className="bg-[#810000] text-white px-2 sm:px-4 py-3 rounded-md flex items-center justify-between mb-6">
         <button
           onClick={() => router.push("/")}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 cursor-pointer"
         >
           <ChevronLeft className="w-5 h-5" />
-          <h1 className="text-lg font-medium whitespace-nowrap">Read Aloud</h1>
+          <h1 className="text-lg font-medium whitespace-nowrap">Answer short question</h1>
         </button>
       </div>
       {/* Tabs */}
@@ -164,9 +164,9 @@ export default function repeatSentence() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#810000]"></div>
           </div>
         ) : error ? (
-          <div className="text-center py-8 text-red-500">{error}</div>
+          <div className="text-center py-8 text-red-500 min-h-[50dvh]">{error}</div>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 min-h-[50dvh]">
             {data && data.length > 0 ? (
               data.map((item) => (
                 <div

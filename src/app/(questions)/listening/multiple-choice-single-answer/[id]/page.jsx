@@ -162,7 +162,7 @@ export default function DynamicPage({ params }) {
         correct response. Only one response is correct.
       </p>
       {/* Question Heading */}
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
         <span className="rounded px-4 py-2 font-bold text-white bg-[#810000] text-base tracking-wide">
           #{currentQ._id}
         </span>

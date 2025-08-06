@@ -28,15 +28,15 @@ export default function Footer() {
               Home
             </Link>
             <Link
-              href="/"
+              href="/subscription/pricing"
               className="text-white text-[16px] font-normal hover:text-[#F2F2F2] transition-all duration-300"
             >
               Pricing
-            </Link>
-            
+            </Link>  
             <Link
-              href="/"
+              href="mailto:hello@skillsnap.com"
               className="text-white text-[16px] font-normal hover:text-[#F2F2F2] transition-all duration-300"
+              
             >
               Contact
             </Link>
