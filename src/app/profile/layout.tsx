@@ -18,6 +18,7 @@ const Layout = ({
    const [loading,setLoading ] = useState(false)
    const [bar,setBar] = useState(false);
    const [name,setName] = useState("Profile");
+   const baseUrl = process.env.NEXT_PUBLIC_URL;
    
  useEffect(() => {
   setLoading(true);
@@ -43,10 +44,24 @@ const Layout = ({
 }, [lastSegment]);
 
 
-  function logout(){
+ async function logout() {
+  const accessToken = localStorage.getItem('accessToken');
+
+  try {
+    await fetch(`${baseUrl}/user/logout`, {
+      method: 'POST',  // or 'GET' depending on your API
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    });
+  } catch (error) {
+    console.error('Logout API error:', error);
+  } finally {
+    localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
-window.location.href = '/';
+    window.location.href = '/';
   }
+}
 if (loading) {
   return (
     <div className="flex w-full justify-center items-center py-8">
@@ -97,7 +112,7 @@ if (loading) {
                <Link className={`${lastSegment === "payment-history" ? "text-[#EF0000]" : ""}`} href="/profile/payment-history">Payment History</Link>
                <Link className={`${lastSegment === "notifications" ? "text-[#EF0000]" : ""}`} href="/profile/notifications">Notification   </Link> 
                 
-               <button onClick={logoutAndRedirect} className='flex justify-start'>Log Out</button>
+               <button onClick={logout} className='flex justify-start'>Log Out</button>
             </div>
             {children}
         </div> 

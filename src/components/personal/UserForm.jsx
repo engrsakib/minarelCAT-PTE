@@ -21,7 +21,7 @@ export default function UserForm({ data ,onUpdateSuccess}) {
     
     
   });
-
+console.log("all data",data);
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -39,19 +39,23 @@ export default function UserForm({ data ,onUpdateSuccess}) {
   // }
 
   // Build object with only changed fields
+  
+  
   const changedFields = {};
 
   if (formData.name !== data.name) changedFields.name = formData.name;
   if (formData.phone !== data.phone) changedFields.phone = formData.phone;
   if (formData.phoneCountry !== (data.phoneCountry || "Bangladesh")) changedFields.phoneCountry = formData.phoneCountry;
   if (formData.city !== data.city) changedFields.city = formData.city;
-  if (formData.email !== data.email) changedFields.email = formData.email;
+changedFields.oldPassword = formData.oldPassword;
+   changedFields.password = formData.password;
+  
 
   
 
-  if (changePass && formData.newPassword) {
-    changedFields.password = formData.newPassword;
-  }
+
+    
+  
 
   // If nothing changed, show info toast and exit
   if (Object.keys(changedFields).length === 0) {

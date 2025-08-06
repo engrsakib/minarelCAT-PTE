@@ -1,15 +1,19 @@
 "use client";
 
 import React, { useState } from 'react';
+import { PiEyeClosedBold, PiEyeClosedDuotone } from "react-icons/pi";
 import bg from '../../../../public/pana.png';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ToastContainer, toast } from 'react-toastify';
+import { useRouter } from "next/navigation";
 import 'react-toastify/dist/ReactToastify.css';
 
 const SignUp = () => {
   const baseUrl = process.env.NEXT_PUBLIC_URL;
-
+    const router = useRouter();
+const [isEyeOpen, setIsEyeOpen] = useState(false);
+const [isEyeOpend, setIsEyeOpend] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -54,6 +58,8 @@ const SignUp = () => {
     password: '',
     confirmPassword: '',
   });
+  
+  
 }
 
       if (!response.ok) {
@@ -61,12 +67,14 @@ const SignUp = () => {
       }
 
       toast.success('Signup successful!');
+      
       // Optional: redirect after success
     } catch (error) {
       toast.error(error.message);
     } finally {
       setLoading(false);
     }
+    router.push("/auth/login")
   };
 
   return (
@@ -101,26 +109,52 @@ const SignUp = () => {
           />
 
           <label>Password</label>
-          <input
+         <div className="w-full relative">
+           <input
             name="password"
-            type="password"
+            type={isEyeOpen ? "text" : "password"}
             className='border border-slate-300 rounded-2xl p-5 md:w-2/3'
             placeholder="Enter a new password"
             value={formData.password}
             onChange={handleChange}
             required
           />
+          {isEyeOpen ? (
+                  <PiEyeClosedBold
+                    className="absolute top-6 right-20 md:right-70 text-[1.5rem] text-[#777777] cursor-pointer"
+                    onClick={() => setIsEyeOpen(false)}
+                  />
+                ) : (
+                  <PiEyeClosedDuotone
+                    className="absolute top-6 right-20  md:right-70 text-[1.5rem] text-[#777777] cursor-pointer"
+                    onClick={() => setIsEyeOpen(true)}
+                  />
+                )}
+         </div>
 
           <label>Confirm Password</label>
-          <input
+          <div className="w-full relative">
+            <input
             name="confirmPassword"
-            type="password"
+            type={isEyeOpend ? "text" : "password"}
             className='border border-slate-300 rounded-2xl p-5 md:w-2/3'
             placeholder='Re-enter your password'
             value={formData.confirmPassword}
             onChange={handleChange}
             required
           />
+          {isEyeOpend ? (
+                  <PiEyeClosedBold
+                    className="absolute top-6 right-20 md:right-70 text-[1.5rem] text-[#777777] cursor-pointer"
+                    onClick={() => setIsEyeOpend(false)}
+                  />
+                ) : (
+                  <PiEyeClosedDuotone
+                    className="absolute top-6 right-20  md:right-70 text-[1.5rem] text-[#777777] cursor-pointer"
+                    onClick={() => setIsEyeOpend(true)}
+                  />
+                )}
+          </div>
 
           <button
             type="submit"
@@ -130,8 +164,8 @@ const SignUp = () => {
             {loading ? 'Signing Up...' : 'Sign Up'}
           </button>
 
-          <div className='w-full'>
-            <p className='flex flex-col md:flex-row gap-2'>
+          <div className='w-full '>
+            <p className='flex flex-col md:flex-row gap-2 '>
               Already have an account?
               <Link className='text-red-800' href={"/auth/login"}>Sign In</Link>
             </p>

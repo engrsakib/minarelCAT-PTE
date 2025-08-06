@@ -17,6 +17,7 @@
     "axios": "^1.10.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "country-data": "^0.0.31",
     "html-react-parser": "^5.2.5",
     "lucide-react": "^0.515.0",
     "mic": "^2.1.2",
@@ -26,6 +27,7 @@
     "react-audio-voice-recorder": "^2.2.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
+    "react-phone-input-2": "^2.15.1",
     "react-toastify": "^11.0.5",
     "tailwind-merge": "^3.3.1"
   },

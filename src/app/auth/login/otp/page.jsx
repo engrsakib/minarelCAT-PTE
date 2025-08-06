@@ -3,6 +3,9 @@ import React, { useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import otpp from "../../../../../public/otp.png";
+import Image from "next/image";
+import back from "../../../../../public/arrow.png";
 
 const Otp = () => {
   const inputRefs = useRef([]);
@@ -57,7 +60,7 @@ const Otp = () => {
       if (data.resetToken) {
         localStorage.setItem("resetToken", data.resetToken);
       }
-      console.log("data.resetToken from otp",data.resetToken);
+      
       
 
       // ✅ Redirect after short delay
@@ -73,12 +76,17 @@ const Otp = () => {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <form
+    <div className="md:mt-40 gap-10 md:flex items-center justify-center  px-4">
+      <div>
+      <Image src={otpp} alt=""/>
+      </div>
+      <div>
+        <form
         onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-2xl shadow-lg max-w-sm w-full text-center space-y-6"
+        className="bg-white p-8 rounded-2xl   w-full text-center space-y-6"
       >
-        <h2 className="text-2xl font-semibold text-[#7D0000]">Enter OTP</h2>
+        <h2 className="text-3xl font-semibold  flex items-center justify-start gap-5"><Image onClick={() => router.back()} height={25} src={back} alt=""/>Verify Code</h2>
+        <p>Please check your email. We have sent a code to your email</p>
 
         <div className="flex justify-center gap-2">
           {otp.map((digit, idx) => (
@@ -97,11 +105,12 @@ const Otp = () => {
 
         <button
           type="submit"
-          className="w-full bg-[#7D0000] text-white py-2 rounded-md hover:bg-[#5e0000] transition"
+          className="w-full bg-gradient-to-r from-[#D80000] to-[#720000] text-white py-4 rounded-full  transition"
         >
-          Verify OTP
+          Verify 
         </button>
       </form>
+      </div>
 
       {/* Toast notifications container */}
       <ToastContainer

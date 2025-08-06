@@ -24,6 +24,7 @@ export function User(
   loading: boolean;
   error: string | null;
 }) {
+  const baseUrl = process.env.NEXT_PUBLIC_URL;
   const [dropDown, setDropDown] = useState(false)
   if (loading) {
     return <div>Loading...</div>;
@@ -31,7 +32,24 @@ export function User(
   if (error) {
     return <div>Error: {error}</div>;
   }
-  
+   async function logout() {
+  const accessToken = localStorage.getItem('accessToken');
+
+  try {
+    await fetch(`${baseUrl}/user/logout`, {
+      method: 'POST',  // or 'GET' depending on your API
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    });
+  } catch (error) {
+    console.error('Logout API error:', error);
+  } finally {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    window.location.href = '/';
+  }
+}
 
   return (
     <DropdownMenu>
@@ -82,7 +100,7 @@ export function User(
             Profile
           </Link>
           <button
-            onClick={logoutAndRedirect}
+            onClick={logout}
             className="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded text-red-700 font-medium transition-all duration-200"
           >
             Logout
