@@ -10,13 +10,15 @@ import UserForm from "../../components/personal/UserForm";
 
 const Profile = () => {
   const fileInputRef = useRef(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [userData, setUserData] = useState(null);
   const baseUrl = process.env.NEXT_PUBLIC_URL;
 
   const fetchUserData = async () => {
+    
     try {
-      setLoading(true);
+      
+       setLoading(true);
       const response = await fetchWithAuth(`${baseUrl}/user/user-info`);
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -31,7 +33,9 @@ const Profile = () => {
   };
 
   useEffect(() => {
+    
     if (baseUrl) fetchUserData();
+    
   }, [baseUrl]);
   
 
@@ -43,10 +47,23 @@ const Profile = () => {
     } else setPreview(dummy);
   }, [userData]);
 
-  if (loading) return <p>Loading...</p>;
-  if (!userData) return <p>No user data available</p>;
+  // if (loading) return <p>Loading</p>;
+  console.log("loading ", loading);
+  
+ 
 
-  const handleImageClick = () => {
+// if (!userData) return <p>No user data available</p>;
+
+if (!userData) {
+  return (
+    <div className="flex w-full justify-center items-center py-8">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#810000]"></div>
+    </div>
+  );
+}
+
+  const handleImageClick = (e) => {
+    e.stopPropagation()
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
@@ -74,8 +91,9 @@ const Profile = () => {
 
       // Preview updated image
       setPreview(result.user?.profile); // if API returns updated user object with new image URL
-
-      toast.success("Profile updated successfully!");
+        toast.success("Profile updated successfully!");
+window.location.reload();
+      
     } catch (error) {
       console.error("Update failed:", error);
       toast.error("Update failed. Please try again.");
@@ -86,6 +104,11 @@ const Profile = () => {
   // setPreview(URL.createObjectURL(file));
   return (
     <div>
+      {
+        loading ? (<div className="flex justify-center items-center py-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#810000]"></div>
+          </div>):(
+          <div>
       <div className="grid">
         <div className="block md:hidden rounded-full top-45 left-6 mt-10">
           <div
@@ -120,11 +143,11 @@ const Profile = () => {
 
         <div
           className="hidden md:block relative w-full h-full"
-          onClick={handleImageClick}
+         
         >
           <Image src={frame} alt="" />
           <div className="absolute rounded-full top-45 left-6 flex">
-            <div className="user-image relative w-[140px] h-[140px] rounded-full shadow-lg border-2 border-pink-50">
+            <div  onClick={handleImageClick} className="user-image relative w-[140px] h-[140px] rounded-full shadow-lg border-2 border-pink-50">
               <Image
                 className="rounded-full object-cover"
                 src={preview}
@@ -157,6 +180,9 @@ const Profile = () => {
         </div>
       </div>
       <ToastContainer/>
+    </div>
+        )
+      }
     </div>
   );
 };

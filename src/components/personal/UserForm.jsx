@@ -1,103 +1,251 @@
 "use client";
 import React, { useState } from "react";
+import { countries } from "country-data";
 import fetchWithAuth from "../../lib/fetchWithAuth";
-  import { ToastContainer, toast } from 'react-toastify';
-export default function UserForm({ data ,onUpdateSuccess}) {
+import { ToastContainer, toast } from "react-toastify";
+
+export default function UserForm({ data, onUpdateSuccess }) {
   const [changePass, setChangePass] = useState(false);
   const baseUrl = process.env.NEXT_PUBLIC_URL;
 
-    
-    
+  // Helper function to get calling code by country name
+  const getCallingCodeByName = (name) => {
+    const country = countries.all.find((c) => c.name === name);
+    return country?.countryCallingCodes[0] || "";
+  };
+
+  // Helper function to get country name by calling code
+  const getCountryNameByCallingCode = (callingCode) => {
+    const country = countries.all.find((c) => 
+      c.countryCallingCodes && c.countryCallingCodes.includes(callingCode)
+    );
+    return country?.name || "";
+  };
+
+  // Function to extract country code and phone number from combined phone
+  const parsePhoneData = (phone, phoneCountry) => {
+    let extractedCountryCode = "";
+    let extractedPhoneNumber = "";
+
+    if (phone && phone.startsWith('+')) {
+      // Phone contains country code, extract it
+      const possibleCodes = countries.all
+        .filter(c => c.countryCallingCodes && c.countryCallingCodes.length > 0)
+        .map(c => c.countryCallingCodes[0])
+        .sort((a, b) => b.length - a.length); // Sort by length descending to match longer codes first
+
+      // Find the matching country code
+      const matchingCode = possibleCodes.find(code => phone.startsWith(code));
+      
+      if (matchingCode) {
+        extractedCountryCode = matchingCode;
+        extractedPhoneNumber = phone.substring(matchingCode.length);
+      } else {
+        // Fallback: assume first 1-4 digits after + are country code
+        const match = phone.match(/^(\+\d{1,4})(.*)/);
+        if (match) {
+          extractedCountryCode = match[1];
+          extractedPhoneNumber = match[2];
+        }
+      }
+    } else {
+      // Phone doesn't contain country code, use phoneCountry
+      if (phoneCountry && phoneCountry.startsWith('+')) {
+        extractedCountryCode = phoneCountry;
+      } else if (phoneCountry) {
+        extractedCountryCode = getCallingCodeByName(phoneCountry);
+      }
+      extractedPhoneNumber = phone || "";
+    }
+
+    // Default to Bangladesh if no country code found
+    if (!extractedCountryCode) {
+      extractedCountryCode = getCallingCodeByName("Bangladesh");
+    }
+
+    return { countryCode: extractedCountryCode, phoneNumber: extractedPhoneNumber };
+  };
+
+  // Helper function to get country object by calling code for display
+  const getCountryByCallingCode = (callingCode) => {
+    return countries.all.find((c) => 
+      c.countryCallingCodes && c.countryCallingCodes.includes(callingCode)
+    );
+  };
+
+  const { countryCode: initialPhoneCountryCode, phoneNumber: initialPhoneNumber } = parsePhoneData(data.phone, data.phoneCountry);
+  
+  // Get the country object for display
+  const initialCountryObj = getCountryByCallingCode(initialPhoneCountryCode);
+  const displayCountryName = initialCountryObj ? initialCountryObj.name : "Bangladesh";
 
   const [formData, setFormData] = useState({
     _id: data._id,
     name: data.name || "",
-    phoneCountry: "Bangladesh",
-    phone: data.phone || "",
+    phoneCountry: displayCountryName, // Store country name for display
+    phoneCountryCode: initialPhoneCountryCode, // Store country code for saving
+    phone: initialPhoneNumber, // Only the phone number part (without country code)
     city: data.city || "",
     email: data.email || "",
+    oldPassword: "",
     password: "",
-    newPassword: "",
-    confirmPassword: "",
   });
+
+  // Store original values for comparison
+  const [originalData, setOriginalData] = useState({
+    name: data.name || "",
+    phoneCountry: displayCountryName,
+    phoneCountryCode: initialPhoneCountryCode,
+    phone: initialPhoneNumber, // Only the phone number part
+    city: data.city || ""
+  });
+
+  console.log("all data", data);
+  console.log("extracted phone data:", { countryCode: initialPhoneCountryCode, phoneNumber: initialPhoneNumber });
+  console.log("displayCountryName", displayCountryName);
+  console.log("formData.phone (number only):", formData.phone);
+  console.log("formData.phoneCountryCode:", formData.phoneCountryCode);
+  console.log("originalData", originalData);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    
+    if (name === 'phoneCountry') {
+      // When country changes, update both display name and country code
+      const selectedCountry = countries.all.find(c => c.name === value);
+      const countryCode = selectedCountry ? selectedCountry.countryCallingCodes[0] : "";
+      
+      setFormData((prev) => ({
+        ...prev,
+        phoneCountry: value, // Country name for display
+        phoneCountryCode: countryCode, // Country code for saving
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (changePass && formData.newPassword !== formData.confirmPassword) {
-    toast.error("Passwords are not matching");
-    return;
-  }
+    // Build changed fields object
+    const changedFields = {};
 
-  // Build object with only changed fields
-  const changedFields = {};
-
-  if (formData.name !== data.name) changedFields.name = formData.name;
-  if (formData.phone !== data.phone) changedFields.phone = formData.phone;
-  if (formData.phoneCountry !== (data.phoneCountry || "Bangladesh")) changedFields.phoneCountry = formData.phoneCountry;
-  if (formData.city !== data.city) changedFields.city = formData.city;
-  if (formData.email !== data.email) changedFields.email = formData.email;
-
-  
-
-  if (changePass && formData.newPassword) {
-    changedFields.password = formData.newPassword;
-  }
-
-  // If nothing changed, show info toast and exit
-  if (Object.keys(changedFields).length === 0) {
-    toast.info("No changes detected.");
-    return;
-  }
-
-  changedFields._id = formData._id; // Always include _id
-
-  try {
-    const response = await fetchWithAuth(`${baseUrl}/user/update-user`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(changedFields),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+    // Check each field for changes against original data
+    if (formData.name.trim() !== originalData.name.trim()) {
+      changedFields.name = formData.name.trim();
+    }
+    
+    // Combine country code and phone number for saving, but only if phone changed
+    const combinedPhone = formData.phoneCountryCode + formData.phone.trim();
+    const originalCombinedPhone = originalData.phoneCountryCode + originalData.phone.trim();
+    
+    if (combinedPhone !== originalCombinedPhone) {
+      changedFields.phone = combinedPhone;
+      console.log("Phone changed from", originalCombinedPhone, "to", combinedPhone);
+    }
+    
+    if (formData.city.trim() !== originalData.city.trim()) {
+      changedFields.city = formData.city.trim();
     }
 
-    const result = await response.json();
-    toast.success("Updated successfully");
-    toast.success("Profile updated successfully!");
+    // Always include password fields if changing password
+    if (changePass) {
+      if (!formData.oldPassword.trim() || !formData.password.trim()) {
+        toast.error("Please fill in both old and new password fields.");
+        return;
+      }
+      changedFields.oldPassword = formData.oldPassword.trim();
+      changedFields.password = formData.password.trim();
+    }
 
-    // Reset password fields
-    setFormData((prev) => ({
-      ...prev,
-      newPassword: "",
-      confirmPassword: "",
-    }));
-    setChangePass(false);
-  } catch (error) {
-    console.error("Update failed:", error);
-    toast.error("Update failed. Please try again.");
-  }
-   
-  if (onUpdateSuccess) {
-    e.preventDefault()
-    toast.success("Updated successfully");
-  await onUpdateSuccess();
-  
-}
-};
+    // Always include _id
+    changedFields._id = formData._id;
 
+    console.log("changedFields", changedFields);
 
+    // Check if there are actual changes
+    const hasChanges = Object.keys(changedFields).length > 1; // More than just _id
+    if (!hasChanges && !changePass) {
+      toast.info("No changes detected.");
+      return;
+    }
+
+    try {
+      const response = await fetchWithAuth(`${baseUrl}/user/update-user`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(changedFields),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Server error:", errorData);
+        
+        // Show specific error message if available
+        if (errorData.message) {
+          toast.error(errorData.message);
+        } else {
+          toast.error(`Update failed: ${response.status} - ${response.statusText}`);
+        }
+        return;
+      }
+
+      const result = await response.json();
+      console.log("Update successful:", result);
+      
+      toast.success("Profile updated successfully!");
+
+      // Reset password fields
+      setFormData((prev) => ({
+        ...prev,
+        oldPassword: "",
+        password: "",
+      }));
+      setChangePass(false);
+
+      // Update the main data object with successful changes
+      if (changedFields.name !== undefined) {
+        data.name = changedFields.name;
+      }
+      if (changedFields.phone !== undefined) {
+        data.phone = changedFields.phone;
+        // Also update phoneCountry in data if phone was changed
+        data.phoneCountry = formData.phoneCountryCode;
+      }
+      if (changedFields.city !== undefined) {
+        data.city = changedFields.city;
+      }
+
+      // Parse the updated phone data for originalData state
+      const { countryCode: newCountryCode, phoneNumber: newPhoneNumber } = parsePhoneData(data.phone, data.phoneCountry);
+      const newCountryObj = getCountryByCallingCode(newCountryCode);
+      const newDisplayCountryName = newCountryObj ? newCountryObj.name : "Bangladesh";
+
+      // Update originalData state to reflect the new saved state
+      setOriginalData({
+        name: data.name || "",
+        phoneCountry: newDisplayCountryName,
+        phoneCountryCode: newCountryCode,
+        phone: newPhoneNumber,
+        city: data.city || ""
+      });
+
+      if (onUpdateSuccess) {
+        toast.success("Profile updated successfully!");
+window.location.reload();
+        await onUpdateSuccess();
+      }
+    } catch (error) {
+      console.error("Update failed:", error);
+      toast.error("Update failed. Please try again.");
+    }
+  };
 
   return (
     <div>
@@ -142,9 +290,14 @@ export default function UserForm({ data ,onUpdateSuccess}) {
                 onChange={handleChange}
                 className="w-1/4 bg-slate-100 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
               >
-                <option value="BD">+880</option>
-                <option value="USA">+1</option>
-                <option value="IN">+91</option>
+                {countries.all
+                  .filter((country) => country.countryCallingCodes && country.countryCallingCodes.length > 0)
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .map((country) => (
+                    <option key={country.alpha2} value={country.name}>
+                      {country.name} ({country.countryCallingCodes[0]})
+                    </option>
+                  ))}
               </select>
               <input
                 type="tel"
@@ -191,6 +344,7 @@ export default function UserForm({ data ,onUpdateSuccess}) {
             </label>
             <div className="flex-1">
               <input
+                disabled
                 type="email"
                 id="email"
                 name="email"
@@ -205,7 +359,7 @@ export default function UserForm({ data ,onUpdateSuccess}) {
           {/* Password Section */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
             <label
-              htmlFor="email"
+              htmlFor="password"
               className="w-full sm:w-32 font-semibold text-gray-700 mb-1 sm:mb-0"
             >
               Password
@@ -213,6 +367,7 @@ export default function UserForm({ data ,onUpdateSuccess}) {
             <div>
               {!changePass ? (
                 <button
+                  type="button"
                   className="bg-[#7D0000] text-white rounded p-2 px-3"
                   onClick={() => setChangePass(true)}
                 >
@@ -222,32 +377,33 @@ export default function UserForm({ data ,onUpdateSuccess}) {
                 <div className="grid gap-2 md:flex md:gap-5 text-black w-full">
                   <input
                     type="password"
-                    id="new-password"
-                    name="newPassword"
-                    placeholder="New Password"
-                    value={formData.newPassword}
+                    id="old-password"
+                    name="oldPassword"
+                    placeholder="Old Password"
+                    value={formData.oldPassword}
                     onChange={handleChange}
                     className="w-full border bg-slate-100 border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
                     required
                   />
                   <input
                     type="password"
-                    id="confirm-password"
-                    name="confirmPassword"
-                    placeholder="Confirm Password"
-                    value={formData.confirmPassword}
+                    id="password"
+                    name="password"
+                    placeholder="New Password"
+                    value={formData.password}
                     onChange={handleChange}
                     className="w-full border bg-slate-100 border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
                     required
                   />
                   <button
+                    type="button"
                     className="bg-[#7D0000] text-white rounded p-2 px-3"
                     onClick={() => {
                       setChangePass(false);
                       setFormData((prev) => ({
                         ...prev,
-                        newPassword: "",
-                        confirmPassword: "",
+                        password: "",
+                        oldPassword: "",
                       }));
                     }}
                   >
@@ -267,7 +423,7 @@ export default function UserForm({ data ,onUpdateSuccess}) {
           </button>
         </form>
       </div>
-        <ToastContainer />
+      <ToastContainer />
     </div>
   );
 }

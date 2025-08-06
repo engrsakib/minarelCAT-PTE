@@ -29,7 +29,7 @@ export default function Navbar() {
 
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
 
-  const loadNotifications = useCallback(
+ const loadNotifications = useCallback(
     async (initial = false) => {
       // ⛔ Bail early if tokens are missing
       const accessToken = localStorage.getItem("accessToken");
@@ -39,7 +39,6 @@ export default function Navbar() {
         console.warn("No tokens found, skipping notification fetch.");
         return;
       }
-
       try {
         const currentPage = initial ? 1 : page;
         const response = await fetchWithAuth(
@@ -175,15 +174,11 @@ export default function Navbar() {
                 </div>
               )}
             />
-            <div className="relative">
-              <User
-                user={user}
-                loading={loading}
-                error={error}
-                className="z-50"
-              />
-              <div className="absolute right-25 top-10 bg-yellow-500 flex items-center gap-x-1 text-white p-0.5 text-[12px] rounded">
-                <Crown className="w-[20px] h-auto" />
+
+            <div className="relative ">
+              <User user={user} loading={loading} error={error} className="z-50" />
+              <div className="absolute right-30 top-12 bg-yellow-500 flex items-center gap-x-1 text-white p-0.5 text-[12px] rounded">
+                <Crown className="w-[15px] h-auto" />
                 <span>{user.user.userSubscription.credits}</span>
               </div>
             </div>
@@ -196,10 +191,8 @@ export default function Navbar() {
             >
               <span>Login</span> <FaRightLong className="text-[20px]" />
             </Link>
-            <Link
-              href="/"
-              className="text-[20px] font-[400] ml-4 bg-gradient-to-r from-[#D80000] to-[#720000] p-8 text-white px-4 py-2 rounded-full w-[289px] h-[60px] flex items-center justify-center hover:bg-gradient-to-r hover:from-[#720000] transition-all duration-300"
-            >
+
+            <Link href="/auth/sign-up" className="text-[20px] font-[400] ml-4 bg-gradient-to-r from-[#D80000] to-[#720000] p-8 text-white px-4 py-2 rounded-full w-[289px] h-[60px] flex items-center justify-center hover:bg-gradient-to-r hover:from-[#720000] transition-all duration-300">
               Sign Up
             </Link>
           </div>

@@ -3,6 +3,7 @@ import Logo from "./Logo";
 import Link from "next/link";
 
 export default function Footer() {
+ 
   return (
     <div className="text-[20px] font-normal bg-gradient-to-r from-[#7F0B0B] to-[#590000] px-4 py-8 rounded w-full min-h-[250px] transition-all duration-300">
       <section className="grid grid-cols-1 lg:grid-cols-6 gap-8 mt-10 mb-20 w-full max-w-6xl mx-auto">
@@ -31,7 +32,7 @@ export default function Footer() {
               className="text-white text-[16px] font-normal hover:text-[#F2F2F2] transition-all duration-300"
             >
               Pricing
-            </Link>
+            </Link>  
             <Link
               href="mailto:hello@skillsnap.com"
               className="text-white text-[16px] font-normal hover:text-[#F2F2F2] transition-all duration-300"

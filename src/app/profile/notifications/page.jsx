@@ -44,14 +44,21 @@ const Notifications = () => {
 
 
 
-  if (loading) return <p>Loading...</p>;
-  if (!notificationData || notificationData.length === 0) {
-    return <p>No notifications available</p>;
-  }
+  // if (loading) return <p>Loading...</p>;
+  // if (!notificationData || notificationData.length === 0) {
+  //   return <p>No notifications available</p>;
+  // }
 
   return (
     <div className="p-6 space-y-4 w-full">
-      {notificationData.map((item, index) => (
+      {
+        loading ? (
+            <div className="flex justify-center items-center py-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#810000]"></div>
+          </div>
+        ):(
+            <div>
+              {notificationData.map((item, index) => (
         <div
           key={index}
           className="flex items-center justify-between gap-2 border-b p-2 rounded  w-full"
@@ -76,6 +83,9 @@ const Notifications = () => {
           </div>
         </div>
       ))}
+            </div>
+        )
+      }
     </div>
   );
 };
