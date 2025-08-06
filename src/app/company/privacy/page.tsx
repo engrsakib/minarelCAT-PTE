@@ -22,11 +22,11 @@ export default function Terms() {
     const fetchTerms = async () => {
       try {
         setIsLoading(true);
-        const res = await fetchWithAuth(`${baseUrl}/about-us/`);
+        const res = await fetchWithAuth(`${baseUrl}/privacy-policy/get-privacy`);
         if (!res || !res.ok) throw new Error("Failed to fetch terms");
         const data = await res.json();
         const htmlContent =
-          data?.[0]?.aboutUsText || "<p>Content not found.</p>";
+          data?.policyData[0]?.policyText || "<p>Content not found.</p>";
         setTermsContent(htmlContent);
       } catch (err) {
         setError("Error loading terms and service content.");
@@ -37,6 +37,8 @@ export default function Terms() {
 
     fetchTerms();
   }, [baseUrl]);
+
+  console.log(termsContent)
 
 
 
