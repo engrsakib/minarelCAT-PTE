@@ -91,21 +91,16 @@ export default function UserForm({ data, onUpdateSuccess }) {
     password: "",
   });
 
-  // Store original values for comparison
+ 
   const [originalData, setOriginalData] = useState({
     name: data.name || "",
     phoneCountry: displayCountryName,
     phoneCountryCode: initialPhoneCountryCode,
-    phone: initialPhoneNumber, // Only the phone number part
+    phone: initialPhoneNumber, 
     city: data.city || ""
   });
 
-  console.log("all data", data);
-  console.log("extracted phone data:", { countryCode: initialPhoneCountryCode, phoneNumber: initialPhoneNumber });
-  console.log("displayCountryName", displayCountryName);
-  console.log("formData.phone (number only):", formData.phone);
-  console.log("formData.phoneCountryCode:", formData.phoneCountryCode);
-  console.log("originalData", originalData);
+ 
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -117,8 +112,8 @@ export default function UserForm({ data, onUpdateSuccess }) {
       
       setFormData((prev) => ({
         ...prev,
-        phoneCountry: value, // Country name for display
-        phoneCountryCode: countryCode, // Country code for saving
+        phoneCountry: value, 
+        phoneCountryCode: countryCode, 
       }));
     } else {
       setFormData((prev) => ({
@@ -131,15 +126,15 @@ export default function UserForm({ data, onUpdateSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Build changed fields object
+    
     const changedFields = {};
 
-    // Check each field for changes against original data
+    
     if (formData.name.trim() !== originalData.name.trim()) {
       changedFields.name = formData.name.trim();
     }
     
-    // Combine country code and phone number for saving, but only if phone changed
+    
     const combinedPhone = formData.phoneCountryCode + formData.phone.trim();
     const originalCombinedPhone = originalData.phoneCountryCode + originalData.phone.trim();
     
@@ -152,7 +147,7 @@ export default function UserForm({ data, onUpdateSuccess }) {
       changedFields.city = formData.city.trim();
     }
 
-    // Always include password fields if changing password
+    
     if (changePass) {
       if (!formData.oldPassword.trim() || !formData.password.trim()) {
         toast.error("Please fill in both old and new password fields.");
@@ -162,12 +157,10 @@ export default function UserForm({ data, onUpdateSuccess }) {
       changedFields.password = formData.password.trim();
     }
 
-    // Always include _id
+  
     changedFields._id = formData._id;
 
-    console.log("changedFields", changedFields);
-
-    // Check if there are actual changes
+   
     const hasChanges = Object.keys(changedFields).length > 1; // More than just _id
     if (!hasChanges && !changePass) {
       toast.info("No changes detected.");
@@ -201,7 +194,7 @@ export default function UserForm({ data, onUpdateSuccess }) {
       
       toast.success("Profile updated successfully!");
 
-      // Reset password fields
+    
       setFormData((prev) => ({
         ...prev,
         oldPassword: "",
@@ -209,25 +202,25 @@ export default function UserForm({ data, onUpdateSuccess }) {
       }));
       setChangePass(false);
 
-      // Update the main data object with successful changes
+      
       if (changedFields.name !== undefined) {
         data.name = changedFields.name;
       }
       if (changedFields.phone !== undefined) {
         data.phone = changedFields.phone;
-        // Also update phoneCountry in data if phone was changed
+        
         data.phoneCountry = formData.phoneCountryCode;
       }
       if (changedFields.city !== undefined) {
         data.city = changedFields.city;
       }
 
-      // Parse the updated phone data for originalData state
+     
       const { countryCode: newCountryCode, phoneNumber: newPhoneNumber } = parsePhoneData(data.phone, data.phoneCountry);
       const newCountryObj = getCountryByCallingCode(newCountryCode);
       const newDisplayCountryName = newCountryObj ? newCountryObj.name : "Bangladesh";
 
-      // Update originalData state to reflect the new saved state
+      
       setOriginalData({
         name: data.name || "",
         phoneCountry: newDisplayCountryName,
