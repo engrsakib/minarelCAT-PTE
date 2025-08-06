@@ -91,8 +91,9 @@ if (!userData) {
 
       // Preview updated image
       setPreview(result.user?.profile); // if API returns updated user object with new image URL
-
-      toast.success("Profile updated successfully!");
+        toast.success("Profile updated successfully!");
+window.location.reload();
+      
     } catch (error) {
       console.error("Update failed:", error);
       toast.error("Update failed. Please try again.");
