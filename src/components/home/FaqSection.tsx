@@ -13,9 +13,10 @@ interface FAQItem {
 
 export default function FAQSection() {
   const [faqs, setFaqs] = useState<FAQItem[]>([])
-  const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set())
+  const [expandedItem, setExpandedItem] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
-    const baseUrl = process.env.NEXT_PUBLIC_URL || ""
+  const baseUrl = process.env.NEXT_PUBLIC_URL || ""
+
   // Mock API data - replace with your actual API endpoint
   const fetchFAQs = async () => {
     try {
@@ -91,13 +92,9 @@ export default function FAQSection() {
   }, [baseUrl])
 
   const toggleExpanded = (id: number) => {
-    const newExpandedItems = new Set(expandedItems)
-    if (newExpandedItems.has(id)) {
-      newExpandedItems.delete(id)
-    } else {
-      newExpandedItems.add(id)
-    }
-    setExpandedItems(newExpandedItems)
+    // If clicking on the currently expanded item, close it
+    // Otherwise, open the clicked item (closing any other open item)
+    setExpandedItem(expandedItem === id ? null : id)
   }
 
   if (loading) {
@@ -145,29 +142,41 @@ export default function FAQSection() {
             {faqs.map((faq) => (
               <div
                 key={faq.id}
-                className="bg-red-50 rounded-lg overflow-hidden transition-all duration-200 hover:shadow-md"
+                className="bg-red-50 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-md transform hover:scale-[1.02]"
               >
                 <button
                   onClick={() => toggleExpanded(faq.id)}
-                  className="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-inset"
+                  className="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none transition-all duration-200 hover:bg-red-100"
                 >
-                  <span className="text-gray-800 font-medium text-base sm:text-lg pr-4">{faq.question}</span>
+                  <span className="text-gray-800 font-medium text-base sm:text-lg pr-4 transition-colors duration-200">
+                    {faq.question}
+                  </span>
                   <div className="flex-shrink-0">
-                    {expandedItems.has(faq.id) ? (
-                      <Minus className="w-5 h-5 text-gray-600" />
-                    ) : (
-                      <Plus className="w-5 h-5 text-gray-600" />
-                    )}
+                    <div className="transition-transform duration-300 ease-in-out">
+                      {expandedItem === faq.id ? (
+                        <Minus className="w-5 h-5 text-gray-600 transform rotate-0 transition-transform duration-300" />
+                      ) : (
+                        <Plus className="w-5 h-5 text-gray-600 transform rotate-0 transition-transform duration-300" />
+                      )}
+                    </div>
                   </div>
                 </button>
 
-                {expandedItems.has(faq.id) && (
+                <div
+                  className={`transition-all duration-300 ease-in-out ${
+                    expandedItem === faq.id
+                      ? "max-h-96 opacity-100"
+                      : "max-h-0 opacity-0"
+                  } overflow-hidden`}
+                >
                   <div className="px-6 pb-5">
-                    <div className="pt-2 border-t border-red-100">
-                      <p className="text-gray-700 text-sm sm:text-base leading-relaxed">{faq.answer}</p>
+                    <div className="pt-2 border-t border-red-100 transition-all duration-200">
+                      <p className="text-gray-700 text-sm sm:text-base leading-relaxed transform transition-transform duration-300">
+                        {faq.answer}
+                      </p>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
             ))}
           </div>

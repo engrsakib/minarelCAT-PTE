@@ -534,7 +534,7 @@ export default function DynamicPage({ params }) {
         <span className="rounded-lg px-4 py-2 font-bold text-white bg-[#810000] text-base tracking-wide">
           #{currentQ._id}
         </span>
-        <span className="text-lg font-semibold text-[#810000] flex-1">
+        <span className="text-lg font-semibold text-[#810000] ">
           {currentQ.heading}
         </span>
       </div>
