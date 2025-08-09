@@ -2,10 +2,41 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 const Layout = ({
   children
 }) => {
+  const pathname = usePathname();
+  
+  // Routes that should not have the main layout
+  const confirmPage = ['/mock-test/confirm-page'];
+ 
+  const isConfirmScreenRoute = confirmPage.some(route => 
+    pathname.startsWith(route)
+  );
+
+  const sectionalConfirmPage = ['/mock-test/sectional-mock-test/confirm-page'];
+ 
+  const isSectionalConfirmPageConfirmScreenRoute = sectionalConfirmPage.some(route => 
+    pathname.startsWith(route)
+  );
+
+  if (isSectionalConfirmPageConfirmScreenRoute) {
+    return (
+      <div>
+         {children}
+      </div>
+    );
+  }
+
+  if (isConfirmScreenRoute) {
+    return (
+      <div>
+         {children}
+      </div>
+    );
+  }
 
     const [mockTest,setMockTest] = useState(true)
  

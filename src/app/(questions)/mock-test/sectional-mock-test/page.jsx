@@ -1,15 +1,7 @@
 "use client";
-/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
-import { Button } from "@/components/ui/button";
-import { Plus, MoreHorizontal, Edit, Trash2 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 
 import { useRouter } from "next/navigation";
 
@@ -18,7 +10,7 @@ export default function SectionalMockTest() {
   const router = useRouter();
   const baseUrl = process.env.NEXT_PUBLIC_ADMIN_URL || "";
 
-  // State for data & loading/error
+  
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -37,46 +29,20 @@ export default function SectionalMockTest() {
     }`;
   };
 
-  // const typeOfSectionalMockTest = activeType.toLowerCase()
   
-  // Fetch mock tests (NO pagination)
- 
-
-  // Refetch function (after delete)
-  // const refetch = () => {
-  //   setLoading(true);
-  //   setError("");
-  //   fetchWithAuth(`${baseUrl}/test/reading/fill-in-the-blanks`)
-  //     .then(async (response) => {
-  //       const json = await response.json();
-  //       if (json && Array.isArray(json.FullmockTests)) {
-  //         setData(json.FullmockTests);
-  //         setLoading(false);
-  //       } else {
-  //         setError("Data not found");
-  //         setLoading(false);
-  //       }
-  //     })
-  //     .catch((e) => {
-  //       setError("React Query Error: " + (e?.message || e));
-  //       setLoading(false);
-  //     });
-  // };
-  
-  // Format duration to string like "02:30"
   const formatDuration = (duration) => {
     if (!duration) return "--";
     const hours = duration.hours?.toString().padStart(2, "0") || "00";
     const minutes = duration.minutes?.toString().padStart(2, "0") || "00";
     return `${hours}:${minutes}`;
   };
-  console.log("data from sectional mock test",data);
+  
   
  useEffect(() => {
   let cancelled = false;
-  const typeOfSectionalMockTest = activeType.toLowerCase(); // or whatever format your API expects
+  const typeOfSectionalMockTest = activeType.toLowerCase(); 
 
-  console.log('Starting fetch for:', typeOfSectionalMockTest);
+  
   setLoading(true);
   setError("");
 
@@ -84,7 +50,7 @@ export default function SectionalMockTest() {
     .then(async (response) => {
       console.log('Response received:', response.status);
       const json = await response.json();
-      console.log('JSON data:', json.sectionalMockTests);
+      
 
       if (!cancelled) {
         if (json && Array.isArray(json.sectionalMockTests)) {
@@ -108,10 +74,10 @@ export default function SectionalMockTest() {
   return () => {
     cancelled = true;
   };
-}, [activeType]); // 🔁 Runs every time activeType changes
+}, [activeType]); 
 
 
-  // Responsive Tailwind styles for the card
+  
   const cardClass =
     "flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-2 p-5 border border-[#e5e2e5] rounded-lg bg-[#faf8fa] shadow-sm transition hover:shadow-lg";
 

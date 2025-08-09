@@ -2,6 +2,7 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import fetchWithAuth from "@/lib/fetchWithAuth";
+import { usePathname } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Plus, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import {
@@ -14,7 +15,10 @@ import {
 import { useRouter } from "next/navigation";
 
 
-export default function AllMockTest() {
+export default function AllMockTest({ children }) {
+
+  
+
   const router = useRouter();
   const baseUrl = process.env.NEXT_PUBLIC_ADMIN_URL || "";
 
