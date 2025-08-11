@@ -111,7 +111,7 @@ export default function SectionalMockTest() {
                   key={item._id}
                   className={cardClass}
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full cursor-pointer">
                     <span className="text-[#a91e22] font-semibold min-w-[90px] break-all">
                       #{item._id}
                     </span>
@@ -119,7 +119,7 @@ export default function SectionalMockTest() {
                     <button
                       type="button"
                       onClick={() => router.push(`/mock-test/sectional-mock-test/confirm-page?item_id=${item._id}`)}
-                      className="font-medium text-base text-[#333] flex-1 text-left hover:underline focus:outline-none"
+                      className="font-medium text-base text-[#333] flex-1 text-left hover:underline focus:outline-none cursor-pointer"
                       tabIndex={0}
                     >
                       {item.name}

@@ -33,6 +33,17 @@ const ReadAloudComponent = ({ question, onAnswer }) => {
   const recorder = useRef(null);
   const timerRef = useRef();
 
+  // Clear audio when question changes
+  useEffect(() => {
+    setIsRecording(false);
+    setRecordingTime(RECORD_SECONDS);
+    setAudioBlob(null);
+    setMp3URL(null);
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+  }, [question._id]);
+
   useEffect(() => {
     if (!isRecording) return;
     if (recordingTime === 0) {
@@ -87,7 +98,7 @@ const ReadAloudComponent = ({ question, onAnswer }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
       <div className="flex items-center mb-4">
-        <BookOpen className="text-blue-600 mr-2" />
+        <BookOpen className="text-red-600 mr-2" />
         <h3 className="text-lg font-semibold text-gray-800">
           Question {question.questionNumber}: Read Aloud
         </h3>
@@ -101,7 +112,7 @@ const ReadAloudComponent = ({ question, onAnswer }) => {
       
       {/* Timer */}
       <div className="mb-4 flex items-center gap-3">
-        <span className="text-blue-600 font-medium text-base">
+        <span className="text-red-600 font-medium text-base">
           {isRecording ? "Recording:" : "Time left:"}
           <span className="font-bold ml-1">{recordingTime} sec</span>
         </span>
@@ -122,7 +133,7 @@ const ReadAloudComponent = ({ question, onAnswer }) => {
         </span>
         <div className="flex-1 h-2 rounded bg-gray-200 overflow-hidden relative">
           <div
-            className="h-2 rounded bg-blue-600 transition-all duration-200"
+            className="h-2 rounded bg-red-600 transition-all duration-200"
             style={{
               width: `${
                 ((RECORD_SECONDS - recordingTime) / RECORD_SECONDS) * 100
@@ -153,7 +164,7 @@ const ReadAloudComponent = ({ question, onAnswer }) => {
           className={`flex items-center px-4 py-2 rounded-md font-medium ${
             isRecording || recordingTime === 0
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-500 hover:bg-blue-600 text-white'
+              : 'bg-red-500 hover:bg-red-600 text-white'
           }`}
         >
           <Mic className="mr-2 h-4 w-4" />
@@ -194,6 +205,14 @@ const RepeatSentenceComponent = ({ question, onAnswer }) => {
   const recorder = useRef(null);
   const audioRef = useRef(null);
 
+  // Clear audio when question changes
+  useEffect(() => {
+    setIsPlaying(false);
+    setIsRecording(false);
+    setAudioBlob(null);
+    setMp3URL(null);
+  }, [question._id]);
+
   const toggleAudio = useCallback(() => {
     if (audioRef.current) {
       if (isPlaying) {
@@ -232,7 +251,7 @@ const RepeatSentenceComponent = ({ question, onAnswer }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
       <div className="flex items-center mb-4">
-        <Volume2 className="text-green-600 mr-2" />
+        <Volume2 className="text-red-600 mr-2" />
         <h3 className="text-lg font-semibold text-gray-800">
           Question {question.questionNumber}: Repeat Sentence
         </h3>
@@ -245,7 +264,7 @@ const RepeatSentenceComponent = ({ question, onAnswer }) => {
         <div className="flex items-center gap-4 mb-3">
           <button
             onClick={toggleAudio}
-            className="flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
+            className="flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md"
           >
             {isPlaying ? <Pause className="mr-2 h-4 w-4" /> : <Play className="mr-2 h-4 w-4" />}
             {isPlaying ? 'Pause Audio' : 'Play Audio'}
@@ -262,7 +281,7 @@ const RepeatSentenceComponent = ({ question, onAnswer }) => {
         />
         
         {question.audioConvertedText && (
-          <div className="mt-3 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
+          <div className="mt-3 p-3 bg-red-50 rounded border-l-4 border-red-400">
             <p className="text-sm text-gray-600 font-medium">Audio Text:</p>
             <p className="text-sm text-gray-700 mt-1">{question.audioConvertedText}</p>
           </div>
@@ -277,7 +296,7 @@ const RepeatSentenceComponent = ({ question, onAnswer }) => {
           className={`flex items-center px-4 py-2 rounded-md font-medium ${
             isRecording
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-500 hover:bg-blue-600 text-white'
+              : 'bg-red-500 hover:bg-red-600 text-white'
           }`}
         >
           <Mic className="mr-2 h-4 w-4" />
@@ -326,6 +345,14 @@ const RespondToSituationComponent = ({ question, onAnswer }) => {
   const recorder = useRef(null);
   const audioRef = useRef(null);
 
+  // Clear audio when question changes
+  useEffect(() => {
+    setIsPlaying(false);
+    setIsRecording(false);
+    setAudioBlob(null);
+    setMp3URL(null);
+  }, [question._id]);
+
   const toggleAudio = useCallback(() => {
     if (audioRef.current) {
       if (isPlaying) {
@@ -364,7 +391,7 @@ const RespondToSituationComponent = ({ question, onAnswer }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
       <div className="flex items-center mb-4">
-        <Volume2 className="text-green-600 mr-2" />
+        <Volume2 className="text-red-600 mr-2" />
         <h3 className="text-lg font-semibold text-gray-800">
           Question {question.questionNumber}: Respond to Situation
         </h3>
@@ -377,7 +404,7 @@ const RespondToSituationComponent = ({ question, onAnswer }) => {
         <div className="flex items-center gap-4 mb-3">
           <button
             onClick={toggleAudio}
-            className="flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
+            className="flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md"
           >
             {isPlaying ? <Pause className="mr-2 h-4 w-4" /> : <Play className="mr-2 h-4 w-4" />}
             {isPlaying ? 'Pause Audio' : 'Play Audio'}
@@ -408,7 +435,7 @@ const RespondToSituationComponent = ({ question, onAnswer }) => {
           className={`flex items-center px-4 py-2 rounded-md font-medium ${
             isRecording
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-500 hover:bg-blue-600 text-white'
+              : 'bg-red-500 hover:bg-red-600 text-white'
           }`}
         >
           <Mic className="mr-2 h-4 w-4" />
@@ -456,6 +483,14 @@ const AnswerShortQuestionComponent = ({ question, onAnswer }) => {
   const [mp3URL, setMp3URL] = useState(null);
   const recorder = useRef(null);
   const audioRef = useRef(null);
+
+  // Clear audio when question changes
+  useEffect(() => {
+    setIsPlaying(false);
+    setIsRecording(false);
+    setAudioBlob(null);
+    setMp3URL(null);
+  }, [question._id]);
 
   const toggleAudio = useCallback(() => {
     if (audioRef.current) {
@@ -579,6 +614,12 @@ const SummarizeSpokenTextComponent = ({ question, onAnswer }) => {
   const [summary, setSummary] = useState('');
   const audioRef = useRef(null);
 
+  // Clear input when question changes
+  useEffect(() => {
+    setSummary('');
+    setIsPlaying(false);
+  }, [question._id]);
+
   // Debounced onAnswer call to prevent excessive updates
   const debouncedOnAnswer = useMemo(() => {
     let timeoutId;
@@ -640,7 +681,7 @@ const SummarizeSpokenTextComponent = ({ question, onAnswer }) => {
         />
         
         {question.audioConvertedText && (
-          <div className="mt-3 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
+          <div className="mt-3 p-3 bg-red-50 rounded border-l-4 border-red-400">
             <p className="text-sm text-gray-600 font-medium">Audio Content:</p>
             <p className="text-sm text-gray-700 mt-1">{question.audioConvertedText}</p>
           </div>
@@ -671,6 +712,11 @@ const SummarizeSpokenTextComponent = ({ question, onAnswer }) => {
 const SummarizeWrittenTextComponent = ({ question, onAnswer }) => {
   const [summary, setSummary] = useState('');
 
+  // Clear input when question changes
+  useEffect(() => {
+    setSummary('');
+  }, [question._id]);
+
   // Debounced onAnswer call
   const debouncedOnAnswer = useMemo(() => {
     let timeoutId;
@@ -691,7 +737,7 @@ const SummarizeWrittenTextComponent = ({ question, onAnswer }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
       <div className="flex items-center mb-4">
-        <PenTool className="text-blue-600 mr-2" />
+        <PenTool className="text-red-600 mr-2" />
         <h3 className="text-lg font-semibold text-gray-800">
           Question {question.questionNumber}: Summarize Written Text
         </h3>
@@ -712,7 +758,7 @@ const SummarizeWrittenTextComponent = ({ question, onAnswer }) => {
         <textarea
           value={summary}
           onChange={handleSummaryChange}
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent"
           rows="4"
           placeholder="Summarize the main points from the text..."
         />
@@ -727,6 +773,11 @@ const SummarizeWrittenTextComponent = ({ question, onAnswer }) => {
 // Write Email Component
 const WriteEmailComponent = ({ question, onAnswer }) => {
   const [email, setEmail] = useState('');
+
+  // Clear input when question changes
+  useEffect(() => {
+    setEmail('');
+  }, [question._id]);
 
   // Debounced onAnswer call
   const debouncedOnAnswer = useMemo(() => {
@@ -748,7 +799,7 @@ const WriteEmailComponent = ({ question, onAnswer }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
       <div className="flex items-center mb-4">
-        <Send className="text-green-600 mr-2" />
+        <Send className="text-red-600 mr-2" />
         <h3 className="text-lg font-semibold text-gray-800">
           Question {question.questionNumber}: Write Email
         </h3>
@@ -769,7 +820,7 @@ const WriteEmailComponent = ({ question, onAnswer }) => {
         <textarea
           value={email}
           onChange={handleEmailChange}
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent"
           rows="8"
           placeholder="Write your email here..."
         />
@@ -784,6 +835,11 @@ const WriteEmailComponent = ({ question, onAnswer }) => {
 // Reading Fill in the Blanks Component - Fixed version
 const RWFillInTheBlanksComponent = ({ question, onAnswer }) => {
   const [answers, setAnswers] = useState({});
+
+  // Clear answers when question changes
+  useEffect(() => {
+    setAnswers({});
+  }, [question._id]);
 
   // Memoize the onAnswer callback to prevent unnecessary re-renders
   const stableOnAnswer = useCallback(onAnswer, []);
@@ -828,7 +884,7 @@ const RWFillInTheBlanksComponent = ({ question, onAnswer }) => {
             key={`blank-${index}`}
             value={answers[blanks[index].index] || ''}
             onChange={(e) => handleAnswerChange(blanks[index].index, e.target.value)}
-            className="mx-1 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+            className="mx-1 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-red-500"
           >
             <option value="">Select...</option>
             {blanks[index].options.map((option, optIndex) => (
@@ -866,6 +922,11 @@ const RWFillInTheBlanksComponent = ({ question, onAnswer }) => {
 const MCQMultipleComponent = ({ question, onAnswer }) => {
   const [selectedAnswers, setSelectedAnswers] = useState([]);
 
+  // Clear selection when question changes
+  useEffect(() => {
+    setSelectedAnswers([]);
+  }, [question._id]);
+
   // Stable onAnswer callback
   const stableOnAnswer = useCallback(onAnswer, []);
 
@@ -886,7 +947,7 @@ const MCQMultipleComponent = ({ question, onAnswer }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
       <div className="flex items-center mb-4">
-        <List className="text-green-600 mr-2" />
+        <List className="text-red-600 mr-2" />
         <h3 className="text-lg font-semibold text-gray-800">
           Question {question.questionNumber}: Multiple Choice (Multiple Answers)
         </h3>
@@ -908,7 +969,7 @@ const MCQMultipleComponent = ({ question, onAnswer }) => {
               type="checkbox"
               checked={selectedAnswers.includes(option)}
               onChange={() => handleAnswerChange(option)}
-              className="mt-1 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+              className="mt-1 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
             />
             <span className="text-gray-700">{option}</span>
           </label>
@@ -921,6 +982,11 @@ const MCQMultipleComponent = ({ question, onAnswer }) => {
 // Multiple Choice Single Answer Component
 const MCQSingleComponent = ({ question, onAnswer }) => {
   const [selectedAnswer, setSelectedAnswer] = useState('');
+
+  // Clear selection when question changes
+  useEffect(() => {
+    setSelectedAnswer('');
+  }, [question._id]);
 
   // Stable onAnswer callback
   const stableOnAnswer = useCallback(onAnswer, []);
@@ -936,7 +1002,7 @@ const MCQSingleComponent = ({ question, onAnswer }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
       <div className="flex items-center mb-4">
-        <Target className="text-blue-600 mr-2" />
+        <Target className="text-red-600 mr-2" />
         <h3 className="text-lg font-semibold text-gray-800">
           Question {question.questionNumber}: Multiple Choice (Single Answer)
         </h3>
@@ -960,7 +1026,7 @@ const MCQSingleComponent = ({ question, onAnswer }) => {
               value={option}
               checked={selectedAnswer === option}
               onChange={(e) => handleAnswerChange(e.target.value)}
-              className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+              className="mt-1 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
             />
             <span className="text-gray-700">{option}</span>
           </label>
@@ -973,6 +1039,11 @@ const MCQSingleComponent = ({ question, onAnswer }) => {
 // Reorder Paragraphs Component
 const ReorderParagraphsComponent = ({ question, onAnswer }) => {
   const [orderedOptions, setOrderedOptions] = useState(question.options || []);
+
+  // Reset to original order when question changes
+  useEffect(() => {
+    setOrderedOptions(question.options || []);
+  }, [question._id, question.options]);
 
   // Stable onAnswer callback
   const stableOnAnswer = useCallback(onAnswer, []);
@@ -1014,14 +1085,14 @@ const ReorderParagraphsComponent = ({ question, onAnswer }) => {
                 <button
                   onClick={() => moveItem(index, Math.max(0, index - 1))}
                   disabled={index === 0}
-                  className="px-2 py-1 bg-blue-500 text-white rounded disabled:bg-gray-300 text-sm"
+                  className="px-2 py-1 bg-red-500 text-white rounded disabled:bg-gray-300 text-sm"
                 >
                   ↑
                 </button>
                 <button
                   onClick={() => moveItem(index, Math.min(orderedOptions.length - 1, index + 1))}
                   disabled={index === orderedOptions.length - 1}
-                  className="px-2 py-1 bg-blue-500 text-white rounded disabled:bg-gray-300 text-sm"
+                  className="px-2 py-1 bg-red-500 text-white rounded disabled:bg-gray-300 text-sm"
                 >
                   ↓
                 </button>
@@ -1040,6 +1111,12 @@ const ListeningFillInTheBlanksComponent = ({ question, onAnswer }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [answers, setAnswers] = useState({});
   const audioRef = useRef(null);
+
+  // Clear answers when question changes
+  useEffect(() => {
+    setAnswers({});
+    setIsPlaying(false);
+  }, [question._id]);
 
   // Stable onAnswer callback
   const stableOnAnswer = useCallback(onAnswer, []);
@@ -1143,6 +1220,12 @@ const ListeningMCQComponent = ({ question, onAnswer, isMultiple = false }) => {
   const [selectedAnswers, setSelectedAnswers] = useState(isMultiple ? [] : '');
   const audioRef = useRef(null);
 
+  // Clear selection when question changes
+  useEffect(() => {
+    setSelectedAnswers(isMultiple ? [] : '');
+    setIsPlaying(false);
+  }, [question._id, isMultiple]);
+
   // Stable onAnswer callback
   const stableOnAnswer = useCallback(onAnswer, []);
 
@@ -1178,7 +1261,7 @@ const ListeningMCQComponent = ({ question, onAnswer, isMultiple = false }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
       <div className="flex items-center mb-4">
-        <Headphones className="text-green-600 mr-2" />
+        <Headphones className="text-red-600 mr-2" />
         <h3 className="text-lg font-semibold text-gray-800">
           Question {question.questionNumber}: Listening Multiple Choice {isMultiple ? '(Multiple Answers)' : '(Single Answer)'}
         </h3>
@@ -1191,7 +1274,7 @@ const ListeningMCQComponent = ({ question, onAnswer, isMultiple = false }) => {
         <div className="flex items-center gap-4 mb-3">
           <button
             onClick={toggleAudio}
-            className="flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
+            className="flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md"
           >
             {isPlaying ? <Pause className="mr-2 h-4 w-4" /> : <Play className="mr-2 h-4 w-4" />}
             {isPlaying ? 'Pause Audio' : 'Play Audio'}
@@ -1221,7 +1304,7 @@ const ListeningMCQComponent = ({ question, onAnswer, isMultiple = false }) => {
               value={option}
               checked={isMultiple ? selectedAnswers.includes(option) : selectedAnswers === option}
               onChange={() => handleAnswerChange(option)}
-              className={`mt-1 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 ${isMultiple ? 'rounded' : ''}`}
+              className={`mt-1 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 ${isMultiple ? 'rounded' : ''}`}
             />
             <span className="text-gray-700">{option}</span>
           </label>
@@ -1301,9 +1384,9 @@ const ResultModal = ({ isOpen, onClose, result }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4  bg-opacity-50">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-auto border border-gray-200 overflow-hidden">
-        <div className="bg-green-600 p-4 text-white">
+        <div className="bg-red-700 p-4 text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CheckCircle className="h-6 w-6" />
@@ -1320,25 +1403,60 @@ const ResultModal = ({ isOpen, onClose, result }) => {
 
         <div className="p-6">
           <div className="text-center">
-            <div className="text-green-600 text-xl font-bold mb-2">
+            <div className="text-red-700 text-xl font-bold mb-2">
               Test Results
             </div>
             <p className="text-gray-600 mb-4">
               Your test has been submitted successfully!
             </p>
             
-            {result && (
-              <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                <pre className="text-sm text-gray-700 whitespace-pre-wrap">
-                  {JSON.stringify(result, null, 2)}
-                </pre>
-              </div>
-            )}
+            {result && result.data && result.data.totalScore > 0 && (
+  <div className="bg-gray-50 rounded-lg p-4 mb-4">
+    <div className="text-sm text-gray-700">
+      {result.data.speaking > 0 && (
+        <div className="mb-2">
+          <span className="font-semibold">Speaking: </span>
+          <span>{result.data.speaking.toFixed(2)}</span>
+        </div>
+      )}
+      
+      {result.data.listening > 0 && (
+        <div className="mb-2">
+          <span className="font-semibold">Listening: </span>
+          <span>{result.data.listening.toFixed(2)}</span>
+        </div>
+      )}
+      
+      {result.data.reading > 0 && (
+        <div className="mb-2">
+          <span className="font-semibold">Reading: </span>
+          <span>{result.data.reading.toFixed(2)}</span>
+        </div>
+      )}
+      
+      {result.data.writing > 0 && (
+        <div className="mb-2">
+          <span className="font-semibold">Writing: </span>
+          <span>{result.data.writing.toFixed(2)}</span>
+        </div>
+      )}
+      
+      <div className="mt-3 pt-2 border-t border-gray-300">
+        <span className="font-semibold">Total Score: </span>
+        <span>{result.data.totalScore.toFixed(2)}</span>
+      </div>
+      
+      <div className="text-xs text-gray-500 mt-2">
+        Test Date: {new Date(result.data.testDate).toLocaleDateString()}
+      </div>
+    </div>
+  </div>
+)}
           </div>
 
           <button
             onClick={onClose}
-            className="w-full py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
+            className="w-full py-2.5 bg-red-700 text-white rounded-lg hover:bg-red-800 transition font-medium"
           >
             Close
           </button>
@@ -1392,6 +1510,7 @@ export default function DynamicMockTest({ params }) {
   // Use React.use() to unwrap the Promise params
   const resolvedParams = use(params);
   const mockTestId = resolvedParams.id;
+  console.log("mockTestId",mockTestId);
   
   const router = useRouter();
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
@@ -1466,7 +1585,7 @@ export default function DynamicMockTest({ params }) {
       
       setLoading(true);
       try {
-        const response = await fetchWithAuth(`${baseUrl}/full-mock-test/get/${mockTestId}`);
+        const response = await fetchWithAuth(`${baseUrl}/sectional-mock-test/getSingleSectionalMockTest/${mockTestId}`);
         const data = await response.json();
         setTestData(data);
       } catch (error) {
@@ -1477,6 +1596,8 @@ export default function DynamicMockTest({ params }) {
     };
 
     fetchTestData();
+    console.log();
+    
   }, [mockTestId, baseUrl]);
 
   // Memoized answer handler to prevent infinite re-renders
@@ -1503,13 +1624,13 @@ export default function DynamicMockTest({ params }) {
         formData.append("questionId", questionId);
         formData.append("mockTestId", mockTestId);
         
-        await fetchWithAuth(`${baseUrl}/full-mock-test/result-single-question`, {
+        await fetchWithAuth(`${baseUrl}/sectional-mock-test/result-single-question`, {
           method: "POST",
           body: formData
         });
       } else {
         // For text answers
-        await fetchWithAuth(`${baseUrl}/full-mock-test/result-single-question`, {
+        await fetchWithAuth(`${baseUrl}/sectional-mock-test/result-single-question`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -1557,7 +1678,7 @@ export default function DynamicMockTest({ params }) {
   const submitTest = useCallback(async () => {
     setIsSubmitting(true);
     try {
-      const response = await fetchWithAuth(`${baseUrl}/full-mock-test/get-mock-test-result/${mockTestId}`);
+      const response = await fetchWithAuth(`${baseUrl}/sectional-mock-test/get-mock-test-result/${mockTestId}`);
       const result = await response.json();
       setTestResult(result);
       setShowResultModal(true);
@@ -1585,7 +1706,7 @@ export default function DynamicMockTest({ params }) {
   if (loading || !testData || !testData.questions || testData.questions.length === 0) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600"></div>
       </div>
     );
   }
@@ -1609,7 +1730,7 @@ export default function DynamicMockTest({ params }) {
               </div>
               <div className="w-48 bg-gray-200 rounded-full h-2 mt-2">
                 <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-red-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${((currentQuestionIndex + 1) / testData.questions.length) * 100}%` }}
                 ></div>
               </div>
@@ -1647,7 +1768,7 @@ export default function DynamicMockTest({ params }) {
             className={`px-6 py-2 rounded-md font-medium ${
               isSubmitting
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700 text-white'
+                : 'bg-red-600 hover:bg-red-700 text-white'
             }`}
           >
             {isSubmitting ? (

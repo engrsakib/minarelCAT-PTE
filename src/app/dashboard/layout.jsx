@@ -18,14 +18,14 @@ const Layout = ({
 
         const response = await fetchWithAuth(`${baseUrl}/user/user-progress`);
 
-        console.log("response from progress page ", response);
+        
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log("Fetched Data:", data);
+       
 
         setData(data);
       } catch (error) {

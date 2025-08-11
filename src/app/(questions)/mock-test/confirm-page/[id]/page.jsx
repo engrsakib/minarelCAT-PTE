@@ -25,13 +25,24 @@ import fetchWithAuth from "@/lib/fetchWithAuth";
 const RECORD_SECONDS = 35;
 
 // Read Aloud Component
-const ReadAloudComponent = ({ question, onAnswer }) => {
+const ReadAloudComponent = ({ question, onAnswer, clearTrigger }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(RECORD_SECONDS);
   const [audioBlob, setAudioBlob] = useState(null);
   const [mp3URL, setMp3URL] = useState(null);
   const recorder = useRef(null);
   const timerRef = useRef();
+
+  // Clear component state when clearTrigger changes
+  useEffect(() => {
+    if (clearTrigger) {
+      setAudioBlob(null);
+      setMp3URL(null);
+      setRecordingTime(RECORD_SECONDS);
+      setIsRecording(false);
+      onAnswer(null);
+    }
+  }, [clearTrigger, onAnswer]);
 
   useEffect(() => {
     if (!isRecording) return;
@@ -87,7 +98,7 @@ const ReadAloudComponent = ({ question, onAnswer }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
       <div className="flex items-center mb-4">
-        <BookOpen className="text-blue-600 mr-2" />
+        <BookOpen className="text-red-600 mr-2" />
         <h3 className="text-lg font-semibold text-gray-800">
           Question {question.questionNumber}: Read Aloud
         </h3>
@@ -101,7 +112,7 @@ const ReadAloudComponent = ({ question, onAnswer }) => {
       
       {/* Timer */}
       <div className="mb-4 flex items-center gap-3">
-        <span className="text-blue-600 font-medium text-base">
+        <span className="text-red-600 font-medium text-base">
           {isRecording ? "Recording:" : "Time left:"}
           <span className="font-bold ml-1">{recordingTime} sec</span>
         </span>
@@ -122,7 +133,7 @@ const ReadAloudComponent = ({ question, onAnswer }) => {
         </span>
         <div className="flex-1 h-2 rounded bg-gray-200 overflow-hidden relative">
           <div
-            className="h-2 rounded bg-blue-600 transition-all duration-200"
+            className="h-2 rounded bg-red-600 transition-all duration-200"
             style={{
               width: `${
                 ((RECORD_SECONDS - recordingTime) / RECORD_SECONDS) * 100
@@ -153,7 +164,7 @@ const ReadAloudComponent = ({ question, onAnswer }) => {
           className={`flex items-center px-4 py-2 rounded-md font-medium ${
             isRecording || recordingTime === 0
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-500 hover:bg-blue-600 text-white'
+              : 'bg-red-500 hover:bg-red-600 text-white'
           }`}
         >
           <Mic className="mr-2 h-4 w-4" />
@@ -186,13 +197,28 @@ const ReadAloudComponent = ({ question, onAnswer }) => {
 };
 
 // Repeat Sentence Component
-const RepeatSentenceComponent = ({ question, onAnswer }) => {
+const RepeatSentenceComponent = ({ question, onAnswer, clearTrigger }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [mp3URL, setMp3URL] = useState(null);
   const recorder = useRef(null);
   const audioRef = useRef(null);
+
+  // Clear component state when clearTrigger changes
+  useEffect(() => {
+    if (clearTrigger) {
+      setIsPlaying(false);
+      setIsRecording(false);
+      setAudioBlob(null);
+      setMp3URL(null);
+      onAnswer(null);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    }
+  }, [clearTrigger, onAnswer]);
 
   const toggleAudio = useCallback(() => {
     if (audioRef.current) {
@@ -232,7 +258,7 @@ const RepeatSentenceComponent = ({ question, onAnswer }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
       <div className="flex items-center mb-4">
-        <Volume2 className="text-green-600 mr-2" />
+        <Volume2 className="text-red-600 mr-2" />
         <h3 className="text-lg font-semibold text-gray-800">
           Question {question.questionNumber}: Repeat Sentence
         </h3>
@@ -245,7 +271,7 @@ const RepeatSentenceComponent = ({ question, onAnswer }) => {
         <div className="flex items-center gap-4 mb-3">
           <button
             onClick={toggleAudio}
-            className="flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
+            className="flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md"
           >
             {isPlaying ? <Pause className="mr-2 h-4 w-4" /> : <Play className="mr-2 h-4 w-4" />}
             {isPlaying ? 'Pause Audio' : 'Play Audio'}
@@ -262,7 +288,7 @@ const RepeatSentenceComponent = ({ question, onAnswer }) => {
         />
         
         {question.audioConvertedText && (
-          <div className="mt-3 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
+          <div className="mt-3 p-3 bg-red-50 rounded border-l-4 border-red-400">
             <p className="text-sm text-gray-600 font-medium">Audio Text:</p>
             <p className="text-sm text-gray-700 mt-1">{question.audioConvertedText}</p>
           </div>
@@ -277,7 +303,7 @@ const RepeatSentenceComponent = ({ question, onAnswer }) => {
           className={`flex items-center px-4 py-2 rounded-md font-medium ${
             isRecording
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-500 hover:bg-blue-600 text-white'
+              : 'bg-red-500 hover:bg-red-600 text-white'
           }`}
         >
           <Mic className="mr-2 h-4 w-4" />
@@ -318,13 +344,28 @@ const RepeatSentenceComponent = ({ question, onAnswer }) => {
 };
 
 // Respond to Situation Component  
-const RespondToSituationComponent = ({ question, onAnswer }) => {
+const RespondToSituationComponent = ({ question, onAnswer, clearTrigger }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [mp3URL, setMp3URL] = useState(null);
   const recorder = useRef(null);
   const audioRef = useRef(null);
+
+  // Clear component state when clearTrigger changes
+  useEffect(() => {
+    if (clearTrigger) {
+      setIsPlaying(false);
+      setIsRecording(false);
+      setAudioBlob(null);
+      setMp3URL(null);
+      onAnswer(null);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    }
+  }, [clearTrigger, onAnswer]);
 
   const toggleAudio = useCallback(() => {
     if (audioRef.current) {
@@ -364,7 +405,7 @@ const RespondToSituationComponent = ({ question, onAnswer }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
       <div className="flex items-center mb-4">
-        <Volume2 className="text-green-600 mr-2" />
+        <Volume2 className="text-red-600 mr-2" />
         <h3 className="text-lg font-semibold text-gray-800">
           Question {question.questionNumber}: Respond to Situation
         </h3>
@@ -377,7 +418,7 @@ const RespondToSituationComponent = ({ question, onAnswer }) => {
         <div className="flex items-center gap-4 mb-3">
           <button
             onClick={toggleAudio}
-            className="flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
+            className="flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md"
           >
             {isPlaying ? <Pause className="mr-2 h-4 w-4" /> : <Play className="mr-2 h-4 w-4" />}
             {isPlaying ? 'Pause Audio' : 'Play Audio'}
@@ -408,7 +449,7 @@ const RespondToSituationComponent = ({ question, onAnswer }) => {
           className={`flex items-center px-4 py-2 rounded-md font-medium ${
             isRecording
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-500 hover:bg-blue-600 text-white'
+              : 'bg-red-500 hover:bg-red-600 text-white'
           }`}
         >
           <Mic className="mr-2 h-4 w-4" />
@@ -449,13 +490,28 @@ const RespondToSituationComponent = ({ question, onAnswer }) => {
 };
 
 // Answer Short Question Component
-const AnswerShortQuestionComponent = ({ question, onAnswer }) => {
+const AnswerShortQuestionComponent = ({ question, onAnswer, clearTrigger }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [mp3URL, setMp3URL] = useState(null);
   const recorder = useRef(null);
   const audioRef = useRef(null);
+
+  // Clear component state when clearTrigger changes
+  useEffect(() => {
+    if (clearTrigger) {
+      setIsPlaying(false);
+      setIsRecording(false);
+      setAudioBlob(null);
+      setMp3URL(null);
+      onAnswer(null);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    }
+  }, [clearTrigger, onAnswer]);
 
   const toggleAudio = useCallback(() => {
     if (audioRef.current) {
@@ -574,10 +630,23 @@ const AnswerShortQuestionComponent = ({ question, onAnswer }) => {
 };
 
 // Summarize Spoken Text Component (Listening)
-const SummarizeSpokenTextComponent = ({ question, onAnswer }) => {
+const SummarizeSpokenTextComponent = ({ question, onAnswer, clearTrigger }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [summary, setSummary] = useState('');
   const audioRef = useRef(null);
+
+  // Clear component state when clearTrigger changes
+  useEffect(() => {
+    if (clearTrigger) {
+      setIsPlaying(false);
+      setSummary('');
+      onAnswer('');
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    }
+  }, [clearTrigger, onAnswer]);
 
   // Debounced onAnswer call to prevent excessive updates
   const debouncedOnAnswer = useMemo(() => {
@@ -640,7 +709,7 @@ const SummarizeSpokenTextComponent = ({ question, onAnswer }) => {
         />
         
         {question.audioConvertedText && (
-          <div className="mt-3 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
+          <div className="mt-3 p-3 bg-red-50 rounded border-l-4 border-red-400">
             <p className="text-sm text-gray-600 font-medium">Audio Content:</p>
             <p className="text-sm text-gray-700 mt-1">{question.audioConvertedText}</p>
           </div>
@@ -668,8 +737,16 @@ const SummarizeSpokenTextComponent = ({ question, onAnswer }) => {
 };
 
 // Summarize Written Text Component (Writing)
-const SummarizeWrittenTextComponent = ({ question, onAnswer }) => {
+const SummarizeWrittenTextComponent = ({ question, onAnswer, clearTrigger }) => {
   const [summary, setSummary] = useState('');
+
+  // Clear component state when clearTrigger changes
+  useEffect(() => {
+    if (clearTrigger) {
+      setSummary('');
+      onAnswer('');
+    }
+  }, [clearTrigger, onAnswer]);
 
   // Debounced onAnswer call
   const debouncedOnAnswer = useMemo(() => {
@@ -691,7 +768,7 @@ const SummarizeWrittenTextComponent = ({ question, onAnswer }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
       <div className="flex items-center mb-4">
-        <PenTool className="text-blue-600 mr-2" />
+        <PenTool className="text-red-600 mr-2" />
         <h3 className="text-lg font-semibold text-gray-800">
           Question {question.questionNumber}: Summarize Written Text
         </h3>
@@ -712,7 +789,7 @@ const SummarizeWrittenTextComponent = ({ question, onAnswer }) => {
         <textarea
           value={summary}
           onChange={handleSummaryChange}
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent"
           rows="4"
           placeholder="Summarize the main points from the text..."
         />
@@ -725,8 +802,16 @@ const SummarizeWrittenTextComponent = ({ question, onAnswer }) => {
 };
 
 // Write Email Component
-const WriteEmailComponent = ({ question, onAnswer }) => {
+const WriteEmailComponent = ({ question, onAnswer, clearTrigger }) => {
   const [email, setEmail] = useState('');
+
+  // Clear component state when clearTrigger changes
+  useEffect(() => {
+    if (clearTrigger) {
+      setEmail('');
+      onAnswer('');
+    }
+  }, [clearTrigger, onAnswer]);
 
   // Debounced onAnswer call
   const debouncedOnAnswer = useMemo(() => {
@@ -748,7 +833,7 @@ const WriteEmailComponent = ({ question, onAnswer }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
       <div className="flex items-center mb-4">
-        <Send className="text-green-600 mr-2" />
+        <Send className="text-red-600 mr-2" />
         <h3 className="text-lg font-semibold text-gray-800">
           Question {question.questionNumber}: Write Email
         </h3>
@@ -769,7 +854,7 @@ const WriteEmailComponent = ({ question, onAnswer }) => {
         <textarea
           value={email}
           onChange={handleEmailChange}
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent"
           rows="8"
           placeholder="Write your email here..."
         />
@@ -782,8 +867,16 @@ const WriteEmailComponent = ({ question, onAnswer }) => {
 };
 
 // Reading Fill in the Blanks Component - Fixed version
-const RWFillInTheBlanksComponent = ({ question, onAnswer }) => {
+const RWFillInTheBlanksComponent = ({ question, onAnswer, clearTrigger }) => {
   const [answers, setAnswers] = useState({});
+
+  // Clear component state when clearTrigger changes
+  useEffect(() => {
+    if (clearTrigger) {
+      setAnswers({});
+      onAnswer({});
+    }
+  }, [clearTrigger, onAnswer]);
 
   // Memoize the onAnswer callback to prevent unnecessary re-renders
   const stableOnAnswer = useCallback(onAnswer, []);
@@ -828,7 +921,7 @@ const RWFillInTheBlanksComponent = ({ question, onAnswer }) => {
             key={`blank-${index}`}
             value={answers[blanks[index].index] || ''}
             onChange={(e) => handleAnswerChange(blanks[index].index, e.target.value)}
-            className="mx-1 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+            className="mx-1 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-red-500"
           >
             <option value="">Select...</option>
             {blanks[index].options.map((option, optIndex) => (
@@ -863,8 +956,16 @@ const RWFillInTheBlanksComponent = ({ question, onAnswer }) => {
 };
 
 // Multiple Choice Multiple Answers Component
-const MCQMultipleComponent = ({ question, onAnswer }) => {
+const MCQMultipleComponent = ({ question, onAnswer, clearTrigger }) => {
   const [selectedAnswers, setSelectedAnswers] = useState([]);
+
+  // Clear component state when clearTrigger changes
+  useEffect(() => {
+    if (clearTrigger) {
+      setSelectedAnswers([]);
+      onAnswer([]);
+    }
+  }, [clearTrigger, onAnswer]);
 
   // Stable onAnswer callback
   const stableOnAnswer = useCallback(onAnswer, []);
@@ -886,7 +987,7 @@ const MCQMultipleComponent = ({ question, onAnswer }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
       <div className="flex items-center mb-4">
-        <List className="text-green-600 mr-2" />
+        <List className="text-red-600 mr-2" />
         <h3 className="text-lg font-semibold text-gray-800">
           Question {question.questionNumber}: Multiple Choice (Multiple Answers)
         </h3>
@@ -908,7 +1009,7 @@ const MCQMultipleComponent = ({ question, onAnswer }) => {
               type="checkbox"
               checked={selectedAnswers.includes(option)}
               onChange={() => handleAnswerChange(option)}
-              className="mt-1 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+              className="mt-1 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
             />
             <span className="text-gray-700">{option}</span>
           </label>
@@ -919,8 +1020,16 @@ const MCQMultipleComponent = ({ question, onAnswer }) => {
 };
 
 // Multiple Choice Single Answer Component
-const MCQSingleComponent = ({ question, onAnswer }) => {
+const MCQSingleComponent = ({ question, onAnswer, clearTrigger }) => {
   const [selectedAnswer, setSelectedAnswer] = useState('');
+
+  // Clear component state when clearTrigger changes
+  useEffect(() => {
+    if (clearTrigger) {
+      setSelectedAnswer('');
+      onAnswer('');
+    }
+  }, [clearTrigger, onAnswer]);
 
   // Stable onAnswer callback
   const stableOnAnswer = useCallback(onAnswer, []);
@@ -936,7 +1045,7 @@ const MCQSingleComponent = ({ question, onAnswer }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
       <div className="flex items-center mb-4">
-        <Target className="text-blue-600 mr-2" />
+        <Target className="text-red-600 mr-2" />
         <h3 className="text-lg font-semibold text-gray-800">
           Question {question.questionNumber}: Multiple Choice (Single Answer)
         </h3>
@@ -960,7 +1069,7 @@ const MCQSingleComponent = ({ question, onAnswer }) => {
               value={option}
               checked={selectedAnswer === option}
               onChange={(e) => handleAnswerChange(e.target.value)}
-              className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+              className="mt-1 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
             />
             <span className="text-gray-700">{option}</span>
           </label>
@@ -971,8 +1080,16 @@ const MCQSingleComponent = ({ question, onAnswer }) => {
 };
 
 // Reorder Paragraphs Component
-const ReorderParagraphsComponent = ({ question, onAnswer }) => {
+const ReorderParagraphsComponent = ({ question, onAnswer, clearTrigger }) => {
   const [orderedOptions, setOrderedOptions] = useState(question.options || []);
+
+  // Clear component state when clearTrigger changes
+  useEffect(() => {
+    if (clearTrigger) {
+      setOrderedOptions(question.options || []);
+      onAnswer(question.options || []);
+    }
+  }, [clearTrigger, question.options, onAnswer]);
 
   // Stable onAnswer callback
   const stableOnAnswer = useCallback(onAnswer, []);
@@ -1014,14 +1131,14 @@ const ReorderParagraphsComponent = ({ question, onAnswer }) => {
                 <button
                   onClick={() => moveItem(index, Math.max(0, index - 1))}
                   disabled={index === 0}
-                  className="px-2 py-1 bg-blue-500 text-white rounded disabled:bg-gray-300 text-sm"
+                  className="px-2 py-1 bg-red-500 text-white rounded disabled:bg-gray-300 text-sm"
                 >
                   ↑
                 </button>
                 <button
                   onClick={() => moveItem(index, Math.min(orderedOptions.length - 1, index + 1))}
                   disabled={index === orderedOptions.length - 1}
-                  className="px-2 py-1 bg-blue-500 text-white rounded disabled:bg-gray-300 text-sm"
+                  className="px-2 py-1 bg-red-500 text-white rounded disabled:bg-gray-300 text-sm"
                 >
                   ↓
                 </button>
@@ -1036,10 +1153,23 @@ const ReorderParagraphsComponent = ({ question, onAnswer }) => {
 };
 
 // Listening Fill in the Blanks Component
-const ListeningFillInTheBlanksComponent = ({ question, onAnswer }) => {
+const ListeningFillInTheBlanksComponent = ({ question, onAnswer, clearTrigger }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [answers, setAnswers] = useState({});
   const audioRef = useRef(null);
+
+  // Clear component state when clearTrigger changes
+  useEffect(() => {
+    if (clearTrigger) {
+      setIsPlaying(false);
+      setAnswers({});
+      onAnswer({});
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    }
+  }, [clearTrigger, onAnswer]);
 
   // Stable onAnswer callback
   const stableOnAnswer = useCallback(onAnswer, []);
@@ -1138,10 +1268,23 @@ const ListeningFillInTheBlanksComponent = ({ question, onAnswer }) => {
 };
 
 // Listening Multiple Choice Components (Single and Multiple)
-const ListeningMCQComponent = ({ question, onAnswer, isMultiple = false }) => {
+const ListeningMCQComponent = ({ question, onAnswer, isMultiple = false, clearTrigger }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [selectedAnswers, setSelectedAnswers] = useState(isMultiple ? [] : '');
   const audioRef = useRef(null);
+
+  // Clear component state when clearTrigger changes
+  useEffect(() => {
+    if (clearTrigger) {
+      setIsPlaying(false);
+      setSelectedAnswers(isMultiple ? [] : '');
+      onAnswer(isMultiple ? [] : '');
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    }
+  }, [clearTrigger, isMultiple, onAnswer]);
 
   // Stable onAnswer callback
   const stableOnAnswer = useCallback(onAnswer, []);
@@ -1178,7 +1321,7 @@ const ListeningMCQComponent = ({ question, onAnswer, isMultiple = false }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
       <div className="flex items-center mb-4">
-        <Headphones className="text-green-600 mr-2" />
+        <Headphones className="text-red-600 mr-2" />
         <h3 className="text-lg font-semibold text-gray-800">
           Question {question.questionNumber}: Listening Multiple Choice {isMultiple ? '(Multiple Answers)' : '(Single Answer)'}
         </h3>
@@ -1191,7 +1334,7 @@ const ListeningMCQComponent = ({ question, onAnswer, isMultiple = false }) => {
         <div className="flex items-center gap-4 mb-3">
           <button
             onClick={toggleAudio}
-            className="flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
+            className="flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md"
           >
             {isPlaying ? <Pause className="mr-2 h-4 w-4" /> : <Play className="mr-2 h-4 w-4" />}
             {isPlaying ? 'Pause Audio' : 'Play Audio'}
@@ -1221,7 +1364,7 @@ const ListeningMCQComponent = ({ question, onAnswer, isMultiple = false }) => {
               value={option}
               checked={isMultiple ? selectedAnswers.includes(option) : selectedAnswers === option}
               onChange={() => handleAnswerChange(option)}
-              className={`mt-1 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 ${isMultiple ? 'rounded' : ''}`}
+              className={`mt-1 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 ${isMultiple ? 'rounded' : ''}`}
             />
             <span className="text-gray-700">{option}</span>
           </label>
@@ -1232,52 +1375,52 @@ const ListeningMCQComponent = ({ question, onAnswer, isMultiple = false }) => {
 };
 
 // Main Question Renderer - Memoized to prevent unnecessary re-renders
-const QuestionRenderer = ({ question, onAnswer }) => {
+const QuestionRenderer = ({ question, onAnswer, clearTrigger }) => {
   const { subtype } = question;
   
   const componentToRender = useMemo(() => {
     switch (subtype) {
       case 'read_aloud':
-        return <ReadAloudComponent question={question} onAnswer={onAnswer} />;
+        return <ReadAloudComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
       
       case 'repeat_sentence':
-        return <RepeatSentenceComponent question={question} onAnswer={onAnswer} />;
+        return <RepeatSentenceComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
       
       case 'respond_to_situation':
-        return <RespondToSituationComponent question={question} onAnswer={onAnswer} />;
+        return <RespondToSituationComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
       
       case 'answer_short_question':
-        return <AnswerShortQuestionComponent question={question} onAnswer={onAnswer} />;
+        return <AnswerShortQuestionComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
       
       case 'summarize_spoken_text':
-        return <SummarizeSpokenTextComponent question={question} onAnswer={onAnswer} />;
+        return <SummarizeSpokenTextComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
       
       case 'summarize_written_text':
-        return <SummarizeWrittenTextComponent question={question} onAnswer={onAnswer} />;
+        return <SummarizeWrittenTextComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
       
       case 'write_email':
-        return <WriteEmailComponent question={question} onAnswer={onAnswer} />;
+        return <WriteEmailComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
       
       case 'rw_fill_in_the_blanks':
-        return <RWFillInTheBlanksComponent question={question} onAnswer={onAnswer} />;
+        return <RWFillInTheBlanksComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
       
       case 'mcq_multiple':
-        return <MCQMultipleComponent question={question} onAnswer={onAnswer} />;
+        return <MCQMultipleComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
       
       case 'mcq_single':
-        return <MCQSingleComponent question={question} onAnswer={onAnswer} />;
+        return <MCQSingleComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
       
       case 'reorder_paragraphs':
-        return <ReorderParagraphsComponent question={question} onAnswer={onAnswer} />;
+        return <ReorderParagraphsComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
       
       case 'listening_fill_in_the_blanks':
-        return <ListeningFillInTheBlanksComponent question={question} onAnswer={onAnswer} />;
+        return <ListeningFillInTheBlanksComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
       
       case 'listening_multiple_choice_multiple_answers':
-        return <ListeningMCQComponent question={question} onAnswer={onAnswer} isMultiple={true} />;
+        return <ListeningMCQComponent question={question} onAnswer={onAnswer} isMultiple={true} clearTrigger={clearTrigger} />;
       
       case 'listening_multiple_choice_single_answers':
-        return <ListeningMCQComponent question={question} onAnswer={onAnswer} isMultiple={false} />;
+        return <ListeningMCQComponent question={question} onAnswer={onAnswer} isMultiple={false} clearTrigger={clearTrigger} />;
       
       default:
         return (
@@ -1291,7 +1434,7 @@ const QuestionRenderer = ({ question, onAnswer }) => {
           </div>
         );
     }
-  }, [subtype, question, onAnswer]);
+  }, [subtype, question, onAnswer, clearTrigger]);
 
   return componentToRender;
 };
@@ -1301,9 +1444,9 @@ const ResultModal = ({ isOpen, onClose, result }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4  bg-opacity-50">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-auto border border-gray-200 overflow-hidden">
-        <div className="bg-green-600 p-4 text-white">
+        <div className="bg-red-700 p-4 text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CheckCircle className="h-6 w-6" />
@@ -1320,7 +1463,7 @@ const ResultModal = ({ isOpen, onClose, result }) => {
 
         <div className="p-6">
           <div className="text-center">
-            <div className="text-green-600 text-xl font-bold mb-2">
+            <div className="text-red-700 text-xl font-bold mb-2">
               Test Results
             </div>
             <p className="text-gray-600 mb-4">
@@ -1329,16 +1472,24 @@ const ResultModal = ({ isOpen, onClose, result }) => {
             
             {result && (
               <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                <pre className="text-sm text-gray-700 whitespace-pre-wrap">
-                  {JSON.stringify(result, null, 2)}
+                <pre className="text-sm text-gray-700 whitespace-pre-wrap grid  gap-5">
+                  <p>Listening : {Number(result.data.listening).toFixed(2)}</p>
+                  <p>Reading : {Number(result.data.reading).toFixed(2)}</p>
+                  <p>Speaking : { Number(result.data.speaking).toFixed(2)}</p>
+                  <p>Writing : { Number(result.data.writing).toFixed(2)}</p>
+                  <p>Total Score : { Number(result.data.totalScore).toFixed(2)}</p>
+                  
                 </pre>
               </div>
-            )}
+            )}{
+              
+              
+            }
           </div>
 
           <button
             onClick={onClose}
-            className="w-full py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
+            className="w-full py-2.5 bg-red-700 text-white rounded-lg hover:bg-red-700 transition font-medium"
           >
             Close
           </button>
@@ -1386,7 +1537,6 @@ const RouteChangeConfirmation = ({ isActive, onConfirm, onCancel }) => {
     </div>
   );
 };
-
 // Main Dynamic Mock Test Component
 export default function DynamicMockTest({ params }) {
   // Use React.use() to unwrap the Promise params
@@ -1585,7 +1735,7 @@ export default function DynamicMockTest({ params }) {
   if (loading || !testData || !testData.questions || testData.questions.length === 0) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600"></div>
       </div>
     );
   }
@@ -1609,7 +1759,7 @@ export default function DynamicMockTest({ params }) {
               </div>
               <div className="w-48 bg-gray-200 rounded-full h-2 mt-2">
                 <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-red-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${((currentQuestionIndex + 1) / testData.questions.length) * 100}%` }}
                 ></div>
               </div>
@@ -1647,7 +1797,7 @@ export default function DynamicMockTest({ params }) {
             className={`px-6 py-2 rounded-md font-medium ${
               isSubmitting
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700 text-white'
+                : 'bg-red-600 hover:bg-red-700 text-white'
             }`}
           >
             {isSubmitting ? (

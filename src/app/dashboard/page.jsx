@@ -8,6 +8,7 @@ const ProgressDemo = () => {
   const baseUrl = process.env.NEXT_PUBLIC_URL;
 
   useEffect(() => {
+   
     const fetchUserData = async () => {
       try {
         setLoading(true);
@@ -17,8 +18,13 @@ const ProgressDemo = () => {
 
 
         if (!response.ok) {
+          
           throw new Error(`HTTP error! status: ${response.status}`);
+          
+          
         }
+       
+
 
         const data = await response.json();
 
@@ -34,8 +40,13 @@ const ProgressDemo = () => {
     if (baseUrl) fetchUserData();
   }, [baseUrl]);
 
+
+
  
 
+
+ 
+ 
 
   return (
     <div>
@@ -53,7 +64,7 @@ const ProgressDemo = () => {
               <div className="bg-white md:flex justify-between gap-2 rounded-xl p-8 md:p-15 w-full">
                 <div className="md:border-r-2 grid gap-2 border-r-[#7D0000] pr-2">
                   <h1 className="flex justify-between pr-4 font-medium text-xl">
-                    150{" "}
+                    {data?.mockTests?.total}{" "}
                     <span className="bg-amber-400 text-white rounded-full px-2 text">
                       {data?.typeProgress?.speaking}
                     </span>
@@ -72,7 +83,7 @@ const ProgressDemo = () => {
                 </div>
                 <div className="md:border-r-2 grid gap-2 border-r-[#7D0000] pr-2">
                   <h1 className="flex justify-between pr-4 font-medium text-xl">
-                    150{" "}
+                    {data?.mockTests?.total}{" "}
                     <span className="bg-blue-500 text-white rounded-full px-2 text">
                       {data?.typeProgress?.writing}
                     </span>
@@ -85,7 +96,7 @@ const ProgressDemo = () => {
                 </div>
                 <div className="md:border-r-2 grid gap-2 border-r-[#7D0000] pr-2">
                   <h1 className="flex justify-between pr-4 font-medium text-xl">
-                    150{" "}
+                    {data?.mockTests?.total}{" "}
                     <span className="bg-green-500 text-white rounded-full px-2 text">
                       {data?.typeProgress?.reading}
                     </span>
@@ -98,7 +109,7 @@ const ProgressDemo = () => {
                 </div>
                 <div className=" grid gap-2  pr-2">
                   <h1 className="flex justify-between pr-4 font-medium text-xl">
-                    150{" "}
+                    {data?.mockTests?.total}{" "}
                     <span className="bg-blue-500 text-white rounded-full px-2 text">
                       {data?.typeProgress?.listening}
                     </span>
@@ -417,6 +428,8 @@ const ProgressDemo = () => {
         )
       }
     </div>
+    // <div></div>
+    
   );
 };
 
