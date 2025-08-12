@@ -834,11 +834,11 @@ const WriteEmailComponent = ({ question, onAnswer }) => {
 
 // Reading Fill in the Blanks Component - Fixed version
 const RWFillInTheBlanksComponent = ({ question, onAnswer }) => {
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useState([]);
 
   // Clear answers when question changes
   useEffect(() => {
-    setAnswers({});
+    setAnswers([]);
   }, [question._id]);
 
   // Memoize the onAnswer callback to prevent unnecessary re-renders
@@ -849,16 +849,69 @@ const RWFillInTheBlanksComponent = ({ question, onAnswer }) => {
     stableOnAnswer(answers);
   }, [answers, stableOnAnswer]);
 
-  const handleAnswerChange = useCallback((blankIndex, value) => {
-    setAnswers(prev => {
-      // Only update if the value actually changed
-      if (prev[blankIndex] === value) return prev;
-      return {
-        ...prev,
-        [blankIndex]: value
-      };
-    });
-  }, []);
+  // const handleAnswerChange = useCallback((blankIndex, value) => {
+  //   //need to ensure answers is an array of objects
+  //   setAnswers(prev => {
+  //     // Only update if the value actually changed
+  //     if (prev[blankIndex] === value) return prev;
+  //     return {
+  //       ...prev,
+  //       [blankIndex]: value
+  //     };
+  //   });
+  // }, []);
+
+//   const handleAnswerChange = useCallback((blankIndex, value) => {
+//   setAnswers(prev => {
+//     // Create a copy of the current array
+//     const newAnswers = [...prev];
+
+//     // Only update if the value has changed
+//     if (newAnswers[blankIndex]?.[blankIndex] === value) return newAnswers;
+
+//     // Update the object at the specific index with the index as key and value as answer
+//     newAnswers[blankIndex] = {
+//       [blankIndex]: value // Use the blankIndex as the key and value as the answer
+//     };
+
+//     return newAnswers;
+//   });
+// }, []);
+
+const handleAnswerChange = useCallback((blankIndex, value) => {
+  setAnswers(prev => {
+    
+    const newAnswers = [...prev];
+     if (newAnswers[blankIndex] === value) return newAnswers;
+     newAnswers[blankIndex] = value;
+
+    return newAnswers;
+  });
+}, []);
+
+// const handleAnswerChange = useCallback((blankIndex, value) => {
+//   setAnswers(prev => {
+//     return value;
+//   });
+// }, []);
+
+
+// const handleAnswerChange = useCallback((blankIndex, value) => {
+//   setAnswers(prev => {
+//     // Create a copy of the current array
+//     const newAnswers = [...prev];
+
+//     // Only update if the value has changed
+//     if (newAnswers[blankIndex] === value) return newAnswers;
+
+//     // Directly store the string value at the correct index
+//     newAnswers[blankIndex] = value;
+
+//     return newAnswers;
+//   });
+// }, []);
+
+
 
   const renderPromptWithBlanks = useMemo(() => {
     let text = question.prompt || '';
@@ -890,7 +943,10 @@ const RWFillInTheBlanksComponent = ({ question, onAnswer }) => {
             {blanks[index].options.map((option, optIndex) => (
               <option key={optIndex} value={option}>{option}</option>
             ))}
+            
+            
           </select>
+          
         );
       }
     });
@@ -918,6 +974,8 @@ const RWFillInTheBlanksComponent = ({ question, onAnswer }) => {
   );
 };
 
+
+
 // Multiple Choice Multiple Answers Component
 const MCQMultipleComponent = ({ question, onAnswer }) => {
   const [selectedAnswers, setSelectedAnswers] = useState([]);
@@ -937,6 +995,7 @@ const MCQMultipleComponent = ({ question, onAnswer }) => {
   const handleAnswerChange = useCallback((option) => {
     setSelectedAnswers(prev => {
       if (prev.includes(option)) {
+        console.log(option)
         return prev.filter(item => item !== option);
       } else {
         return [...prev, option];
@@ -971,6 +1030,8 @@ const MCQMultipleComponent = ({ question, onAnswer }) => {
               onChange={() => handleAnswerChange(option)}
               className="mt-1 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
             />
+            
+            
             <span className="text-gray-700">{option}</span>
           </label>
         ))}
@@ -1341,7 +1402,7 @@ const QuestionRenderer = ({ question, onAnswer }) => {
       case 'write_email':
         return <WriteEmailComponent question={question} onAnswer={onAnswer} />;
       
-      case 'rw_fill_in_the_blanks':
+      case 'reading_fill_in_the_blanks':
         return <RWFillInTheBlanksComponent question={question} onAnswer={onAnswer} />;
       
       case 'mcq_multiple':
@@ -1626,7 +1687,7 @@ export default function DynamicMockTest({ params }) {
         
         await fetchWithAuth(`${baseUrl}/sectional-mock-test/result-single-question`, {
           method: "POST",
-          body: formData
+          body: formData,
         });
       } else {
         // For text answers

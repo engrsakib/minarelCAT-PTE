@@ -1401,7 +1401,7 @@ const QuestionRenderer = ({ question, onAnswer, clearTrigger }) => {
       case 'write_email':
         return <WriteEmailComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
       
-      case 'rw_fill_in_the_blanks':
+      case 'reading_fill_in_the_blanks':
         return <RWFillInTheBlanksComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
       
       case 'mcq_multiple':

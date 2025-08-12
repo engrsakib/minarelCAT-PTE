@@ -173,6 +173,7 @@ export default function Navbar() {
                   {notification}
                 </div>
               )}
+              portal="true" 
             />
 
             <div className="relative ">

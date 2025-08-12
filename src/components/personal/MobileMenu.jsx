@@ -7,7 +7,7 @@ import useLoggedInUser from "@/lib/useGetLoggedInUser";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "#", label: "Practice" }, // Don't use href="#" for Practice, just trigger action
-  { href: "/questions/test", label: "Mock Test" },
+  { href: "/mock-test", label: "Mock Test" },
   { href: "/subscription/pricing", label: "Pricing" },
   { href: "/company/about", label: "About US" }, // Same for FAQ
 ];

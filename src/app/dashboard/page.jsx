@@ -146,7 +146,11 @@ const ProgressDemo = () => {
                                 {data?.typeCounts?.speaking?.read_aloud?.total}
                               </span>
                             </p>
-                            <Progress value={30} color="amber" />
+
+                            {console.log("data?.typeProgress?",data?.typeProgress)
+                            }
+                            <Progress value={parseInt((data?.typeCounts?.speaking?.read_aloud?.completed / data?.typeCounts?.speaking?.read_aloud?.total) * 100, 10)} color="amber" />
+
                           </div>
                           <div className="lower">
                             <p className="flex justify-between">
@@ -159,7 +163,8 @@ const ProgressDemo = () => {
                                 /{data?.typeCounts?.speaking?.repeat_sentence?.total}
                               </span>
                             </p>
-                            <Progress value={30} color="amber" />
+                            <Progress value={parseInt((data?.typeCounts?.speaking?.repeat_sentence?.completed / data?.typeCounts?.speaking?.repeat_sentence?.total) * 100, 10)} color="amber" />
+
                           </div>
                         </div>
                         <div className="right w-full flex flex-col gap-2 md:gap-5">
@@ -178,7 +183,8 @@ const ProgressDemo = () => {
                                 }
                               </span>
                             </p>
-                            <Progress value={30} color="amber" />
+                            <Progress value={parseInt((data?.typeCounts?.speaking?.respond_to_situation?.completed / data?.typeCounts?.speaking?.respond_to_situation?.total) * 100, 10)} color="amber" />
+
                           </div>
                           <div className="lower">
                             <p className="flex justify-between">
@@ -195,7 +201,8 @@ const ProgressDemo = () => {
                                 }
                               </span>
                             </p>
-                            <Progress value={30} color="amber" />
+                            <Progress value={parseInt((data?.typeCounts?.speaking?.answer_short_question?.completed / data?.typeCounts?.speaking?.answer_short_question?.total) * 100, 10)} color="amber" />
+
                           </div>
                         </div>
                       </div>
@@ -219,7 +226,8 @@ const ProgressDemo = () => {
                                 }
                               </span>
                             </p>
-                            <Progress value={30} color="green" />
+                            <Progress value={parseInt((data?.typeCounts?.reading?.reading_fill_in_the_blanks?.completed / data?.typeCounts?.reading?.reading_fill_in_the_blanks?.total) * 100, 10)} color="green" />
+
                           </div>
                           <div className="lower">
                             <p className="flex justify-between">
@@ -233,7 +241,8 @@ const ProgressDemo = () => {
                                 {data?.typeCounts?.reading?.reorder_paragraphs?.total}
                               </span>
                             </p>
-                            <Progress value={30} color="green" />
+                            <Progress value={parseInt((data?.typeCounts?.reading?.reorder_paragraphs?.completed / data?.typeCounts?.reading?.reorder_paragraphs?.total) * 100, 10)} color="green" />
+
                           </div>
                         </div>
                         <div className="right w-full flex flex-col gap-2 md:gap-5">
@@ -245,7 +254,8 @@ const ProgressDemo = () => {
                                 {data?.typeCounts?.reading?.mcq_multiple?.total}
                               </span>
                             </p>
-                            <Progress value={30} color="green" />
+                            <Progress value={parseInt((data?.typeCounts?.reading?.mcq_multiple?.completed / data?.typeCounts?.reading?.mcq_multiple?.total) * 100, 10)} color="green" />
+
                           </div>
                           <div className="lower">
                             <p className="flex justify-between">
@@ -255,7 +265,8 @@ const ProgressDemo = () => {
                                 {data?.typeCounts?.reading?.mcq_single?.total}
                               </span>
                             </p>
-                            <Progress value={30} color="green" />
+                            <Progress value={parseInt((data?.typeCounts?.reading?.mcq_single?.completed / data?.typeCounts?.reading?.mcq_single?.total) * 100, 10)} color="green" />
+
                           </div>
                         </div>
                       </div>
@@ -281,7 +292,8 @@ const ProgressDemo = () => {
                                 }
                               </span>
                             </p>
-                            <Progress value={30} color="sky" />
+                            <Progress value={parseInt((data?.typeCounts?.writing?.summarize_written_text?.completed / data?.typeCounts?.writing?.summarize_written_text?.total) * 100, 10)} color="sky" />
+
                           </div>
                         </div>
                         <div className="right w-full flex flex-col gap-2 md:gap-5">
@@ -293,7 +305,8 @@ const ProgressDemo = () => {
                                 {data?.typeCounts?.writing?.write_email?.total}
                               </span>
                             </p>
-                            <Progress value={30} color="sky" />
+                            <Progress value={parseInt((data?.typeCounts?.writing?.write_email?.completed / data?.typeCounts?.writing?.write_email?.total) * 100, 10)} color="sky" />
+
                           </div>
                         </div>
                       </div>
@@ -317,7 +330,8 @@ const ProgressDemo = () => {
                                 }
                               </span>
                             </p>
-                            <Progress value={30} color="blue" />
+                           <Progress value={parseInt((data?.typeCounts?.listening?.summarize_spoken_text?.completed / data?.typeCounts?.listening?.summarize_spoken_text?.total) * 100, 10)} color="blue" />
+
                           </div>
                           <div className="lower">
                             <p className="flex justify-between">
@@ -333,7 +347,8 @@ const ProgressDemo = () => {
                                 }
                               </span>
                             </p>
-                            <Progress value={30} color="blue" />
+                            <Progress value={parseInt((data?.typeCounts?.listening?.listening_fill_in_the_blanks?.completed / data?.typeCounts?.listening?.listening_fill_in_the_blanks?.total) * 100, 10)} color="blue" />
+
                           </div>
                         </div>
                         <div className="right w-full flex flex-col gap-2 md:gap-5">
@@ -354,7 +369,8 @@ const ProgressDemo = () => {
                                 }
                               </span>
                             </p>
-                            <Progress value={30} color="blue" />
+                            <Progress value={parseInt((data?.typeCounts?.listening?.listening_multiple_choice_multiple_answers?.completed / data?.typeCounts?.listening?.listening_multiple_choice_multiple_answers?.total) * 100, 10)} color="blue" />
+
                           </div>
                           <div className="lower">
                             <p className="flex justify-between">
@@ -375,7 +391,8 @@ const ProgressDemo = () => {
                                 }
                               </span>
                             </p>
-                            <Progress value={30} color="blue" />
+                            <Progress value={parseInt((data?.typeCounts?.listening?.listening_multiple_choice_single_answers?.completed / data?.typeCounts?.listening?.listening_multiple_choice_single_answers?.total) * 100, 10)} color="blue" />
+
                           </div>
                         </div>
                       </div>
@@ -396,13 +413,18 @@ const ProgressDemo = () => {
                                 }
                               </span>
                             </p>
-                            <Progress value={30} color="red" />
+                            <Progress value={parseInt((data?.mockTests?.completed / data?.mockTests?.total) * 100, 10)} color="red" />
+
                           </div>
                         </div>
                         <div className="right w-full flex flex-col gap-2 md:gap-5">
                           <div className="upper">
                             <p className="flex justify-between">
                               Sectional Mock Test <span>
+                                {
+                                  console.log("data?.sectionalMockTests?",data?.sectionalMockTests)
+                                  
+                                }
 
                                 {
                                   data?.sectionalMockTests?.completed
@@ -414,7 +436,8 @@ const ProgressDemo = () => {
 
                               </span>
                             </p>
-                            <Progress value={30} color="red" />
+                            <Progress value={parseInt((data?.sectionalMockTests?.completed / data?.sectionalMockTests?.total) * 100, 10)} color="red" />
+
                           </div>
                         </div>
                       </div>
