@@ -849,34 +849,7 @@ const RWFillInTheBlanksComponent = ({ question, onAnswer }) => {
     stableOnAnswer(answers);
   }, [answers, stableOnAnswer]);
 
-  // const handleAnswerChange = useCallback((blankIndex, value) => {
-  //   //need to ensure answers is an array of objects
-  //   setAnswers(prev => {
-  //     // Only update if the value actually changed
-  //     if (prev[blankIndex] === value) return prev;
-  //     return {
-  //       ...prev,
-  //       [blankIndex]: value
-  //     };
-  //   });
-  // }, []);
-
-//   const handleAnswerChange = useCallback((blankIndex, value) => {
-//   setAnswers(prev => {
-//     // Create a copy of the current array
-//     const newAnswers = [...prev];
-
-//     // Only update if the value has changed
-//     if (newAnswers[blankIndex]?.[blankIndex] === value) return newAnswers;
-
-//     // Update the object at the specific index with the index as key and value as answer
-//     newAnswers[blankIndex] = {
-//       [blankIndex]: value // Use the blankIndex as the key and value as the answer
-//     };
-
-//     return newAnswers;
-//   });
-// }, []);
+  
 
 const handleAnswerChange = useCallback((blankIndex, value) => {
   setAnswers(prev => {
@@ -889,27 +862,7 @@ const handleAnswerChange = useCallback((blankIndex, value) => {
   });
 }, []);
 
-// const handleAnswerChange = useCallback((blankIndex, value) => {
-//   setAnswers(prev => {
-//     return value;
-//   });
-// }, []);
 
-
-// const handleAnswerChange = useCallback((blankIndex, value) => {
-//   setAnswers(prev => {
-//     // Create a copy of the current array
-//     const newAnswers = [...prev];
-
-//     // Only update if the value has changed
-//     if (newAnswers[blankIndex] === value) return newAnswers;
-
-//     // Directly store the string value at the correct index
-//     newAnswers[blankIndex] = value;
-
-//     return newAnswers;
-//   });
-// }, []);
 
 
 
@@ -928,28 +881,51 @@ const handleAnswerChange = useCallback((blankIndex, value) => {
 
     const parts = text.split(/<BLANK_\d+>/);
     const result = [];
+    console.log("blanks.length",blanks.length);
     
-    parts.forEach((part, index) => {
-      result.push(<span key={`text-${index}`}>{part}</span>);
-      if (index < blanks.length) {
-        result.push(
-          <select
-            key={`blank-${index}`}
-            value={answers[blanks[index].index] || ''}
-            onChange={(e) => handleAnswerChange(blanks[index].index, e.target.value)}
-            className="mx-1 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-red-500"
-          >
-            <option value="">Select...</option>
-            {blanks[index].options.map((option, optIndex) => (
-              <option key={optIndex} value={option}>{option}</option>
-            ))}
-            
-            
-          </select>
-          
-        );
-      }
-    });
+  parts.forEach((part, index) => {
+  // Push the part (text) into the result array
+  result.push(<span key={`text-${index}`}>{part}</span>);
+
+  // Only render select inputs for the corresponding blanks
+  if (index < blanks.length) {
+    result.push(
+      <select
+        key={`blank-${index}`}
+        value={answers[blanks[index].index] || ''}
+        onChange={(e) => handleAnswerChange(blanks[index].index, e.target.value)}
+        className="mx-1 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-red-500"
+      >
+        <option value="">Select...</option>
+        {blanks[index].options.map((option, optIndex) => (
+          <option key={optIndex} value={option}>{option}</option>
+        ))}
+      </select>
+    );
+  }
+});
+
+// Ensure that if there are more blanks than parts, we still render the remaining blanks.
+if (blanks.length > parts.length) {
+  blanks.slice(parts.length).forEach((blank, index) => {
+    result.push(
+      <select
+        key={`blank-${index + parts.length}`}
+        value={answers[blank.index] || ''}
+        onChange={(e) => handleAnswerChange(blank.index, e.target.value)}
+        className="mx-1 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-red-500"
+      >
+        <option value="">Select...</option>
+        {blank.options.map((option, optIndex) => (
+          <option key={optIndex} value={option}>{option}</option>
+        ))}
+      </select>
+    );
+  });
+}
+
+
+    
 
     return result;
   }, [question.prompt, question.blanks, answers, handleAnswerChange]);

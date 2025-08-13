@@ -867,16 +867,13 @@ const WriteEmailComponent = ({ question, onAnswer, clearTrigger }) => {
 };
 
 // Reading Fill in the Blanks Component - Fixed version
-const RWFillInTheBlanksComponent = ({ question, onAnswer, clearTrigger }) => {
-  const [answers, setAnswers] = useState({});
+const RWFillInTheBlanksComponent = ({ question, onAnswer }) => {
+  const [answers, setAnswers] = useState([]);
 
-  // Clear component state when clearTrigger changes
+  // Clear answers when question changes
   useEffect(() => {
-    if (clearTrigger) {
-      setAnswers({});
-      onAnswer({});
-    }
-  }, [clearTrigger, onAnswer]);
+    setAnswers([]);
+  }, [question._id]);
 
   // Memoize the onAnswer callback to prevent unnecessary re-renders
   const stableOnAnswer = useCallback(onAnswer, []);
@@ -886,16 +883,22 @@ const RWFillInTheBlanksComponent = ({ question, onAnswer, clearTrigger }) => {
     stableOnAnswer(answers);
   }, [answers, stableOnAnswer]);
 
-  const handleAnswerChange = useCallback((blankIndex, value) => {
-    setAnswers(prev => {
-      // Only update if the value actually changed
-      if (prev[blankIndex] === value) return prev;
-      return {
-        ...prev,
-        [blankIndex]: value
-      };
-    });
-  }, []);
+  
+
+const handleAnswerChange = useCallback((blankIndex, value) => {
+  setAnswers(prev => {
+    
+    const newAnswers = [...prev];
+     if (newAnswers[blankIndex] === value) return newAnswers;
+     newAnswers[blankIndex] = value;
+
+    return newAnswers;
+  });
+}, []);
+
+
+
+
 
   const renderPromptWithBlanks = useMemo(() => {
     let text = question.prompt || '';
@@ -912,25 +915,51 @@ const RWFillInTheBlanksComponent = ({ question, onAnswer, clearTrigger }) => {
 
     const parts = text.split(/<BLANK_\d+>/);
     const result = [];
+    console.log("blanks.length",blanks.length);
     
-    parts.forEach((part, index) => {
-      result.push(<span key={`text-${index}`}>{part}</span>);
-      if (index < blanks.length) {
-        result.push(
-          <select
-            key={`blank-${index}`}
-            value={answers[blanks[index].index] || ''}
-            onChange={(e) => handleAnswerChange(blanks[index].index, e.target.value)}
-            className="mx-1 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-red-500"
-          >
-            <option value="">Select...</option>
-            {blanks[index].options.map((option, optIndex) => (
-              <option key={optIndex} value={option}>{option}</option>
-            ))}
-          </select>
-        );
-      }
-    });
+  parts.forEach((part, index) => {
+  // Push the part (text) into the result array
+  result.push(<span key={`text-${index}`}>{part}</span>);
+
+  // Only render select inputs for the corresponding blanks
+  if (index < blanks.length) {
+    result.push(
+      <select
+        key={`blank-${index}`}
+        value={answers[blanks[index].index] || ''}
+        onChange={(e) => handleAnswerChange(blanks[index].index, e.target.value)}
+        className="mx-1 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-red-500"
+      >
+        <option value="">Select...</option>
+        {blanks[index].options.map((option, optIndex) => (
+          <option key={optIndex} value={option}>{option}</option>
+        ))}
+      </select>
+    );
+  }
+});
+
+// Ensure that if there are more blanks than parts, we still render the remaining blanks.
+if (blanks.length > parts.length) {
+  blanks.slice(parts.length).forEach((blank, index) => {
+    result.push(
+      <select
+        key={`blank-${index + parts.length}`}
+        value={answers[blank.index] || ''}
+        onChange={(e) => handleAnswerChange(blank.index, e.target.value)}
+        className="mx-1 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-red-500"
+      >
+        <option value="">Select...</option>
+        {blank.options.map((option, optIndex) => (
+          <option key={optIndex} value={option}>{option}</option>
+        ))}
+      </select>
+    );
+  });
+}
+
+
+    
 
     return result;
   }, [question.prompt, question.blanks, answers, handleAnswerChange]);
@@ -954,7 +983,6 @@ const RWFillInTheBlanksComponent = ({ question, onAnswer, clearTrigger }) => {
     </div>
   );
 };
-
 // Multiple Choice Multiple Answers Component
 const MCQMultipleComponent = ({ question, onAnswer, clearTrigger }) => {
   const [selectedAnswers, setSelectedAnswers] = useState([]);
