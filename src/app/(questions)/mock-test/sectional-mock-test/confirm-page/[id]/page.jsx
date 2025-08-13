@@ -25,7 +25,7 @@ import fetchWithAuth from "@/lib/fetchWithAuth";
 const RECORD_SECONDS = 35;
 
 // Read Aloud Component
-const ReadAloudComponent = ({ question, onAnswer, clearTrigger }) => {
+const ReadAloudComponent = ({ question, onAnswer }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(RECORD_SECONDS);
   const [audioBlob, setAudioBlob] = useState(null);
@@ -33,16 +33,16 @@ const ReadAloudComponent = ({ question, onAnswer, clearTrigger }) => {
   const recorder = useRef(null);
   const timerRef = useRef();
 
-  // Clear component state when clearTrigger changes
+  // Clear audio when question changes
   useEffect(() => {
-    if (clearTrigger) {
-      setAudioBlob(null);
-      setMp3URL(null);
-      setRecordingTime(RECORD_SECONDS);
-      setIsRecording(false);
-      onAnswer(null);
+    setIsRecording(false);
+    setRecordingTime(RECORD_SECONDS);
+    setAudioBlob(null);
+    setMp3URL(null);
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
     }
-  }, [clearTrigger, onAnswer]);
+  }, [question._id]);
 
   useEffect(() => {
     if (!isRecording) return;
@@ -197,7 +197,7 @@ const ReadAloudComponent = ({ question, onAnswer, clearTrigger }) => {
 };
 
 // Repeat Sentence Component
-const RepeatSentenceComponent = ({ question, onAnswer, clearTrigger }) => {
+const RepeatSentenceComponent = ({ question, onAnswer }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
@@ -205,20 +205,13 @@ const RepeatSentenceComponent = ({ question, onAnswer, clearTrigger }) => {
   const recorder = useRef(null);
   const audioRef = useRef(null);
 
-  // Clear component state when clearTrigger changes
+  // Clear audio when question changes
   useEffect(() => {
-    if (clearTrigger) {
-      setIsPlaying(false);
-      setIsRecording(false);
-      setAudioBlob(null);
-      setMp3URL(null);
-      onAnswer(null);
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
-    }
-  }, [clearTrigger, onAnswer]);
+    setIsPlaying(false);
+    setIsRecording(false);
+    setAudioBlob(null);
+    setMp3URL(null);
+  }, [question._id]);
 
   const toggleAudio = useCallback(() => {
     if (audioRef.current) {
@@ -344,7 +337,7 @@ const RepeatSentenceComponent = ({ question, onAnswer, clearTrigger }) => {
 };
 
 // Respond to Situation Component  
-const RespondToSituationComponent = ({ question, onAnswer, clearTrigger }) => {
+const RespondToSituationComponent = ({ question, onAnswer }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
@@ -352,20 +345,13 @@ const RespondToSituationComponent = ({ question, onAnswer, clearTrigger }) => {
   const recorder = useRef(null);
   const audioRef = useRef(null);
 
-  // Clear component state when clearTrigger changes
+  // Clear audio when question changes
   useEffect(() => {
-    if (clearTrigger) {
-      setIsPlaying(false);
-      setIsRecording(false);
-      setAudioBlob(null);
-      setMp3URL(null);
-      onAnswer(null);
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
-    }
-  }, [clearTrigger, onAnswer]);
+    setIsPlaying(false);
+    setIsRecording(false);
+    setAudioBlob(null);
+    setMp3URL(null);
+  }, [question._id]);
 
   const toggleAudio = useCallback(() => {
     if (audioRef.current) {
@@ -490,7 +476,7 @@ const RespondToSituationComponent = ({ question, onAnswer, clearTrigger }) => {
 };
 
 // Answer Short Question Component
-const AnswerShortQuestionComponent = ({ question, onAnswer, clearTrigger }) => {
+const AnswerShortQuestionComponent = ({ question, onAnswer }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
@@ -498,20 +484,13 @@ const AnswerShortQuestionComponent = ({ question, onAnswer, clearTrigger }) => {
   const recorder = useRef(null);
   const audioRef = useRef(null);
 
-  // Clear component state when clearTrigger changes
+  // Clear audio when question changes
   useEffect(() => {
-    if (clearTrigger) {
-      setIsPlaying(false);
-      setIsRecording(false);
-      setAudioBlob(null);
-      setMp3URL(null);
-      onAnswer(null);
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
-    }
-  }, [clearTrigger, onAnswer]);
+    setIsPlaying(false);
+    setIsRecording(false);
+    setAudioBlob(null);
+    setMp3URL(null);
+  }, [question._id]);
 
   const toggleAudio = useCallback(() => {
     if (audioRef.current) {
@@ -630,23 +609,16 @@ const AnswerShortQuestionComponent = ({ question, onAnswer, clearTrigger }) => {
 };
 
 // Summarize Spoken Text Component (Listening)
-const SummarizeSpokenTextComponent = ({ question, onAnswer, clearTrigger }) => {
+const SummarizeSpokenTextComponent = ({ question, onAnswer }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [summary, setSummary] = useState('');
   const audioRef = useRef(null);
 
-  // Clear component state when clearTrigger changes
+  // Clear input when question changes
   useEffect(() => {
-    if (clearTrigger) {
-      setIsPlaying(false);
-      setSummary('');
-      onAnswer('');
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
-    }
-  }, [clearTrigger, onAnswer]);
+    setSummary('');
+    setIsPlaying(false);
+  }, [question._id]);
 
   // Debounced onAnswer call to prevent excessive updates
   const debouncedOnAnswer = useMemo(() => {
@@ -737,16 +709,13 @@ const SummarizeSpokenTextComponent = ({ question, onAnswer, clearTrigger }) => {
 };
 
 // Summarize Written Text Component (Writing)
-const SummarizeWrittenTextComponent = ({ question, onAnswer, clearTrigger }) => {
+const SummarizeWrittenTextComponent = ({ question, onAnswer }) => {
   const [summary, setSummary] = useState('');
 
-  // Clear component state when clearTrigger changes
+  // Clear input when question changes
   useEffect(() => {
-    if (clearTrigger) {
-      setSummary('');
-      onAnswer('');
-    }
-  }, [clearTrigger, onAnswer]);
+    setSummary('');
+  }, [question._id]);
 
   // Debounced onAnswer call
   const debouncedOnAnswer = useMemo(() => {
@@ -802,16 +771,13 @@ const SummarizeWrittenTextComponent = ({ question, onAnswer, clearTrigger }) => 
 };
 
 // Write Email Component
-const WriteEmailComponent = ({ question, onAnswer, clearTrigger }) => {
+const WriteEmailComponent = ({ question, onAnswer }) => {
   const [email, setEmail] = useState('');
 
-  // Clear component state when clearTrigger changes
+  // Clear input when question changes
   useEffect(() => {
-    if (clearTrigger) {
-      setEmail('');
-      onAnswer('');
-    }
-  }, [clearTrigger, onAnswer]);
+    setEmail('');
+  }, [question._id]);
 
   // Debounced onAnswer call
   const debouncedOnAnswer = useMemo(() => {
@@ -983,17 +949,17 @@ if (blanks.length > parts.length) {
     </div>
   );
 };
+
+
+
 // Multiple Choice Multiple Answers Component
-const MCQMultipleComponent = ({ question, onAnswer, clearTrigger }) => {
+const MCQMultipleComponent = ({ question, onAnswer }) => {
   const [selectedAnswers, setSelectedAnswers] = useState([]);
 
-  // Clear component state when clearTrigger changes
+  // Clear selection when question changes
   useEffect(() => {
-    if (clearTrigger) {
-      setSelectedAnswers([]);
-      onAnswer([]);
-    }
-  }, [clearTrigger, onAnswer]);
+    setSelectedAnswers([]);
+  }, [question._id]);
 
   // Stable onAnswer callback
   const stableOnAnswer = useCallback(onAnswer, []);
@@ -1005,6 +971,7 @@ const MCQMultipleComponent = ({ question, onAnswer, clearTrigger }) => {
   const handleAnswerChange = useCallback((option) => {
     setSelectedAnswers(prev => {
       if (prev.includes(option)) {
+        console.log(option)
         return prev.filter(item => item !== option);
       } else {
         return [...prev, option];
@@ -1039,6 +1006,8 @@ const MCQMultipleComponent = ({ question, onAnswer, clearTrigger }) => {
               onChange={() => handleAnswerChange(option)}
               className="mt-1 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
             />
+            
+            
             <span className="text-gray-700">{option}</span>
           </label>
         ))}
@@ -1048,16 +1017,13 @@ const MCQMultipleComponent = ({ question, onAnswer, clearTrigger }) => {
 };
 
 // Multiple Choice Single Answer Component
-const MCQSingleComponent = ({ question, onAnswer, clearTrigger }) => {
+const MCQSingleComponent = ({ question, onAnswer }) => {
   const [selectedAnswer, setSelectedAnswer] = useState('');
 
-  // Clear component state when clearTrigger changes
+  // Clear selection when question changes
   useEffect(() => {
-    if (clearTrigger) {
-      setSelectedAnswer('');
-      onAnswer('');
-    }
-  }, [clearTrigger, onAnswer]);
+    setSelectedAnswer('');
+  }, [question._id]);
 
   // Stable onAnswer callback
   const stableOnAnswer = useCallback(onAnswer, []);
@@ -1108,16 +1074,13 @@ const MCQSingleComponent = ({ question, onAnswer, clearTrigger }) => {
 };
 
 // Reorder Paragraphs Component
-const ReorderParagraphsComponent = ({ question, onAnswer, clearTrigger }) => {
+const ReorderParagraphsComponent = ({ question, onAnswer }) => {
   const [orderedOptions, setOrderedOptions] = useState(question.options || []);
 
-  // Clear component state when clearTrigger changes
+  // Reset to original order when question changes
   useEffect(() => {
-    if (clearTrigger) {
-      setOrderedOptions(question.options || []);
-      onAnswer(question.options || []);
-    }
-  }, [clearTrigger, question.options, onAnswer]);
+    setOrderedOptions(question.options || []);
+  }, [question._id, question.options]);
 
   // Stable onAnswer callback
   const stableOnAnswer = useCallback(onAnswer, []);
@@ -1181,23 +1144,16 @@ const ReorderParagraphsComponent = ({ question, onAnswer, clearTrigger }) => {
 };
 
 // Listening Fill in the Blanks Component
-const ListeningFillInTheBlanksComponent = ({ question, onAnswer, clearTrigger }) => {
+const ListeningFillInTheBlanksComponent = ({ question, onAnswer }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [answers, setAnswers] = useState({});
   const audioRef = useRef(null);
 
-  // Clear component state when clearTrigger changes
+  // Clear answers when question changes
   useEffect(() => {
-    if (clearTrigger) {
-      setIsPlaying(false);
-      setAnswers({});
-      onAnswer({});
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
-    }
-  }, [clearTrigger, onAnswer]);
+    setAnswers({});
+    setIsPlaying(false);
+  }, [question._id]);
 
   // Stable onAnswer callback
   const stableOnAnswer = useCallback(onAnswer, []);
@@ -1296,23 +1252,16 @@ const ListeningFillInTheBlanksComponent = ({ question, onAnswer, clearTrigger })
 };
 
 // Listening Multiple Choice Components (Single and Multiple)
-const ListeningMCQComponent = ({ question, onAnswer, isMultiple = false, clearTrigger }) => {
+const ListeningMCQComponent = ({ question, onAnswer, isMultiple = false }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [selectedAnswers, setSelectedAnswers] = useState(isMultiple ? [] : '');
   const audioRef = useRef(null);
 
-  // Clear component state when clearTrigger changes
+  // Clear selection when question changes
   useEffect(() => {
-    if (clearTrigger) {
-      setIsPlaying(false);
-      setSelectedAnswers(isMultiple ? [] : '');
-      onAnswer(isMultiple ? [] : '');
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
-    }
-  }, [clearTrigger, isMultiple, onAnswer]);
+    setSelectedAnswers(isMultiple ? [] : '');
+    setIsPlaying(false);
+  }, [question._id, isMultiple]);
 
   // Stable onAnswer callback
   const stableOnAnswer = useCallback(onAnswer, []);
@@ -1403,52 +1352,52 @@ const ListeningMCQComponent = ({ question, onAnswer, isMultiple = false, clearTr
 };
 
 // Main Question Renderer - Memoized to prevent unnecessary re-renders
-const QuestionRenderer = ({ question, onAnswer, clearTrigger }) => {
+const QuestionRenderer = ({ question, onAnswer }) => {
   const { subtype } = question;
   
   const componentToRender = useMemo(() => {
     switch (subtype) {
       case 'read_aloud':
-        return <ReadAloudComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
+        return <ReadAloudComponent question={question} onAnswer={onAnswer} />;
       
       case 'repeat_sentence':
-        return <RepeatSentenceComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
+        return <RepeatSentenceComponent question={question} onAnswer={onAnswer} />;
       
       case 'respond_to_situation':
-        return <RespondToSituationComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
+        return <RespondToSituationComponent question={question} onAnswer={onAnswer} />;
       
       case 'answer_short_question':
-        return <AnswerShortQuestionComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
+        return <AnswerShortQuestionComponent question={question} onAnswer={onAnswer} />;
       
       case 'summarize_spoken_text':
-        return <SummarizeSpokenTextComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
+        return <SummarizeSpokenTextComponent question={question} onAnswer={onAnswer} />;
       
       case 'summarize_written_text':
-        return <SummarizeWrittenTextComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
+        return <SummarizeWrittenTextComponent question={question} onAnswer={onAnswer} />;
       
       case 'write_email':
-        return <WriteEmailComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
+        return <WriteEmailComponent question={question} onAnswer={onAnswer} />;
       
       case 'reading_fill_in_the_blanks':
-        return <RWFillInTheBlanksComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
+        return <RWFillInTheBlanksComponent question={question} onAnswer={onAnswer} />;
       
       case 'mcq_multiple':
-        return <MCQMultipleComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
+        return <MCQMultipleComponent question={question} onAnswer={onAnswer} />;
       
       case 'mcq_single':
-        return <MCQSingleComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
+        return <MCQSingleComponent question={question} onAnswer={onAnswer} />;
       
       case 'reorder_paragraphs':
-        return <ReorderParagraphsComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
+        return <ReorderParagraphsComponent question={question} onAnswer={onAnswer} />;
       
       case 'listening_fill_in_the_blanks':
-        return <ListeningFillInTheBlanksComponent question={question} onAnswer={onAnswer} clearTrigger={clearTrigger} />;
+        return <ListeningFillInTheBlanksComponent question={question} onAnswer={onAnswer} />;
       
       case 'listening_multiple_choice_multiple_answers':
-        return <ListeningMCQComponent question={question} onAnswer={onAnswer} isMultiple={true} clearTrigger={clearTrigger} />;
+        return <ListeningMCQComponent question={question} onAnswer={onAnswer} isMultiple={true} />;
       
       case 'listening_multiple_choice_single_answers':
-        return <ListeningMCQComponent question={question} onAnswer={onAnswer} isMultiple={false} clearTrigger={clearTrigger} />;
+        return <ListeningMCQComponent question={question} onAnswer={onAnswer} isMultiple={false} />;
       
       default:
         return (
@@ -1462,7 +1411,7 @@ const QuestionRenderer = ({ question, onAnswer, clearTrigger }) => {
           </div>
         );
     }
-  }, [subtype, question, onAnswer, clearTrigger]);
+  }, [subtype, question, onAnswer]);
 
   return componentToRender;
 };
@@ -1498,26 +1447,53 @@ const ResultModal = ({ isOpen, onClose, result }) => {
               Your test has been submitted successfully!
             </p>
             
-            {result && (
-              <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                <pre className="text-sm text-gray-700 whitespace-pre-wrap grid  gap-5">
-                  <p>Listening : {Number(result.data.listening).toFixed(2)}</p>
-                  <p>Reading : {Number(result.data.reading).toFixed(2)}</p>
-                  <p>Speaking : { Number(result.data.speaking).toFixed(2)}</p>
-                  <p>Writing : { Number(result.data.writing).toFixed(2)}</p>
-                  <p>Total Score : { Number(result.data.totalScore).toFixed(2)}</p>
-                  
-                </pre>
-              </div>
-            )}{
-              
-              
-            }
+            {result && result.data && result.data.totalScore > 0 && (
+  <div className="bg-gray-50 rounded-lg p-4 mb-4">
+    <div className="text-sm text-gray-700">
+      {result.data.speaking > 0 && (
+        <div className="mb-2">
+          <span className="font-semibold">Speaking: </span>
+          <span>{result.data.speaking.toFixed(2)}</span>
+        </div>
+      )}
+      
+      {result.data.listening > 0 && (
+        <div className="mb-2">
+          <span className="font-semibold">Listening: </span>
+          <span>{result.data.listening.toFixed(2)}</span>
+        </div>
+      )}
+      
+      {result.data.reading > 0 && (
+        <div className="mb-2">
+          <span className="font-semibold">Reading: </span>
+          <span>{result.data.reading.toFixed(2)}</span>
+        </div>
+      )}
+      
+      {result.data.writing > 0 && (
+        <div className="mb-2">
+          <span className="font-semibold">Writing: </span>
+          <span>{result.data.writing.toFixed(2)}</span>
+        </div>
+      )}
+      
+      <div className="mt-3 pt-2 border-t border-gray-300">
+        <span className="font-semibold">Total Score: </span>
+        <span>{result.data.totalScore.toFixed(2)}</span>
+      </div>
+      
+      <div className="text-xs text-gray-500 mt-2">
+        Test Date: {new Date(result.data.testDate).toLocaleDateString()}
+      </div>
+    </div>
+  </div>
+)}
           </div>
 
           <button
             onClick={onClose}
-            className="w-full py-2.5 bg-red-700 text-white rounded-lg hover:bg-red-700 transition font-medium"
+            className="w-full py-2.5 bg-red-700 text-white rounded-lg hover:bg-red-800 transition font-medium"
           >
             Close
           </button>
@@ -1565,11 +1541,13 @@ const RouteChangeConfirmation = ({ isActive, onConfirm, onCancel }) => {
     </div>
   );
 };
+
 // Main Dynamic Mock Test Component
 export default function DynamicMockTest({ params }) {
   // Use React.use() to unwrap the Promise params
   const resolvedParams = use(params);
   const mockTestId = resolvedParams.id;
+  console.log("mockTestId",mockTestId);
   
   const router = useRouter();
   const baseUrl = process.env.NEXT_PUBLIC_URL || "";
@@ -1644,7 +1622,7 @@ export default function DynamicMockTest({ params }) {
       
       setLoading(true);
       try {
-        const response = await fetchWithAuth(`${baseUrl}/full-mock-test/get/${mockTestId}`);
+        const response = await fetchWithAuth(`${baseUrl}/sectional-mock-test/getSingleSectionalMockTest/${mockTestId}`);
         const data = await response.json();
         setTestData(data);
       } catch (error) {
@@ -1655,6 +1633,8 @@ export default function DynamicMockTest({ params }) {
     };
 
     fetchTestData();
+    console.log();
+    
   }, [mockTestId, baseUrl]);
 
   // Memoized answer handler to prevent infinite re-renders
@@ -1681,13 +1661,13 @@ export default function DynamicMockTest({ params }) {
         formData.append("questionId", questionId);
         formData.append("mockTestId", mockTestId);
         
-        await fetchWithAuth(`${baseUrl}/full-mock-test/result-single-question`, {
+        await fetchWithAuth(`${baseUrl}/sectional-mock-test/result-single-question`, {
           method: "POST",
-          body: formData
+          body: formData,
         });
       } else {
         // For text answers
-        await fetchWithAuth(`${baseUrl}/full-mock-test/result-single-question`, {
+        await fetchWithAuth(`${baseUrl}/sectional-mock-test/result-single-question`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -1738,7 +1718,7 @@ export default function DynamicMockTest({ params }) {
   const submitTest = useCallback(async () => {
     setIsSubmitting(true);
     try {
-      const response = await fetchWithAuth(`${baseUrl}/full-mock-test/get-mock-test-result/${mockTestId}`);
+      const response = await fetchWithAuth(`${baseUrl}/sectional-mock-test/get-mock-test-result/${mockTestId}`);
       const result = await response.json();
       setTestResult(result);
       setShowResultModal(true);
