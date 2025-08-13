@@ -1686,23 +1686,26 @@ export default function DynamicMockTest({ params }) {
 
   // Navigate to next question
   const nextQuestion = useCallback(async () => {
-    if (!testData?.questions || isSubmitting) return;
+  if (!testData?.questions || isSubmitting) return;
 
-    const currentQuestion = testData.questions[currentQuestionIndex];
-    const currentAnswer = answers[currentQuestion._id];
-    
-    // Submit current answer if exists
-    if (currentAnswer) {
-      await submitAnswer(currentQuestion._id, currentAnswer);
-    }
-    
-    if (currentQuestionIndex < testData.questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else {
-      // Submit entire test
-      await submitTest();
-    }
-  }, [testData, currentQuestionIndex, answers, isSubmitting, submitAnswer]);
+  const currentQuestion = testData.questions[currentQuestionIndex];
+  const currentAnswer = answers[currentQuestion._id];
+
+  // Submit current answer if exists
+  if (currentAnswer) {
+    setIsSubmitting(true); // Set isSubmitting to true
+    await submitAnswer(currentQuestion._id, currentAnswer);
+    setIsSubmitting(false); // Reset isSubmitting after submitting
+  }
+
+  if (currentQuestionIndex < testData.questions.length - 1) {
+    setCurrentQuestionIndex(currentQuestionIndex + 1);
+  } else {
+    // Submit entire test
+    await submitTest();
+  }
+}, [testData, currentQuestionIndex, answers, isSubmitting, submitAnswer]);
+
 
   // Navigate to previous question
   const prevQuestion = useCallback(() => {
@@ -1800,23 +1803,24 @@ export default function DynamicMockTest({ params }) {
           </button>
           
           <button
-            onClick={nextQuestion}
-            disabled={isSubmitting}
-            className={`px-6 py-2 rounded-md font-medium ${
-              isSubmitting
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-red-600 hover:bg-red-700 text-white'
-            }`}
-          >
-            {isSubmitting ? (
-              <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                Submitting...
-              </div>
-            ) : (
-              isLastQuestion ? 'Submit Test' : 'Next'
-            )}
-          </button>
+  onClick={nextQuestion}
+  disabled={isSubmitting}
+  className={`px-6 py-2 rounded-md font-medium ${
+    isSubmitting
+      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+      : 'bg-red-600 hover:bg-red-700 text-white'
+  }`}
+>
+  {isSubmitting ? (
+    <div className="flex items-center gap-2">
+      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+      Submitting...
+    </div>
+  ) : (
+    isLastQuestion ? 'Submit Test' : 'Next'
+  )}
+</button>
+
         </div>
       </div>
 
