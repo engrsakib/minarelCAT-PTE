@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
+
+export function middleware(request) {
   console.log("Middleware triggered:", request.url);
 
   const token = request.cookies.get("authToken");
