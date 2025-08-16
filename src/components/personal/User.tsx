@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
 import Link from "next/link";
-import { logoutAndRedirect } from "@/lib/fetchWithAuth";
+// import { logoutAndRedirect } from "@/lib/fetchWithAuth";
 import { RootUser } from "@/types/user";
 import { useState } from "react";
 import dummy from "../../../public/dummy-image.png"
@@ -84,7 +84,6 @@ export function User(
           sideOffset={12}
           align="end"
           forceMount
-          portal
         >
           <DropdownMenuSeparator />
           <Link

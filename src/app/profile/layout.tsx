@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { usePathname } from "next/navigation";
 import { IoIosArrowDown } from "react-icons/io";
 import { MdKeyboardArrowRight } from "react-icons/md";
-import { logoutAndRedirect } from '@/lib/fetchWithAuth';
+// import { logoutAndRedirect } from '@/lib/fetchWithAuth';
 
 const Layout = ({
   children,
