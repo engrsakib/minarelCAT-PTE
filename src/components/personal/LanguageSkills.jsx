@@ -1,19 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client"
 
-import type React from "react"
-
 import Link from "next/link"
 import { FaTimes } from "react-icons/fa"
 import { FaMicrophone, FaPen, FaBook, FaHeadphones } from "react-icons/fa"
 import { useEffect, useState } from "react"
 
-interface LanguageSkillsProps {
-  isOpen: boolean
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
-}
-
-const LanguageSkills: React.FC<LanguageSkillsProps> = ({ isOpen, setIsOpen }) => {
+export default function LanguageSkills({ isOpen, setIsOpen }) {
   const [isAnimating, setIsAnimating] = useState(false)
 
   const skillsData = [
@@ -83,7 +76,7 @@ const LanguageSkills: React.FC<LanguageSkillsProps> = ({ isOpen, setIsOpen }) =>
 
   // Handle Escape key press
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
+    const handleEscape = (e) => {
       if (e.key === "Escape" && isOpen) {
         handleClose()
       }
@@ -163,5 +156,3 @@ const LanguageSkills: React.FC<LanguageSkillsProps> = ({ isOpen, setIsOpen }) =>
     </div>
   )
 }
-
-export default LanguageSkills

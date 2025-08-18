@@ -1,6 +1,6 @@
 "use client";
 import React from 'react'
-import LogoImage from "../../../public/logo.png";
+import LogoImage from "@/../public/logo.png";
 import Image from "next/image";
 
 export default function Logo() {

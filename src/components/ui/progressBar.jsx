@@ -20,12 +20,8 @@ const progressIndicatorVariants = cva("h-full w-full flex-1 transition-all", {
   },
 })
 
-export interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
-  value?: number
-  color?: "primary" | "amber" | "red" | "blue" | "green"
-}
-
-const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
+// Remove TypeScript type annotation and use JS props
+const Progress = React.forwardRef(
   ({ className, value = 0, color = "primary", ...props }, ref) => (
     <div ref={ref} className={cn(progressVariants(), className)} {...props}>
       <div

@@ -2,7 +2,7 @@ import { FaRightLong } from "react-icons/fa6";
 import { FaTimes } from "react-icons/fa";
 import Link from "next/link";
 import { User } from "./User";
-import useLoggedInUser from "@/lib/useGetLoggedInUser";
+import useLoggedInUser from "../../lib/useGetLoggedInUser";
 
 const navLinks = [
   { href: "/", label: "Home" },

@@ -1,27 +1,43 @@
 {
   "compilerOptions": {
+    "baseUrl": ".", // baseUrl হিসেবে প্রজেক্টের রুট
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ] // @ আলিয়াসকে src ডিরেক্টরি নির্দেশ করবে
+    },
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": true,
+    "strict": false,
     "noEmit": true,
-    "esModuleInterop": true,
+    "incremental": true,
     "module": "esnext",
-    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "incremental": true,
     "plugins": [
       {
         "name": "next"
       }
-    ],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
+    ]
   },
-  "include": ["next-env.d.js", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/components/personal/Navbar.jsx", "src/components/personal/MobileMenu.jsx", "src/app/middleware.js", "src/app/notifications/page.jsx", "src/app/subscription/pricing/page.jsx", "src/app/page.jsx", "src/app/not-found.jsx", "src/app/loading.jsx", "src/app/layout.tsx", "next.config.js", "middleware.js", "src/lib/utils.js", "src/lib/useGetLoggedInUser.jsx", "src/lib/fetchWithAuthSSR.js"],
-  "exclude": ["node_modules"]
+  "include": [
+    "**/*.js", // TypeScript এর কিছু type ডিফিনিশন
+    "**/*.jsx", // .next ফোল্ডারও ইঙ্কলুড করতে হবে
+    ".next/types/**/*.js", // সব JavaScript ফাইল
+    "next-env.d.ts" // সব JSX ফাইল
+    ,
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules" // node_modules এক্সক্লুড করা হবে
+  ]
 }

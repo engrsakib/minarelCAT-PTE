@@ -1,16 +1,10 @@
-
 import { useEffect, useState } from "react";
 import fetchWithAuth from "./fetchWithAuth";
 
-interface User {
-  name: string;
-  email: string;
-}
-
 export default function useLoggedInUser() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -39,7 +33,7 @@ export default function useLoggedInUser() {
 
         const data = await response.json();
         setUser(data);
-      } catch (err: unknown) {
+      } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
         } else {

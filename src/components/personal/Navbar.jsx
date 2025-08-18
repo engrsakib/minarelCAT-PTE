@@ -6,14 +6,14 @@ import Header from "./Header";
 import Logo from "./Logo";
 import Link from "next/link";
 import LanguageSkills from "./LanguageSkills";
-import useLoggedInUser from "@/lib/useGetLoggedInUser";
+import useLoggedInUser from "../../lib/useGetLoggedInUser";
 import { User } from "./User";
 import { Crown } from "lucide-react";
 import { IoNotificationsOutline } from "react-icons/io5";
-import fetchWithAuth from "../../lib/fetchWithAuth";
-import NotificationBell from "@/app/notifications/page"; 
+import fetchWithAuth from "../../lib/fetchWithAuth"; 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import NotificationBell from './../../app/notifications/NotificationBell';
 
 const PAGE_SIZE = 10;
 
@@ -41,13 +41,13 @@ export default function Navbar() {
       const refresh = localStorage.getItem("refreshToken");
       setAccessToken(access);
       setRefreshToken(refresh);
-      console.log("Access Token:", access);
-      console.log("Refresh Token:", refresh);
+      // console.log("Access Token:", access);
+      // console.log("Refresh Token:", refresh);
     }
   }, []);
 
   useEffect(() => {
-    console.log("Base URL:", baseUrl);
+    // console.log("Base URL:", baseUrl);
     
     const fetchUserData = async () => {
       // Only fetch if we have tokens
@@ -62,7 +62,7 @@ export default function Navbar() {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        console.log("Fetched User Data:", data);
+        // console.log("Fetched User Data:", data);
         setUserData(data.user);
       } catch (error) {
         console.error("Error fetching user info:", error);

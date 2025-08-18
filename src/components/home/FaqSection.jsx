@@ -5,15 +5,9 @@ import { Plus, Minus } from "lucide-react"
 import Image from "next/image"
 import woman from '@/../public/woman.png'
 
-interface FAQItem {
-  id: number
-  question: string
-  answer: string
-}
-
 export default function FAQSection() {
-  const [faqs, setFaqs] = useState<FAQItem[]>([])
-  const [expandedItem, setExpandedItem] = useState<number | null>(null)
+  const [faqs, setFaqs] = useState([])
+  const [expandedItem, setExpandedItem] = useState(null)
   const [loading, setLoading] = useState(true)
   const baseUrl = process.env.NEXT_PUBLIC_URL || ""
 
@@ -29,9 +23,9 @@ export default function FAQSection() {
 
       const data = await response.json()
 
-      // Map the API data to match our interface
-      const mappedFaqs: FAQItem[] = data.map(
-        (item: { id?: number; question?: string; answer?: string }, index: number) => ({
+      // Map the API data to match our structure
+      const mappedFaqs = data.map(
+        (item, index) => ({
           id: item.id || index + 1,
           question: item.question || "",
           answer: item.answer || "",
@@ -43,14 +37,11 @@ export default function FAQSection() {
     } catch (error) {
       console.error("Error fetching FAQs:", error)
       setLoading(false)
-
-      // Fallback to empty array or show error message
       setFaqs([])
     }
   }
 
   useEffect(() => {
-    // Define fetchFAQs inside useEffect to avoid dependency warning
     const fetchFAQsEffect = async () => {
       try {
         setLoading(true)
@@ -62,9 +53,8 @@ export default function FAQSection() {
 
         const data = await response.json()
 
-        // Map the API data to match our interface
-        const mappedFaqs: FAQItem[] = data.map(
-          (item: { id?: number; question?: string; answer?: string }, index: number) => ({
+        const mappedFaqs = data.map(
+          (item, index) => ({
             id: item.id || index + 1,
             question: item.question || "",
             answer: item.answer || "",
@@ -76,24 +66,16 @@ export default function FAQSection() {
       } catch (error) {
         console.error("Error fetching FAQs:", error)
         setLoading(false)
-
-        // Fallback to empty array or show error message
         setFaqs([])
       }
     }
 
-    // Initial fetch
     fetchFAQsEffect()
-
-    // Set up interval to refresh every 5 minutes (300,000 ms)
     const interval = setInterval(fetchFAQsEffect, 5 * 60 * 1000)
-
     return () => clearInterval(interval)
   }, [baseUrl])
 
-  const toggleExpanded = (id: number) => {
-    // If clicking on the currently expanded item, close it
-    // Otherwise, open the clicked item (closing any other open item)
+  const toggleExpanded = (id) => {
     setExpandedItem(expandedItem === id ? null : id)
   }
 

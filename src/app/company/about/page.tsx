@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 
 import parse from "html-react-parser";
-import fetchWithAuth from "@/lib/fetchWithAuth";
+import fetchWithAuth from "../../../lib/fetchWithAuth";
 
 
 

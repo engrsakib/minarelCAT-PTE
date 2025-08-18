@@ -1,8 +1,9 @@
 import React from 'react'
-import not from '@/../public/not.png'
+import not from '../../public/not.png'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+import { Button } from '../components/ui/button'
+
 export default function NotFound() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">

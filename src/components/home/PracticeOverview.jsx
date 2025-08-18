@@ -4,54 +4,27 @@ import { useEffect, useState } from "react";
 import { Mic, PenTool, BookOpen, Volume2 } from "lucide-react";
 import practiceData from "@/../public/data.json";
 
-interface PracticeData {
-  title: string;
-  count: number;
-  label: string;
-  icon: string;
-  details: string[];
-  id: string;
-}
-
-interface PracticeDataSet {
-  speaking: PracticeData;
-  writing: PracticeData;
-  reading: PracticeData;
-  listening: PracticeData;
-}
-
-// Define the structure of the API response
-interface QuestionCountResponse {
-  data: {
-    [key: string]: number;
-  };
-}
-
-type PracticeType = keyof PracticeDataSet;
+// TypeScript interfaces removed for pure JS compatibility
 
 export default function PracticeOverview() {
-  // base url
   const baseUrl = process.env.NEXT_PUBLIC_URL;
 
-  const [questionCount, setQuestionCount] = useState<QuestionCountResponse | null>(null);
-  console.log("Question counts==========>", questionCount);
-
+  const [questionCount, setQuestionCount] = useState(null);
   // Getting question counts
   useEffect(() => {
     fetch(`${baseUrl}/user/questions-counts`)
       .then((res) => res.json())
-      .then((data: QuestionCountResponse) => setQuestionCount(data))
+      .then((data) => setQuestionCount(data))
       .catch((error) => {
         console.error("Error fetching question counts:", error);
         setQuestionCount(null);
       });
   }, [baseUrl]);
 
-  const [activeCategory, setActiveCategory] =
-    useState<PracticeType>("speaking");
-  const data = practiceData as PracticeDataSet;
+  const [activeCategory, setActiveCategory] = useState("speaking");
+  const data = practiceData;
 
-  const getActiveIcon = (category: PracticeType) => {
+  const getActiveIcon = (category) => {
     const iconClass =
       activeCategory === category
         ? "w-6 h-6 text-white"
@@ -71,7 +44,6 @@ export default function PracticeOverview() {
   };
 
   const currentData = data[activeCategory];
-  console.log("Current Data========>", currentData);
 
   return (
     <div className="min-h-screen  relative overflow-hidden">
@@ -91,7 +63,7 @@ export default function PracticeOverview() {
 
         {/* Practice Category Buttons */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-          {(Object.keys(data) as PracticeType[]).map((category) => (
+          {Object.keys(data).map((category) => (
             <button
               key={category}
               onClick={() => setActiveCategory(category)}
